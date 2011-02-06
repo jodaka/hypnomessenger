@@ -1,21 +1,3 @@
-//var chrome = {
-//    i18n: {
-//        getMessage: function(msg) {
-//            if (i18 && i18[msg]) {
-//                return i18[msg];
-//            } else {
-//                return 'lang resources are not available';
-//            }
-//        }
-//    },
-//
-//    extension: {
-//        getURL: function(path) {
-//            return path;
-//        }
-//    }
-//};
-
 var Bandog = {
 
     version : -1,
@@ -221,7 +203,7 @@ var Bandog = {
                         '&phone_number='+phone_number+
                         '&message='+encodeURIComponent(text)
 
-                    Bandog.Messages.History.Save(phone_number, text, key);
+                    Bandog.Messages.History.Save(phone_number, text, collapse_key);
                     alert('SENT');
                     //continue;
 
@@ -339,7 +321,7 @@ var Bandog = {
                         return 1;
                     }
 
-                    if (json.status == "SIGNIN_REQUIRED_STATUS") {
+                    if (json.status == "SIGNIN_REQUIRED") {
                         window.location.href = Bandog.Urls.signIn;
                         return 1;
                     }

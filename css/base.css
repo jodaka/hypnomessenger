@@ -85,7 +85,7 @@ input[type="button"] {
     display: inline-block;
     padding: 2px 6px;
 
-    background: #EEE url(http://static.ak.fbcdn.net/rsrc.php/zD/r/B4K_BWwP7P5.png) repeat 0 0;
+    background: #EEE url('/img/btn_bg.png') repeat 0 0;
     background-position: 0 -48px;
     border: 1px solid #999;
     border-bottom-color: #888;
@@ -155,7 +155,7 @@ div.rcpt_del {
 div.rcpt_del img {
     width: 7px;
     height: 7px;
-    background: url('img/remove_rcpt.png') no-repeat;
+    background: url(/img/remove_rcpt.png) no-repeat;
     background-position: 0px -14px;
 }
 
