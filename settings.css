@@ -1,0 +1,265 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Sans;
+}
+
+#header {
+    width: 949px;
+    margin: 0 0 25px 0;
+    background: #6D84B4;
+    border: 1px solid #3B5998;
+    border-bottom: none;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 0 10px 50px;
+    text-align: left;
+}
+
+#main {
+    width: 1000px;
+    margin: 0 auto;
+    -webkit-box-shadow: 0 0px 15px black;
+    text-align: center;
+    padding: 0 0 50px 0;
+    min-height: 500px;
+}
+
+#fl {
+    width: 600px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#newmessage {
+    margin-bottom: 40px;
+}
+
+label {
+    text-align: left;
+    display: block;
+    font-weight: bold;
+    font-size: 11px;
+    color: #333;
+}
+
+#nw_text_label {
+    margin: 10px 0 0 0;
+}
+
+#contacts {
+    width: 300px;
+    height: 300px;
+    display: inline-block;
+    overflow: hidden;
+    margin-top: 13px;
+}
+
+#contacts_list {
+    height: 268px;
+    overflow: auto;
+}
+
+input[type="button"] {
+    font-size: 13px;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
+    font-weight: bold;
+    margin: 0;
+    outline: none;
+    padding: 1px 0 2px;
+    white-space: nowrap;
+    text-align: center;
+    background-color: transparent;
+    border: 0;
+}
+
+#send_label {
+    min-width: 44px;
+    cursor: pointer;
+    display: -moz-inline-box;
+    display: inline-block;
+    padding: 2px 6px;
+
+    background: #EEE url(http://static.ak.fbcdn.net/rsrc.php/zD/r/B4K_BWwP7P5.png) repeat 0 0;
+    background-position: 0 -48px;
+    border: 1px solid #999;
+    border-bottom-color: #888;
+    border-color: #29447E #29447E #1A356E;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+
+    line-height: normal !important;
+    
+}
+
+textarea {
+    width: 550px;
+    padding: 0 0.2em;
+    min-height: 100px;
+    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    font-size: 11px;
+    color: #333;
+    border: 1px solid #8496BA;
+}
+
+#nm_to {
+    border: 1px solid #8496BA;
+    padding: 3px 0 0 3px;
+    width: 550px;
+}
+
+#nm_to div {
+    display: inline-block;
+    margin: 0 3px 1px 0;
+}
+
+#nm_to_value {
+    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    font-size: 11px;
+    color: #333;
+    width: 96%;
+    padding: 0 0.2em;
+    margin: 0.5em;
+    border: 0px;
+}
+
+#newmessage, #contacts {
+    text-align: left;
+}
+
+div.rcpt {
+    background-color: #8496BA;
+    border-radius: 0.5em;
+    color: white;
+    font-size: 9pt;
+    padding: 5px;
+    
+}
+
+div.rcpt_name {
+    padding-left: 7px;
+}
+
+div.rcpt_del {
+    width: 20px;
+    cursor: pointer;
+    vertical-align: baseline;
+    text-align: center;
+}
+
+div.rcpt_del img {
+    width: 7px;
+    height: 7px;
+    background: url('img/remove_rcpt.png') no-repeat;
+    background-position: 0px -14px;
+}
+
+div.rcpt_del img:hover {
+    background-position: 0px -7px;
+}
+
+#contacts_header_title, #contacts_sort_holder {
+    display: inline-block;
+    width: 50%;
+}
+
+#contacts_sort_holder {
+    text-align: right;
+}
+
+#contacts_sort {
+    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    font-size: 11px;
+    color: #333;
+    border: 1px solid #8496BA;
+}
+
+#contacts_header {
+    background-color: #F2F2F2;
+    border-top: solid 1px #E2E2E2;
+    padding: 4px 5px 5px;
+    font-size: 11px;
+    color:#333;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+#contacts_list ul {
+    margin: 0;
+    padding: 0;
+}
+
+#contacts_list li {
+    font-weight: bold;
+    color: #3B5998;
+    cursor: pointer;
+    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    font-size: 11px;
+    list-style: none;
+    padding: 2px 0 2px 5px;
+}
+
+#contacts_list li:hover {
+    background-color: #EEEEFF;
+}
+
+#contacts_list li.selected {
+    background-color: #FFFFEE;
+}
+
+div.contact_avatar {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+}
+
+div.contact_name {
+    display: inline-block;
+    vertical-align: top;
+    padding: 3px 0 0 3px;
+}
+
+#history_holder {
+    text-align: left;
+    font-weight: bold;
+    font-size: 11px;
+    color: #777;
+}
+
+#history_header {
+    width: 550px;
+    border-bottom: 1px solid #777;
+    cursor: pointer;
+    color: #333;
+}
+
+#history {
+    padding: 1em 0 0 0.5em;
+}
+
+div.history_item {
+    padding: 0.5em 0;
+}
+
+div.history_item:hover {
+    background-color: #FFFFEE;
+}
+
+div.history_item div {
+    display: inline-block;
+    padding: 0.5em;
+}
+
+div.history_date {
+    font-weight: bold;
+}
+
+div.history_rcpt {
+    color: #3B5998;
+    width: 150px;
+}

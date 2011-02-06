@@ -1,0 +1,38 @@
+{
+    "name": {
+        "message"       : "Bandog Messenger"
+    },
+    "goto_bookmark": {
+        "message"       : "Finish him!"
+    },
+    "description": {
+        "message"       : "One ring to rule them all"
+    },
+    "_ui_send_btn" : {
+        "message"       : "Send message"
+    },
+    
+    "_ui_contacts_header": {
+        "message"       : "Contacts"
+    },
+    
+    "_ui_no_contacts_math_filtering": {
+        "message"       : "no matches"
+    },
+    
+    "_ui_nw_rcpt_label": {
+        "message"       : "Recipients"
+    },
+    
+    "_ui_nw_text_label": {
+        "message"       : "Message text"
+    },
+    
+    "_ui_header"        : {
+        "message"       : "Bandog Messenger (beta)"
+    },
+    
+    "_history_header"   : {
+        "message"       : "History"
+    }
+}

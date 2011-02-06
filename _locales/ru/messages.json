@@ -1,0 +1,38 @@
+{
+    "name": {
+        "message"       : "Закрутанская Кнопка Закладка"
+    },
+    "goto_bookmark": {
+        "message"       : "Перейти к закладке"
+    },
+    "description": {
+        "message"       : "Настраиваемая кнопка закладка для тулбара"
+    },
+    "cfg_title" : {
+        "message"       : "Настройки Toolbar Bookmark"
+    },
+    "cfg_h1" : {
+        "message"       : "Настройки Toolbar Bookmark"
+    },
+    "cfg_bookmark_url" : {
+        "message"       : "URL адрес закладки"
+    },
+    "cfg_toolbar_icon" : {
+        "message"       : "Иконка"
+    },
+    "cfg_toolbar_icon_fav" : {
+        "message"       : "использовать иконку сайта"
+    },
+    "cfg_toolbar_icon_def" : {
+        "message"       : "использовать иконку с девушкой"
+    },
+    "cfg_or" : {
+        "message"       : "или"
+    },
+    "cfg_save" : {
+        "message"       : "сохранить"
+    },
+    "cfg_close" : {
+        "message"       : "закрыть"
+    }
+}
