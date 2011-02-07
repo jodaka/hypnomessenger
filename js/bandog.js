@@ -163,7 +163,7 @@ var Bandog = {
 
             RedrawRcpt: function() {
                 var rcpt_holder = $('#contact_recipients');
-                rcpt_holder.hide().html('');
+                rcpt_holder.html('');
 
                 var recipients  = Bandog.Messages.New.rcpt;
                 console.log(recipients);
@@ -195,19 +195,20 @@ var Bandog = {
                     });
 
                     rcpt_holder.append(rcpt);
+                    if (recipients[r].change == 1) {
+                        Bandog.Messages.New.ChangePhone(rcpt, r, recipients[r].id, recipients[r].number);
+                    }
                 }
-                rcpt_holder.show();
             },
-            
+
             ChangePhone: function(rcpt_div, id, cid, phone) {
                 var $rcpt_div = $(rcpt_div);
                 var pos       = $rcpt_div.position();
 
                 var pselect = Bandog.Messages.New.rcpt[id].change;
                 // changing number for contact with primary number
-                
                 $('div.number_change').remove();
-                
+
                 var select = $('<div class="number_change"></div>');
                 var phones = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)].phones;
                 for (var i = 0, max = phones.length; i < max; i++) {
@@ -217,8 +218,8 @@ var Bandog = {
                                 phones[i].number
                             )
                             .bind('click', {id: id, phone: phones[i].number}, function(event){
-                                console.warn('SELECTED id='+event.data.id+ ' phone='+event.data.phone);
-                                Bandog.Messages.New.rcpt[event.data.id].phone = event.data.phone;
+                                Bandog.Messages.New.rcpt[event.data.id].phone  = event.data.phone;
+                                Bandog.Messages.New.rcpt[event.data.id].change = 0;
                                 $('div.number_change').remove();
                                 Bandog.Messages.New.RedrawRcpt();
                             })
@@ -229,12 +230,9 @@ var Bandog = {
                     top     : pos.top+$rcpt_div.height()+'px',
                     left    : pos.left+'px'
                 });
-                Bandog.Messages.New.rcpt[id].change = select;
-
-                console.log("changing phone for cid = "+id+" phone = "+phone);
                 return 1;
             },
-            
+
             AddRcpt: function(cid) {
                 console.log('Adding rcpt '+cid);
                 var phones = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)].phones;
