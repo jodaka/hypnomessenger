@@ -150,18 +150,41 @@ div.rcpt {
     color: white;
     font-size: 9pt;
     padding: 5px;
-    
 }
 
-div.rcpt_name {
+div.rcpt_data {
     padding-left: 7px;
+}
+
+div.rcpt_name, div.rcpt_phone {
+    display: block !important;
+}
+
+div.rcpt_phone {
+    cursor: pointer;
+}
+
+div.number_change {
+    position: absolute;
+    z-index: 100;
+    background-color: #8496BA;
+    border: 1px solid black;
+    color: white;
+    font-size: 12px;
 }
 
 div.rcpt_del {
     width: 20px;
     cursor: pointer;
-    vertical-align: baseline;
+    vertical-align: top;
     text-align: center;
+    padding-top: 12px;
+    height: 15px;
+}
+
+div.rcpt_del:hover {
+    -webkit-border-radius: 8px;
+    background-color: #5872A7;
 }
 
 div.rcpt_del img {
@@ -169,6 +192,7 @@ div.rcpt_del img {
     height: 7px;
     background: url(/img/remove_rcpt.png) no-repeat;
     background-position: 0px -14px;
+    vertical-align: top;
 }
 
 div.rcpt_del img:hover {
