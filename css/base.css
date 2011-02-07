@@ -128,6 +128,18 @@ textarea {
     border: 0px;
 }
 
+#nm_send, #nm_notes {
+    vertical-align: top;
+    display: inline-block;
+}
+
+#nm_notes {
+    font-size: 11px;
+    color: #333;
+    /*padding-top: 3px;*/
+}
+
+
 #newmessage, #contacts {
     text-align: left;
 }

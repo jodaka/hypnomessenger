@@ -50,6 +50,14 @@ var Bandog = {
             $('#nm_send_btn').bind('click', function(){
                 Bandog.Messages.New.Send();
             });
+            
+            $('#nm_text_value').bind('change', function(){
+                Bandog.Messages.New.RedrawNotes();
+            });
+            $('#nm_text_value').bind('keyup', function(){
+                Bandog.Messages.New.RedrawNotes();
+            });
+            
 
             console.log('... UI.Load() finished');
             return 1;
@@ -133,6 +141,26 @@ var Bandog = {
         New: {
             rcpt: [],
 
+            RedrawNotes: function() {
+                // count number of symbols in textarea
+                var text = $('#nm_text_value').val().trim();
+
+                var text_length = 0;
+                for (var i = 0, n = text.length; i < n; i++) {
+                    if (text[i].charCodeAt() > 255) {
+                        text_length = text_length+2;
+                    } else {
+                        text_length++;
+                    }
+                }
+
+                var note1 = 'Message length: '+text_length+' symbols <br />';
+
+                var sms_count = Math.ceil(text_length / 140);
+                var note2 = 'Messages to sent: '+sms_count*Bandog.Messages.New.rcpt.length;
+                $('#nm_notes').html(note1+note2);
+            },
+
             RedrawRcpt: function() {
                 var rcpt_holder = $('#contact_recipients');
                 rcpt_holder.hide().html('');
@@ -158,6 +186,7 @@ var Bandog = {
                 console.log('Adding rcpt '+cid);
                 Bandog.Messages.New.rcpt.push(cid);
                 Bandog.Messages.New.RedrawRcpt();
+                Bandog.Messages.New.RedrawNotes()
             },
 
             RemoveRcpt: function(cid) {
@@ -165,6 +194,7 @@ var Bandog = {
                 var index = Bandog.Messages.New.rcpt.indexOf(cid);
                 if (index != -1) Bandog.Messages.New.rcpt.splice(index, 1);
                 Bandog.Messages.New.RedrawRcpt();
+                Bandog.Messages.New.RedrawNotes()
             },
             
             Send: function() {
@@ -205,7 +235,7 @@ var Bandog = {
 
                     Bandog.Messages.History.Save(phone_number, text, collapse_key);
                     alert('SENT');
-                    //continue;
+                    continue;
 
                     jQuery.ajax({
                         url: initial_url,
@@ -375,11 +405,13 @@ var Bandog = {
 
         Init: function() {
             console.log('... Urls.Init() started');
-            Bandog.Urls.appEngine = "http://"+Bandog.version+".latest.bandog812.appspot.com/";
-            Bandog.Urls.signIn    = Bandog.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(Bandog.Urls.index)+"&ver="+Bandog.version;
-            Bandog.Urls.signOut   = Bandog.Urls.appEngine+"sign?action=signout&extret=OK&ver="+Bandog.version;
-            Bandog.Urls.contacts  = Bandog.Urls.appEngine+"dispatcher?action=get_contacts_list&ver="+Bandog.version;
-            Bandog.Urls.send  = Bandog.Urls.appEngine+"dispatcher?action=send_message&ver="+Bandog.version;
+            Bandog.Urls.appEngine   = "http://"+Bandog.version+".latest.bandog812.appspot.com/";
+            Bandog.Urls.signIn      = Bandog.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(Bandog.Urls.index)+"&ver="+Bandog.version;
+            Bandog.Urls.signOut     = Bandog.Urls.appEngine+"sign?action=signout&extret=OK&ver="+Bandog.version;
+            Bandog.Urls.contacts    = Bandog.Urls.appEngine+"contacts_list?action=get&ver="+Bandog.version;
+            Bandog.Urls.send        = Bandog.Urls.appEngine+"message?action=send&ver="+Bandog.version;
+            Bandog.Urls.send_status = Bandog.Urls.appEngine+"message?action=get_send&ver="+Bandog.version;
+            Bandog.Urls.messages_get= Bandog.Urls.appEngine+"sms?action=get&ver="+Bandog.version;
             console.log('... Urls.Init() finished');
         }
     }
