@@ -34,5 +34,13 @@
     
     "_history_header"   : {
         "message"       : "History"
+    },
+    
+    "outgoing"   : {
+        "message"       : "Outgoing"
+    },
+    
+    "incoming"   : {
+        "message"       : "Incoming"
     }
 }

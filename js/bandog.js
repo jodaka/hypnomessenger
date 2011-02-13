@@ -11,9 +11,12 @@ var Bandog = {
         // init translations
         Bandog.UI.DrawTranslations();
 
-        Bandog.Messages.History.Init();
-
+        // get contacts list
         Bandog.Contacts.Get();
+
+        // get messages from server
+        Bandog.Messages.Init();
+
     },
 
     UI: {
@@ -32,6 +35,10 @@ var Bandog = {
         
             document.getElementById('nw_rcpt_label').innerHTML = chrome.i18n.getMessage('_ui_nw_rcpt_label');
             document.getElementById('nw_text_label').innerHTML = chrome.i18n.getMessage('_ui_nw_text_label');
+            
+            document.getElementById('h2_outgoing').innerHTML = chrome.i18n.getMessage('outgoing');
+            document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming');
+            
             document.getElementById('header').innerHTML        = chrome.i18n.getMessage('_ui_header');        
         },
 
@@ -58,7 +65,7 @@ var Bandog = {
                 Bandog.Messages.New.RedrawNotes();
             });
             
-
+            Bandog.Messages.New.RedrawNotes();
             console.log('... UI.Load() finished');
             return 1;
         }
@@ -67,21 +74,31 @@ var Bandog = {
     },
 
     Messages: {
+        
+        Init: function() {
+            Bandog.Messages.Received.Load();
+            Bandog.Messages.History.Init();
+        },
+        
         // this holds last 50 messages history 
         History: {
             items: [],
-
             Save: function(rcpt, text, key) {
                 Bandog.Messages.History.items.push({
                     'rcpt'          : rcpt,
                     'text'          : text,
                     'timestamp'     : new Date().getTime(),
-                    'collapsekey'   : key
+                    'collapsekey'   : key,
+                    'status'        : 'sent'
                 });
 
+                Bandog.Messages.History.Store();
+                Bandog.Messages.History.DrawTotal();
+            },
+
+            Store: function() {
                 window.localStorage.removeItem('bandog_history');
                 window.localStorage.setItem('bandog_history',  JSON.stringify(Bandog.Messages.History.items));
-                Bandog.Messages.History.DrawTotal();
             },
 
             DrawTotal: function() {
@@ -102,6 +119,11 @@ var Bandog = {
                 $('#history_header').bind('click', function(){
                     Bandog.Messages.History.Show();
                 });
+                
+                Bandog.Messages.Sent.queue_process_timer = setInterval(function(){
+                    console.warn('ProcessingQueue');
+                    Bandog.Messages.Sent.ProcessQueue();
+                }, 10000);
             },
 
             Show: function() {
@@ -117,18 +139,25 @@ var Bandog = {
                 // showing history
                 var items = Bandog.Messages.History.items;
                 for (var i = items.length-1; i >= 0 ; i--) {
+                    var date        = new Date(items[i].timestamp);
+                    var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
+                    var rcpt_name =Bandog.Contacts.list[Bandog.Contacts.FindByPhone(items[i].rcpt)].name;
                     var item = $('<div class="history_item"></div>')
                         .append(
                             $('<div class="history_date"></div>')
-                                .append(items[i].timestamp)
+                                .append(fdate)
                         )
                         .append(
                             $('<div class="history_rcpt"></div>')
-                                .append(items[i].rcpt)
+                                .append(rcpt_name)
                         )
                         .append(
                             $('<div class="history_text"></div>')
                                 .append(items[i].text)
+                        )
+                        .append(
+                            $('<div class="history_status"></div>')
+                                .append(items[i].status)
                         );
                     self.append(item);
                 }
@@ -166,7 +195,7 @@ var Bandog = {
                 rcpt_holder.html('');
 
                 var recipients  = Bandog.Messages.New.rcpt;
-                console.log(recipients);
+                //console.log(recipients);
                 
                 var rcpt_tmpl = '<div class="rcpt">\
                                         <div class="rcpt_data">\
@@ -281,8 +310,9 @@ var Bandog = {
                 var phones = [];
 
                 var rcpts = Bandog.Messages.New.rcpt;
+
                 for (var i = 0; i < rcpts.length; i++) {
-                    phones.push(Bandog.Contacts.list[Bandog.Contacts.FindById(rcpts[i])].phones[0].number);
+                    phones.push(Bandog.Contacts.list[Bandog.Contacts.FindById(rcpts[i].id)].phones[0].number);
                 }
 
                 var to      = $('#nm_to_value').val().replace(/\s/g, '');
@@ -308,32 +338,119 @@ var Bandog = {
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))+
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))
 
-                    var initial_url = Bandog.Urls.send+
+                    var send_url = Bandog.Urls.send+
                         '&collapse_key='+collapse_key+
                         '&phone_number='+phone_number+
                         '&message='+encodeURIComponent(text)
 
                     Bandog.Messages.History.Save(phone_number, text, collapse_key);
+                    //alert('message sent turned off');
+                    //return 1;
                     alert('SENT');
-                    continue;
 
                     jQuery.ajax({
-                        url: initial_url,
+                        url: send_url,
                         dataType: 'json',
                         complete: function(data) {
-                            console.log(data);
+                            // message was sent. Now we need to check periodically for
+                            // it's status
+                            Bandog.Messages.Sent.queue.push(collapse_key);
                         }
                     });
                 }
 
                 return 1;
             }
+        },
+
+        
+        Received: {
+            list: [],
+            
+            Load: function() {
+                jQuery.ajax({
+                    url: Bandog.Urls.messages_get,
+                    dataType: 'json',
+                    complete: function(data) {
+                        var json = {};
+
+                        try {
+                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                        } catch (err) {
+                            console.warn(err);
+                            return false;
+                        }
+
+                        console.log('GOT HISTORY');
+                        console.log(json.sms_list);
+                        console.log(json);
+                        Bandog.Messages.Received.list = json.sms_list;
+                        return 1;
+                    }
+                });
+            }
+        },
+        
+        // this will hold SMS that were already sent by web interface
+        Sent: {
+            queue_process_timer: false,
+            queue: [],
+            GetStatus: function(collapse_key) {
+                jQuery.ajax({
+                    url: Bandog.Urls.send_status+collapse_key,
+                    dataType: 'json',
+                    complete: function(data) {
+                        // message was sent. Now we need to check periodically for
+                        // it's status
+                        Bandog.Messages.Sent.MarkAsDelivered(collapse_key);
+                    }
+                });
+            },
+
+            ProcessQueue: function() {
+                var queue = Bandog.Messages.Sent.queue;
+                for (var i = 0; i < queue.length; i++) {
+                    Bandog.Messages.Sent.GetStatus(queue[i]);
+                }
+            },
+
+            MarkAsDelivered: function(collapse_key) {
+                var items = Bandog.Messages.History.items;
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].collapsekey == collapse_key) {
+                        items[i].status = 'delivered';
+                        Bandog.Messages.History.Store();
+                        break;
+                    }
+                }
+                
+                // delete from queue
+                var queue = Bandog.Messages.Sent.queue;
+                queue = queue.splice(queue.indexOf(collapse_key), 1);
+                Bandog.Messages.Sent.queue = queue;
+            }
         }
     },
 
     Contacts: {
         list: [],
-        
+        phones_lookup: false,
+        FindByPhone: function(phone) {
+            var lookup = Bandog.Contacts.phones_lookup;
+            // if lookup is empty we need to init it first
+            if (!lookup) {
+                lookup   = {};
+                var list = Bandog.Contacts.list;
+                for (var i = 0; i < list.length; i++) {
+                    for (var j = 0; j < list[i].phones.length; j++) {
+                        lookup[list[i].phones[j].number] = i;
+                    }
+                }
+                Bandog.Contacts.phones_lookup = lookup;
+            }
+            return lookup[phone];
+
+        },
         FindById: function(id) {
             var list = Bandog.Contacts.list;
             for (var i = 0; i < list.length; i++) {
@@ -490,7 +607,7 @@ var Bandog = {
             Bandog.Urls.signOut     = Bandog.Urls.appEngine+"sign?action=signout&extret=OK&ver="+Bandog.version;
             Bandog.Urls.contacts    = Bandog.Urls.appEngine+"contacts_list?action=get&ver="+Bandog.version;
             Bandog.Urls.send        = Bandog.Urls.appEngine+"message?action=send&ver="+Bandog.version;
-            Bandog.Urls.send_status = Bandog.Urls.appEngine+"message?action=get_send&ver="+Bandog.version;
+            Bandog.Urls.send_status = Bandog.Urls.appEngine+"message?action=get_status&ver="+Bandog.version+'&collapse_key=';
             Bandog.Urls.messages_get= Bandog.Urls.appEngine+"sms?action=get&ver="+Bandog.version;
             console.log('... Urls.Init() finished');
         }

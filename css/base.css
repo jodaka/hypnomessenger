@@ -24,7 +24,7 @@ body {
     -webkit-box-shadow: 0 0px 15px black;
     text-align: center;
     padding: 0 0 50px 0;
-    min-height: 500px;
+    height: 450px;
 }
 
 #fl {
@@ -35,6 +35,21 @@ body {
 
 #newmessage {
     margin-bottom: 40px;
+}
+
+div.h2 {
+    font-family: 'Ubuntu', serif;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    text-shadow: none;
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0em;
+    word-spacing: 0em;
+    line-height: 1.2;
+    display: inline-block;
+    padding: 0.5em;
 }
 
 label {
@@ -162,7 +177,13 @@ div.rcpt_name, div.rcpt_phone {
 
 div.rcpt_phone {
     cursor: pointer;
+    border: 1px solid #8496BA;
 }
+
+div.rcpt_phone:hover {
+    border: 1px solid #FFF;
+}
+
 
 div.number_change {
     position: absolute;

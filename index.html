@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html><head>
 <link rel="stylesheet" type="text/css" href="css/base.css"/>
-<!--<link type="text/css" href="css/flick/jquery-ui-1.8.7.custom.css" rel="stylesheet" />-->
+<link  href="http://fonts.googleapis.com/css?family=Ubuntu:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" >
 </head>
 <body id="body">
     <div id="main">
         <div id="loading"> </div>
         <div id="header"></div>
         <div id="fl">
+            <div class="h2" id="h2_outgoing">_Outgoing</div>
+            <div class="h2" id="h2_incoming">_Incoming</div>
+            <div id="incoming"></div>
             <div id="newmessage">
                 <label for="nm_to" id="nw_rcpt_label"></label>
                 <div id="nm_to">
@@ -35,8 +38,6 @@
             <div id="contacts_header"><div id="contacts_header_title"></div><div id="contacts_sort_holder"><input type="text" id="contacts_sort" /></div></div>
             <div id="contacts_list">...loading...</div>
         </div>
-    
-        
     </div>
 
 <script src="js/lang.js" type="text/javascript"></script>
