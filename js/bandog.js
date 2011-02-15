@@ -31,14 +31,16 @@ var Bandog = {
             document.getElementById('loading').innerHTML = chrome.i18n.getMessage('loading');
             document.getElementById('nm_send_btn').value = chrome.i18n.getMessage('_ui_send_btn');
             document.getElementById('contacts_header_title').innerHTML = chrome.i18n.getMessage('_ui_contacts_header');
-        
+
             document.getElementById('nw_rcpt_label').innerHTML = chrome.i18n.getMessage('_ui_nw_rcpt_label');
             document.getElementById('nw_text_label').innerHTML = chrome.i18n.getMessage('_ui_nw_text_label');
-            
+
             document.getElementById('h2_outgoing').innerHTML = chrome.i18n.getMessage('outgoing');
             document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming');
-            
+
             document.getElementById('header').innerHTML      = chrome.i18n.getMessage('_ui_header');
+            document.getElementById('h2_contact').innerHTML  = chrome.i18n.getMessage('contact_details');
+
         },
         
         MenuClick: function(id) {
@@ -46,6 +48,11 @@ var Bandog = {
             var $div = $('#'+id.replace(/h2_/, ''));
 
             if ($div.is(":visible")) return 1;
+            if (id != 'h2_contact') {
+                $('#h2_contact').hide();
+            } else {
+                $('#h2_contact').show();
+            }
 
             $('#main div.section:visible').fadeOut('fast', 0, function(){
                 $div.show();
@@ -596,15 +603,28 @@ var Bandog = {
     Contacts: {
         list: [],
         phones_lookup: false,
-        
-        
+
         /*
             Takes contact id and shows a detailed contact info
         */
         Info: function(cid) {
             console.log(cid);
+            Bandog.UI.MenuClick('h2_contact');
+            var contact = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)];
+            var self = $('#contact_holder').html('');
+
+            self.append(
+                '<h3>'+contact.name+'</h3>'
+            );
+
+            var phones = contact.phones;
+            var phones_html = $('<ul></ul>');
+            for (var i = 0; i < phones.length; i++) {
+                phones_html.append('<li>'+phones[i].number+'</li>');
+            }
+            self.append(phones_html);
         },
-        
+
         FindByPhone: function(phone) {
             var lookup = Bandog.Contacts.phones_lookup;
             // if lookup is empty we need to init it first

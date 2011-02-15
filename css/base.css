@@ -33,10 +33,10 @@ body {
     vertical-align: top;
 }
 
-#incoming_messages {
+#incoming_messages, #contact_holder {
     text-align: left;
     padding: 0 40px 0 50px;
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: 400px;
 }
 
@@ -345,7 +345,7 @@ div.history_date {
 
 div.history_rcpt {
     color: #3B5998;
-    width: 150px;
+    min-width: 110px;
 }
 
 div.status_delivered {

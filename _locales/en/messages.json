@@ -46,5 +46,9 @@
     
     "messages_viewed": {
         "message"       : "Old messages"
+    },
+    
+    "contact_details": {
+        "message"       : "Contact Details"
     }
 }
