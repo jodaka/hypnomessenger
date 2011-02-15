@@ -6,37 +6,42 @@
 <body id="body">
     <div id="main">
         <div id="loading"> </div>
-        <div id="header"></div>
-        <div id="fl">
-            <div class="h2" id="h2_outgoing">_Outgoing</div>
+        <div id="header" style="display: none"></div>
+        <div id="menu">
+            <div class="h2 active_h2" id="h2_outgoing">_Outgoing</div>
             <div class="h2" id="h2_incoming">_Incoming</div>
-            <div id="incoming"></div>
-            <div id="newmessage">
-                <label for="nm_to" id="nw_rcpt_label"></label>
-                <div id="nm_to">
-                    <div id="contact_recipients"></div>
-                    <div ><input type="text" id="nm_to_value" value="" /></div>
-                </div>
-                <label for="newmessage" id="nw_text_label"></label>
-                <div id="nm_text">
-                    <textarea id="nm_text_value">this is a test </textarea>
-                </div>
-                <div id="nm_send">
-                    <label id="send_label" for="nm_send_btn"><input type="button" value="__SEND__" id="nm_send_btn" /></label>
-                </div>
-                <div id="nm_notes">__NOTES__
-                </div>
-            </div>
-            
-            <div id="history_holder">
-                <div id="history_header">__history__</div>
-                <div id="history" style="display: none"></div>
-            </div>
         </div>
 
-        <div id="contacts">
-            <div id="contacts_header"><div id="contacts_header_title"></div><div id="contacts_sort_holder"><input type="text" id="contacts_sort" /></div></div>
-            <div id="contacts_list">...loading...</div>
+        <div id="incoming" class="section" style="display: none">
+            <div id="incoming_messages">_This is holder for incoming sms_</div>
+        </div>
+        <div id="outgoing" class="section">
+            <div id="fl">
+                <div id="newmessage">
+                    <label for="nm_to" id="nw_rcpt_label"></label>
+                    <div id="nm_to">
+                        <div id="contact_recipients"></div>
+                        <div ><input type="text" id="nm_to_value" value="" /></div>
+                    </div>
+                    <label for="newmessage" id="nw_text_label"></label>
+                    <div id="nm_text">
+                        <textarea id="nm_text_value">hello</textarea>
+                    </div>
+                    <div id="nm_send">
+                        <label id="send_label" for="nm_send_btn"><input type="button" value="__SEND__" id="nm_send_btn" /></label>
+                    </div>
+                    <div id="nm_notes">__NOTES__
+                    </div>
+                </div>
+                <div id="history_holder">
+                    <div id="history_header">__history__</div>
+                    <div id="history" style="display: none"></div>
+                </div>
+            </div>
+            <div id="contacts">
+                <div id="contacts_header"><div id="contacts_header_title"></div><div id="contacts_sort_holder"><input type="text" id="contacts_sort" /></div></div>
+                <div id="contacts_list">...loading...</div>
+            </div>
         </div>
     </div>
 

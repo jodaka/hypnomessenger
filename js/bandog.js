@@ -22,7 +22,6 @@ var Bandog = {
     UI: {
         body: document.getElementById('body'),
 
-
         Close: function() {
             //_gaq.push(['_trackEvent', 'Menu CLOSE', 'clicked']);
             window.close();
@@ -39,7 +38,20 @@ var Bandog = {
             document.getElementById('h2_outgoing').innerHTML = chrome.i18n.getMessage('outgoing');
             document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming');
             
-            document.getElementById('header').innerHTML        = chrome.i18n.getMessage('_ui_header');        
+            document.getElementById('header').innerHTML      = chrome.i18n.getMessage('_ui_header');
+        },
+        
+        MenuClick: function(id) {
+            var $id = $('#'+id);
+            var $div = $('#'+id.replace(/h2_/, ''));
+
+            if ($div.is(":visible")) return 1;
+
+            $('#main div.section:visible').fadeOut('fast', 0, function(){
+                $div.show();
+                $('#menu div.active_h2').removeClass('active_h2');
+                $id.addClass('active_h2');
+            });
         },
 
         Load: function() {
@@ -47,7 +59,7 @@ var Bandog = {
             jQuery("#loading").hide();
 
             document.getElementById('loading').innerHTML = 'Check complete. UI can be loaded';
-            
+
             Bandog.Contacts.DrawUI(Bandog.Contacts.list);
 
             $('#contacts_sort').bind('keyup', function(){
@@ -57,24 +69,26 @@ var Bandog = {
             $('#nm_send_btn').bind('click', function(){
                 Bandog.Messages.New.Send();
             });
-            
+
             $('#nm_text_value').bind('change', function(){
                 Bandog.Messages.New.RedrawNotes();
             });
             $('#nm_text_value').bind('keyup', function(){
                 Bandog.Messages.New.RedrawNotes();
             });
-            
+
+            // bind menu
+            $('#menu div').bind('click', function(){
+                Bandog.UI.MenuClick(this.id);
+            });
+
             Bandog.Messages.New.RedrawNotes();
             console.log('... UI.Load() finished');
             return 1;
         }
-        
-        
     },
 
     Messages: {
-        
         Init: function() {
             Bandog.Messages.Received.Load();
             Bandog.Messages.History.Init();
@@ -119,11 +133,18 @@ var Bandog = {
                 $('#history_header').bind('click', function(){
                     Bandog.Messages.History.Show();
                 });
-                
+
+                // every 10s we process sent queue
                 Bandog.Messages.Sent.queue_process_timer = setInterval(function(){
-                    console.warn('ProcessingQueue');
+                    console.warn('Processing sent queue');
                     Bandog.Messages.Sent.ProcessQueue();
                 }, 10000);
+
+                // every 30s we check for new messages
+                Bandog.Messages.Received.check_timer = setInterval(function(){
+                    console.warn('Checking for new messages...');
+                    Bandog.Messages.Received.Load();
+                }, 30000);
             },
 
             Show: function() {
@@ -346,15 +367,35 @@ var Bandog = {
                     Bandog.Messages.History.Save(phone_number, text, collapse_key);
                     //alert('message sent turned off');
                     //return 1;
-                    alert('SENT');
+                    
+                    // disable button
+                    $('#nm_send_btn').attr('disabled', 'disabled');
 
                     jQuery.ajax({
                         url: send_url,
                         dataType: 'json',
                         complete: function(data) {
-                            // message was sent. Now we need to check periodically for
-                            // it's status
-                            Bandog.Messages.Sent.queue.push(collapse_key);
+                            try {
+                                json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                            } catch (err) {
+                                console.warn(err);
+                                return false;
+                            }
+                            $('#nm_send_btn').removeAttr('disabled');
+    
+                            if (json.status == "OK") {
+                                alert('Message SENT');
+                                // message was sent. Now we need to check periodically for
+                                // it's status
+                                Bandog.Messages.Sent.queue.push(collapse_key);
+                                return 1;
+                            }
+    
+                            if (json.status == "SIGNIN_REQUIRED") {
+                                alert('ERROR');
+                                window.location.href = Bandog.Urls.signIn;
+                                return 1;
+                            }
                         }
                     });
                 }
@@ -363,10 +404,89 @@ var Bandog = {
             }
         },
 
-        
         Received: {
-            list: [],
-            
+            list        : [],
+            viewed      : [],
+            check_timer : false,
+
+            Draw: function() {
+                // setting header
+                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+Bandog.Messages.Received.list.length+')';
+                
+                var items  = Bandog.Messages.Received.list;
+                var viewed = Bandog.Messages.Received.viewed;
+                var self = $('#incoming_messages');
+                self.html('');
+
+                for (var i = items.length-1; i >= 0 ; i--) {
+                    var date      = new Date(items[i].create_time);
+                    var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
+                    var rcpt_name = items[i].phone_number;
+                    var item = $('<div class="history_item"></div>').
+                        bind('click', {id: i}, function(e){
+                            var id = e.data.id;
+                            Bandog.Messages.Received.viewed.push(Bandog.Messages.Received.list[id]);
+                            Bandog.Messages.Received.list.splice(id, 1);
+                            Bandog.Messages.Received.Store();
+                            Bandog.Messages.Received.Draw();
+                        })
+                        .append(
+                            $('<div class="history_date"></div>')
+                                .append(fdate)
+                        )
+                        .append(
+                            $('<div class="history_rcpt"></div>')
+                                .append(rcpt_name)
+                        )
+                        .append(
+                            $('<div class="history_text"></div>')
+                                .append(items[i].message)
+                        );
+                    self.append(item);
+                }
+                
+                if (viewed.length > 0) {
+                    self.append('<h2>old</h2><hr>');
+                    
+                    for (var i = viewed.length-1; i >= 0 ; i--) {
+                        var date      = new Date(viewed[i].create_time);
+                        var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
+                        var rcpt_name = viewed[i].phone_number;
+                        var item = $('<div class="history_item"></div>')
+                            .append(
+                                $('<div class="history_date"></div>')
+                                    .append(fdate)
+                            )
+                            .append(
+                                $('<div class="history_rcpt"></div>')
+                                    .append(rcpt_name)
+                            )
+                            .append(
+                                $('<div class="history_text"></div>')
+                                    .append(viewed[i].message)
+                            );
+                        self.append(item);
+                    }
+                }
+            },
+
+            LoadViewed: function() {
+                var viewed = window.localStorage.getItem('bandog_received_viewed');
+                if (viewed) {
+                    viewed = JSON.parse(viewed);
+                    Bandog.Messages.Received.viewed = viewed;
+                    console.log('Viewed messages loaded');
+                    console.log(viewed);
+                }
+            },
+
+            Store: function() {
+                window.localStorage.removeItem('bandog_received_new');
+                window.localStorage.setItem('bandog_received_new',  JSON.stringify(Bandog.Messages.Received.list));
+                window.localStorage.removeItem('bandog_received_viewed');
+                window.localStorage.setItem('bandog_received_viewed',  JSON.stringify(Bandog.Messages.Received.viewed));
+            },
+
             Load: function() {
                 jQuery.ajax({
                     url: Bandog.Urls.messages_get,
@@ -380,17 +500,37 @@ var Bandog = {
                             console.warn(err);
                             return false;
                         }
+                        
+                        // get cached
 
-                        console.log('GOT HISTORY');
-                        console.log(json.sms_list);
-                        console.log(json);
-                        Bandog.Messages.Received.list = json.sms_list;
+                        var cache     = window.localStorage.getItem('bandog_received_new');
+                        if (cache) cache = JSON.parse(cache);
+                        
+                        var viewed = window.localStorage.getItem('bandog_received_viewed');
+                        if (viewed) {
+                            Bandog.Messages.Received.viewed = JSON.parse(viewed);
+                        }
+                        
+
+                        if (json.sms_list.length > 0 || (cache || cache.length > 0)) {
+                            Bandog.Messages.Received.list = json.sms_list.slice(0);
+                            console.log('GOT HISTORY');
+                            if (cache || cache.length > 0) {
+                                console.log('GOT HISTORY CACHE. Will merge :)');
+                                for (var i = 0; i < cache.length; i++) {
+                                    Bandog.Messages.Received.list.push(cache[i]);
+                                }
+                            }
+                            console.log(Bandog.Messages.Received.list);
+                            Bandog.Messages.Received.Store();
+                            Bandog.Messages.Received.Draw();
+                        }
                         return 1;
                     }
                 });
             }
         },
-        
+
         // this will hold SMS that were already sent by web interface
         Sent: {
             queue_process_timer: false,
@@ -400,15 +540,31 @@ var Bandog = {
                     url: Bandog.Urls.send_status+collapse_key,
                     dataType: 'json',
                     complete: function(data) {
-                        // message was sent. Now we need to check periodically for
-                        // it's status
-                        Bandog.Messages.Sent.MarkAsDelivered(collapse_key);
+                        try {
+                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                        } catch (err) {
+                            console.warn(err);
+                            return false;
+                        }
+
+                        if (json.status == "OK") {
+                            // message was sent. Now we need to check periodically for
+                            // it's status
+                            Bandog.Messages.Sent.MarkAsDelivered(collapse_key);
+                            return 1;
+                        }
+
+                        if (json.status == "SIGNIN_REQUIRED") {
+                            window.location.href = Bandog.Urls.signIn;
+                            return 1;
+                        }
                     }
                 });
             },
 
             ProcessQueue: function() {
                 var queue = Bandog.Messages.Sent.queue;
+                if (queue.length == 0) return 0;
                 for (var i = 0; i < queue.length; i++) {
                     Bandog.Messages.Sent.GetStatus(queue[i]);
                 }
@@ -503,18 +659,20 @@ var Bandog = {
         Get: function() {
             console.log('... Contacts Get() sending request');
 
-            var cache = window.localStorage.getItem('bandog_contacts_cache');
+            var cache       = window.localStorage.getItem('bandog_contacts_cache');
+            var ui_loaded = 0;
             if (cache) {
                 cache = JSON.parse(cache);
-                if (cache.timestamp && new Date().getTime()/1000 - cache.timestamp < 600) {
-                    console.log('Contacts list taken from cache');
+            //    if (cache.timestamp && new Date().getTime()/1000 - cache.timestamp < 600) {
+            //        console.log('Contacts list taken from cache');
                     Bandog.Contacts.list = cache.list;
                     Bandog.Contacts.list = Bandog.Contacts.Sort('name');
                     Bandog.UI.Load();
-                    return 1;
-                } else {
-                    console.warn(cache);
-                }
+                    ui_loaded = 1;
+            //        return 1;
+            //    } else {
+            //        console.warn(cache);
+            //    }
             }
 
             jQuery.ajax({
@@ -544,7 +702,11 @@ var Bandog = {
                         // now we can load full UI
                         Bandog.Contacts.list = json.contact_list;
                         Bandog.Contacts.list = Bandog.Contacts.Sort('name');
-                        Bandog.UI.Load();
+                        if (ui_loaded) {
+                            Bandog.Contacts.DrawUI(Bandog.Contacts.list);
+                        } else {
+                            Bandog.UI.Load();
+                        }
                         return 1;
                     }
 

@@ -38,18 +38,34 @@ body {
 }
 
 div.h2 {
-    font-family: 'Ubuntu', serif;
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 400;
-    text-shadow: none;
-    text-decoration: none;
-    text-transform: none;
-    letter-spacing: 0em;
-    word-spacing: 0em;
-    line-height: 1.2;
+    font-size: 16px;
     display: inline-block;
     padding: 0.5em;
+    background-color: #99A2B4;
+    color: #FFF;
+    margin: 0px;
+    border: 0px;
+}
+
+div.h2:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+div.active_h2 {
+    background-color: #6D84B4;
+}
+
+div.active_h2:hover {
+    background-color: #6D84B4;
+    text-decoration: none;
+    cursor: default;
+}
+
+
+#menu {
+    text-align: left;
+    margin-bottom: 15px;
 }
 
 label {
