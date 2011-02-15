@@ -33,6 +33,13 @@ body {
     vertical-align: top;
 }
 
+#incoming_messages {
+    text-align: left;
+    padding: 0 40px 0 50px;
+    overflow-y: scroll;
+    max-height: 400px;
+}
+
 #newmessage {
     margin-bottom: 40px;
 }
@@ -313,6 +320,8 @@ div.contact_name {
 
 #history {
     padding: 1em 0 0 0.5em;
+    max-height: 300px;
+    overflow-y: scroll;
 }
 
 div.history_item {

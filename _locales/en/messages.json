@@ -42,5 +42,9 @@
     
     "incoming"   : {
         "message"       : "Incoming"
+    },
+    
+    "messages_viewed": {
+        "message"       : "Old messages"
     }
 }

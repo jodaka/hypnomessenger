@@ -160,9 +160,10 @@ var Bandog = {
                 // showing history
                 var items = Bandog.Messages.History.items;
                 for (var i = items.length-1; i >= 0 ; i--) {
-                    var date        = new Date(items[i].timestamp);
+                    var date      = new Date(items[i].timestamp);
                     var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                    var rcpt_name =Bandog.Contacts.list[Bandog.Contacts.FindByPhone(items[i].rcpt)].name;
+                    var contact_id= Bandog.Contacts.FindByPhone(items[i].rcpt);
+                    var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].rcpt;
                     var item = $('<div class="history_item"></div>')
                         .append(
                             $('<div class="history_date"></div>')
@@ -421,7 +422,9 @@ var Bandog = {
                 for (var i = items.length-1; i >= 0 ; i--) {
                     var date      = new Date(items[i].create_time);
                     var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                    var rcpt_name = items[i].phone_number;
+                    var contact_id= Bandog.Contacts.FindByPhone(items[i].phone_number);
+                    var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].phone_number;
+
                     var item = $('<div class="history_item"></div>').
                         bind('click', {id: i}, function(e){
                             var id = e.data.id;
@@ -446,12 +449,13 @@ var Bandog = {
                 }
                 
                 if (viewed.length > 0) {
-                    self.append('<h2>old</h2><hr>');
+                    self.append('<h2>'+chrome.i18n.getMessage('messages_viewed')+'</h2><hr>');
                     
                     for (var i = viewed.length-1; i >= 0 ; i--) {
                         var date      = new Date(viewed[i].create_time);
                         var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                        var rcpt_name = viewed[i].phone_number;
+                        var contact_id= Bandog.Contacts.FindByPhone(viewed[i].phone_number);
+                        var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : viewed[i].phone_number;
                         var item = $('<div class="history_item"></div>')
                             .append(
                                 $('<div class="history_date"></div>')
