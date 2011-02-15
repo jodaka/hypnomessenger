@@ -292,14 +292,16 @@ div.rcpt_del img:hover {
     background-color: #FFFFEE;
 }
 
-div.contact_avatar {
+div.contact_avatar, div.contact_name, div.contact_tools {
     display: inline-block;
+}
+
+div.contact_avatar {
     width: 50px;
     height: 50px;
 }
 
 div.contact_name {
-    display: inline-block;
     vertical-align: top;
     padding: 3px 0 0 3px;
 }
@@ -344,4 +346,10 @@ div.history_date {
 div.history_rcpt {
     color: #3B5998;
     width: 150px;
+}
+
+div.status_delivered {
+    height: 16px;
+    width: 16px;
+    background: url('/img/delivered.png') no-repeat;
 }

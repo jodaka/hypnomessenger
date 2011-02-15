@@ -136,13 +136,13 @@ var Bandog = {
 
                 // every 10s we process sent queue
                 Bandog.Messages.Sent.queue_process_timer = setInterval(function(){
-                    console.warn('Processing sent queue');
+                    console.log('Processing sent queue');
                     Bandog.Messages.Sent.ProcessQueue();
                 }, 10000);
 
                 // every 30s we check for new messages
                 Bandog.Messages.Received.check_timer = setInterval(function(){
-                    console.warn('Checking for new messages...');
+                    console.log('Checking for new messages...');
                     Bandog.Messages.Received.Load();
                 }, 30000);
             },
@@ -174,13 +174,14 @@ var Bandog = {
                                 .append(rcpt_name)
                         )
                         .append(
-                            $('<div class="history_text"></div>')
-                                .append(items[i].text)
+                            $('<div class="history_status"></div>')
+                                .append('<div class="status_'+items[i].status+'"></div>')
                         )
                         .append(
-                            $('<div class="history_status"></div>')
-                                .append(items[i].status)
+                            $('<div class="history_text"></div>')
+                                .append(items[i].text)
                         );
+
                     self.append(item);
                 }
 
@@ -518,9 +519,9 @@ var Bandog = {
 
                         if (json.sms_list.length > 0 || (cache || cache.length > 0)) {
                             Bandog.Messages.Received.list = json.sms_list.slice(0);
-                            console.log('GOT HISTORY');
+                            //console.log('GOT HISTORY');
                             if (cache || cache.length > 0) {
-                                console.log('GOT HISTORY CACHE. Will merge :)');
+                                //console.log('GOT HISTORY CACHE. Will merge :)');
                                 for (var i = 0; i < cache.length; i++) {
                                     Bandog.Messages.Received.list.push(cache[i]);
                                 }
@@ -595,6 +596,15 @@ var Bandog = {
     Contacts: {
         list: [],
         phones_lookup: false,
+        
+        
+        /*
+            Takes contact id and shows a detailed contact info
+        */
+        Info: function(cid) {
+            console.log(cid);
+        },
+        
         FindByPhone: function(phone) {
             var lookup = Bandog.Contacts.phones_lookup;
             // if lookup is empty we need to init it first
@@ -736,18 +746,26 @@ var Bandog = {
             for (var i = 0; i < list.length; i++) {
                 var avatar = (list[i].avatar) ? list[i].avatar : 'img/noavatar.gif';
                 var li = $('<li></li>')
-                    .bind('click', {cid: list[i].id}, function(event){
-                        var self = $(this);
-                        self.toggleClass('selected');
-                        if (self.hasClass('selected')) {
-                            Bandog.Messages.New.AddRcpt(event.data.cid);
-                        } else {
-                            Bandog.Messages.New.RemoveRcpt(event.data.cid);
-                        }
-                    })
                     .append(
                         '<div class="contact_avatar"><img src="'+avatar+'" alt=""></div>\
-                        <div class="contact_name">'+list[i].name+'</div>'
+                        <div class="contact_name">'+list[i].name+'</div>')
+                    .append(
+                        $('<div class="contact_tools">'+'+add+'+'</div>')
+                        .bind('click', {cid: list[i].id}, function(event){
+                            var self = $(this);
+                            self.toggleClass('selected');
+                            if (self.hasClass('selected')) {
+                                Bandog.Messages.New.AddRcpt(event.data.cid);
+                            } else {
+                                Bandog.Messages.New.RemoveRcpt(event.data.cid);
+                            }
+                        })
+                    )
+                    .append(
+                        $('<div class="contact_info">'+'-?-'+'</div>')
+                        .bind('click', {cid: list[i].id}, function(event){
+                            Bandog.Contacts.Info(event.data.cid);
+                        })
                     );
                 holder.append(li);
             }
