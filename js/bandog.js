@@ -418,6 +418,21 @@ var Bandog = {
             viewed      : [],
             check_timer : false,
 
+            MarkAsRead: function(id) {
+                var real_msg_id = Bandog.Messages.Received.list[id].id;
+                jQuery.ajax({
+                    url: Bandog.Urls.set_status+real_msg_id,
+                    dataType: 'json',
+                    complete: function(data) {
+                        // actually we should check real response here... but we are lazy
+                        Bandog.Messages.Received.Store();
+                    }
+                });
+                Bandog.Messages.Received.viewed.push(Bandog.Messages.Received.list[id]);
+                Bandog.Messages.Received.list.splice(id, 1);
+                Bandog.Messages.Received.Draw();
+            },
+
             Draw: function() {
                 // setting header
                 document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+Bandog.Messages.Received.list.length+')';
@@ -435,11 +450,7 @@ var Bandog = {
 
                     var item = $('<div class="history_item"></div>').
                         bind('click', {id: i}, function(e){
-                            var id = e.data.id;
-                            Bandog.Messages.Received.viewed.push(Bandog.Messages.Received.list[id]);
-                            Bandog.Messages.Received.list.splice(id, 1);
-                            Bandog.Messages.Received.Store();
-                            Bandog.Messages.Received.Draw();
+                            Bandog.Messages.Received.MarkAsRead(e.data.id);
                         })
                         .append(
                             $('<div class="history_date"></div>')
@@ -459,7 +470,7 @@ var Bandog = {
                 if (viewed.length > 0) {
                     self.append('<h2>'+chrome.i18n.getMessage('messages_viewed')+'</h2><hr>');
                     
-                    for (var i = viewed.length-1; i >= 0 ; i--) {
+                    for (var i = 0; i < viewed.length; i++) {
                         var date      = new Date(viewed[i].create_time);
                         var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
                         var contact_id= Bandog.Contacts.FindByPhone(viewed[i].phone_number);
@@ -493,8 +504,6 @@ var Bandog = {
             },
 
             Store: function() {
-                window.localStorage.removeItem('bandog_received_new');
-                window.localStorage.setItem('bandog_received_new',  JSON.stringify(Bandog.Messages.Received.list));
                 window.localStorage.removeItem('bandog_received_viewed');
                 window.localStorage.setItem('bandog_received_viewed',  JSON.stringify(Bandog.Messages.Received.viewed));
             },
@@ -512,31 +521,25 @@ var Bandog = {
                             console.warn(err);
                             return false;
                         }
-                        
-                        // get cached
-
-                        var cache     = window.localStorage.getItem('bandog_received_new');
-                        if (cache) cache = JSON.parse(cache);
-                        
-                        var viewed = window.localStorage.getItem('bandog_received_viewed');
-                        if (viewed) {
-                            Bandog.Messages.Received.viewed = JSON.parse(viewed);
-                        }
-                        
-
-                        if (json.sms_list.length > 0 || (cache || cache.length > 0)) {
                             Bandog.Messages.Received.list = json.sms_list.slice(0);
-                            //console.log('GOT HISTORY');
-                            if (cache || cache.length > 0) {
-                                //console.log('GOT HISTORY CACHE. Will merge :)');
-                                for (var i = 0; i < cache.length; i++) {
-                                    Bandog.Messages.Received.list.push(cache[i]);
-                                }
-                            }
-                            console.log(Bandog.Messages.Received.list);
-                            Bandog.Messages.Received.Store();
                             Bandog.Messages.Received.Draw();
+                        return 1;
+                    }
+                });
+                jQuery.ajax({
+                    url: Bandog.Urls.messages_get_viewed,
+                    dataType: 'json',
+                    complete: function(data) {
+                        var json = {};
+
+                        try {
+                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                        } catch (err) {
+                            console.warn(err);
+                            return false;
                         }
+                        Bandog.Messages.Received.viewed = json.sms_list.slice(0);
+                        Bandog.Messages.Received.Draw();
                         return 1;
                     }
                 });
@@ -812,7 +815,9 @@ var Bandog = {
             Bandog.Urls.contacts    = Bandog.Urls.appEngine+"contacts_list?action=get&ver="+Bandog.version;
             Bandog.Urls.send        = Bandog.Urls.appEngine+"message?action=send&ver="+Bandog.version;
             Bandog.Urls.send_status = Bandog.Urls.appEngine+"message?action=get_status&ver="+Bandog.version+'&collapse_key=';
-            Bandog.Urls.messages_get= Bandog.Urls.appEngine+"sms?action=get&ver="+Bandog.version;
+            Bandog.Urls.messages_get= Bandog.Urls.appEngine+"sms?action=get&status=0&ver="+Bandog.version;
+            Bandog.Urls.messages_get_viewed= Bandog.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+Bandog.version;
+            Bandog.Urls.set_status  = Bandog.Urls.appEngine+"sms?action=update_status&ver="+Bandog.version+"&status=30&id=";
             console.log('... Urls.Init() finished');
         }
     }
