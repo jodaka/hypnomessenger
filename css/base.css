@@ -275,11 +275,12 @@ div.rcpt_del img:hover {
 }
 
 #contacts_list li {
-    font-weight: bold;
-    color: #3B5998;
-    cursor: pointer;
-    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-    font-size: 11px;
+    /*font-weight: bold;*/
+    /*color: #3B5998;*/
+    color: #6D84B4;
+    
+    /*font-family: "lucida grande",tahoma,verdana,arial,sans-serif;*/
+    /*font-size: 11px;*/
     list-style: none;
     padding: 2px 0 2px 5px;
 }
@@ -292,8 +293,14 @@ div.rcpt_del img:hover {
     background-color: #FFFFEE;
 }
 
-div.contact_avatar, div.contact_name, div.contact_tools {
+div.contact_avatar, div.contact_info {
     display: inline-block;
+}
+
+div.contact_info {
+    
+    vertical-align: top;
+    width: 230px;
 }
 
 div.contact_avatar {
@@ -302,8 +309,29 @@ div.contact_avatar {
 }
 
 div.contact_name {
-    vertical-align: top;
-    padding: 3px 0 0 3px;
+    height: 25px;
+    padding: 0 0 0 25px;
+}
+
+div.contact_add, div.contact_about {
+    opacity: 0;
+    cursor: pointer;
+    display: inline-block;
+    height: 25px;
+    min-width: 45px;
+}
+
+div.contact_add {
+    background: url('/img/add.png') no-repeat;
+    margin-left: 25px;
+}
+
+div.contact_about {
+    background: url('/img/info.png') no-repeat;
+}
+
+div.contact_info:hover div.contact_add, div.contact_info:hover div.contact_about {
+    opacity: 1;
 }
 
 #history_holder {
