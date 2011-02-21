@@ -36,6 +36,10 @@
         "message"       : "History"
     },
     
+    "compose"   : {
+        "message"       : "Compose"
+    },
+    
     "outgoing"   : {
         "message"       : "Outgoing"
     },
@@ -50,5 +54,9 @@
     
     "contact_details": {
         "message"       : "Contact Details"
+    },
+    
+    "messages_history": {
+        "message"       : "Messages History"
     }
 }

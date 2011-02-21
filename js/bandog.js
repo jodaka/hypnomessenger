@@ -37,6 +37,7 @@ var Bandog = {
 
             document.getElementById('h2_outgoing').innerHTML = chrome.i18n.getMessage('outgoing');
             document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming');
+            document.getElementById('h2_compose').innerHTML = chrome.i18n.getMessage('compose');
 
             document.getElementById('header').innerHTML      = chrome.i18n.getMessage('_ui_header');
             document.getElementById('h2_contact').innerHTML  = chrome.i18n.getMessage('contact_details');
@@ -124,8 +125,8 @@ var Bandog = {
 
             DrawTotal: function() {
                 // set proper header
-                document.getElementById('history_header').innerHTML =
-                    chrome.i18n.getMessage('_history_header')+' ('+Bandog.Messages.History.items.length+')';
+                document.getElementById('h2_outgoing').innerHTML =
+                    chrome.i18n.getMessage('outgoing')+' ('+Bandog.Messages.History.items.length+')';
             },
 
             Init: function() {
@@ -136,10 +137,7 @@ var Bandog = {
                     : [];
 
                 Bandog.Messages.History.DrawTotal();
-                
-                $('#history_header').bind('click', function(){
-                    Bandog.Messages.History.Show();
-                });
+                Bandog.Messages.History.Draw();
 
                 // every 10s we process sent queue
                 Bandog.Messages.Sent.queue_process_timer = setInterval(function(){
@@ -154,15 +152,8 @@ var Bandog = {
                 }, 30000);
             },
 
-            Show: function() {
+            Draw: function() {
                 var self = $('#history');
-
-                if (self.is(':visible')) {
-                    self.slideUp();
-                    $('#newmessage').slideDown();
-                    return 1;
-                }
-
                 self.html('');
                 // showing history
                 var items = Bandog.Messages.History.items;
@@ -191,9 +182,6 @@ var Bandog = {
 
                     self.append(item);
                 }
-
-                $('#newmessage').slideUp();
-                self.slideDown();
             }
         },
 
@@ -370,7 +358,7 @@ var Bandog = {
 
                     var send_url = Bandog.Urls.send+
                         '&collapse_key='+collapse_key+
-                        '&phone_number='+phone_number+
+                        '&phone_number='+encodeURIComponent(phone_number)+
                         '&message='+encodeURIComponent(text)
 
                     Bandog.Messages.History.Save(phone_number, text, collapse_key);
@@ -630,7 +618,7 @@ var Bandog = {
             self.append(phones_html);
             
             self.append(
-                '<h3>History</h3><div id="contact_history"></div>'
+                '<h3>'+chrome.i18n.getMessage('messages_history')+'</h3><div id="contact_history"></div>'
             );
             
             
