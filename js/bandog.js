@@ -4,6 +4,8 @@ var Bandog = {
 
     Init: function(ver) {
         Bandog.version = ver;
+        // draw loading
+        Bandog.UI.DrawLoading();
 
         // initializing urls
         Bandog.Urls.Init();
@@ -13,9 +15,6 @@ var Bandog = {
 
         // get contacts list
         Bandog.Contacts.Get();
-
-        // get messages from server
-        Bandog.Messages.Init();
 
     },
 
@@ -27,8 +26,23 @@ var Bandog = {
             window.close();
         },
 
+        DrawLoading: function() {
+            var main_pos    = $('#main').position();
+            var loading_div = $('#loading').css({
+                'top' : main_pos.top+'px',
+                'left': main_pos.left+'px'
+            });
+            loading_div.html(chrome.i18n.getMessage('_ui_loading'));
+            return 1;
+        },
+
+        DrawNotRegistered: function() {
+            var loading = $('#loading');
+            loading.show().html('<h2>'+chrome.i18n.getMessage('_ui_device_not_registered_header')+'</h2>\
+                                <div class="dnr">'+chrome.i18n.getMessage('_ui_device_not_registered_text')+'</div>');
+        },
+
         DrawTranslations: function() {
-            document.getElementById('loading').innerHTML = chrome.i18n.getMessage('loading');
             document.getElementById('nm_send_btn').value = chrome.i18n.getMessage('_ui_send_btn');
             document.getElementById('contacts_header_title').innerHTML = chrome.i18n.getMessage('_ui_contacts_header');
 
@@ -63,11 +77,10 @@ var Bandog = {
         },
 
         Load: function() {
+            // remove loading screen
+            $('#loading').hide();
+
             console.log('... UI.Load() started');
-            jQuery("#loading").hide();
-
-            document.getElementById('loading').innerHTML = 'Check complete. UI can be loaded';
-
             Bandog.Contacts.DrawUI(Bandog.Contacts.list);
 
             $('#contacts_sort').bind('keyup', function(){
@@ -187,7 +200,6 @@ var Bandog = {
         },
 
         New: {
-            
             rcpt: [],
             Init: function(){
                 $('#nm_to_value').bind('change', function(){
@@ -252,10 +264,11 @@ var Bandog = {
 
                 for (var r = 0; r < recipients.length; r++) {
 
-                    var rcpt_id = recipients[r].id;
-                    var name    = (Bandog.Contacts.FindById(rcpt_id))  // rewrite this ugly code
-                        ? Bandog.Contacts.list[Bandog.Contacts.FindById(rcpt_id)].name
-                        : '';
+                    var rcpt_id      = recipients[r].id;
+                    var contact_id   = Bandog.Contacts.FindById(rcpt_id);
+                    var name = (contact_id == -1)
+                        ? contact_id
+                        : Bandog.Contacts.list[contact_id].name
 
                     // filling template with data
                     var rcpt = jQuery.tmpl(rcpt_tmpl, {
@@ -266,6 +279,7 @@ var Bandog = {
                     // binding removing client
                     $('div.rcpt_del', rcpt).bind('click', {cid: recipients[r].id}, function(event){
                         Bandog.Messages.New.RemoveRcpt(event.data.cid);
+                        Bandog.Contacts.Filter();
                     });
 
                     // binding number changing
@@ -361,7 +375,7 @@ var Bandog = {
                 Bandog.Messages.New.RedrawRcpt();
                 Bandog.Messages.New.RedrawNotes()
             },
-            
+
             Send: function() {
                 var phones = [];
 
@@ -652,6 +666,9 @@ var Bandog = {
             for (var i = 0; i < phones.length; i++) {
                 phones_html.append('<li>'+phones[i].number+'</li>');
                 phones_numbers += phones[i].number+',';
+                if (!/^\+/.test(phones[i].number)) {
+                    phones_numbers += '+'+phones[i].number+',';
+                }
             }
             self.append(phones_html);
             
@@ -725,26 +742,35 @@ var Bandog = {
                     return i;
                 }
             }
+            return -1;
         },
 
         Filter: function(name_part) {
+            if (!name_part) name_part = $('#contacts_sort').val().trim();
             name_part = name_part.toLowerCase();
-
-            // don't do filtering with empty strings
-            if (!/\S/.test(name_part)) {
-                Bandog.Contacts.DrawUI(Bandog.Contacts.list);
-                return 1;
-            }
 
             var list = Bandog.Contacts.list;
             var res  = [];
 
+            var rcpt_in_new_msg = [];
+            for (var i = 0; i < Bandog.Messages.New.rcpt.length; i++) {
+                rcpt_in_new_msg.push(Bandog.Messages.New.rcpt[i].id);
+            }
+
             for (var i = 0; i < list.length; i++) {
-                var index_start = list[i].name.toLowerCase().indexOf(name_part);
-                if (index_start != -1) {
-                    var el  = new cloneObject(list[i]);
-                    el.name = el.name.substring(0, index_start)+'<u>'+el.name.substr(index_start, name_part.length)+'</u>'+el.name.substring(index_start+name_part.length, el.name.length);
-                    res.push(el);
+                // don't show contacts that are already in new message rcpt list
+                if (jQuery.inArray(list[i].id, rcpt_in_new_msg) != -1) {
+                    continue;
+                }
+                if (name_part != '') {
+                    var index_start = list[i].name.toLowerCase().indexOf(name_part);
+                    if (index_start != -1) {
+                        var el  = new cloneObject(list[i]);
+                        el.name = el.name.substring(0, index_start)+'<u>'+el.name.substr(index_start, name_part.length)+'</u>'+el.name.substring(index_start+name_part.length, el.name.length);
+                        res.push(el);
+                    }
+                } else {
+                    res.push(list[i]);
                 }
             }
 
@@ -773,20 +799,6 @@ var Bandog = {
             console.log('... Contacts Get() sending request');
 
             var cache       = window.localStorage.getItem('bandog_contacts_cache');
-            var ui_loaded = 0;
-            if (cache) {
-                cache = JSON.parse(cache);
-            //    if (cache.timestamp && new Date().getTime()/1000 - cache.timestamp < 600) {
-            //        console.log('Contacts list taken from cache');
-                    Bandog.Contacts.list = cache.list;
-                    Bandog.Contacts.list = Bandog.Contacts.Sort('name');
-                    Bandog.UI.Load();
-                    ui_loaded = 1;
-            //        return 1;
-            //    } else {
-            //        console.warn(cache);
-            //    }
-            }
 
             jQuery.ajax({
                 url: Bandog.Urls.contacts,
@@ -815,16 +827,20 @@ var Bandog = {
                         // now we can load full UI
                         Bandog.Contacts.list = json.contact_list;
                         Bandog.Contacts.list = Bandog.Contacts.Sort('name');
-                        if (ui_loaded) {
-                            Bandog.Contacts.DrawUI(Bandog.Contacts.list);
-                        } else {
-                            Bandog.UI.Load();
-                        }
+                        Bandog.UI.Load();
+                        // get messages from server
+                        Bandog.Messages.Init();
+
                         return 1;
                     }
 
                     if (json.status == "SIGNIN_REQUIRED") {
                         window.location.href = Bandog.Urls.signIn;
+                        return 1;
+                    }
+                    
+                    if (json.status == "DEVICE_NOT_REGISTERED") {
+                        Bandog.UI.DrawNotRegistered();
                         return 1;
                     }
                 },
@@ -853,12 +869,8 @@ var Bandog = {
                                 $('<div class="contact_add">&nbsp;</div>')
                                     .bind('click', {cid: list[i].id}, function(event){
                                         var self = $(this);
-                                        self.toggleClass('selected');
-                                        if (self.hasClass('selected')) {
-                                            Bandog.Messages.New.AddRcpt(event.data.cid);
-                                        } else {
-                                            Bandog.Messages.New.RemoveRcpt(event.data.cid);
-                                        }
+                                        Bandog.Messages.New.AddRcpt(event.data.cid);
+                                        Bandog.Contacts.Filter();
                                     })
                             )
                             .append(

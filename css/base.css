@@ -27,6 +27,25 @@ body {
     height: 450px;
 }
 
+/*
+ same size as main div
+*/
+#loading {
+    width: 1000px;
+    height: 450px;
+    position: absolute;
+    z-index: 100;
+    background-color: white;
+}
+
+#loading h2 {
+    margin: 50px 50px 0 50px;
+}
+
+#loading div {
+    margin: 20px 50px 50px 50px;
+}
+
 #fl {
     width: 600px;
     display: inline-block;
@@ -187,14 +206,18 @@ div.rcpt {
     border-radius: 0.5em;
     color: white;
     font-size: 9pt;
-    padding: 5px;
 }
 
 div.rcpt_data {
-    padding-left: 7px;
+    margin: 5px 0px 5px 12px !important;
+    width: 140px;
 }
 
 div.rcpt_name, div.rcpt_phone {
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    -o-text-overflow:ellipsis;
     display: block !important;
 }
 

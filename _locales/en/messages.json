@@ -58,5 +58,17 @@
     
     "messages_history": {
         "message"       : "Messages History"
+    },
+    
+    "_ui_device_not_registered_text": {
+        "message"       : "You need to install Bandog Messenger app on your android phone and press 'Register' button"
+    },
+    
+    "_ui_device_not_registered_header": {
+        "message"       : "Your phone isn't registered"
+    },
+    
+    "_ui_loading": {
+        "message"       : "Loading... please wait"
     }
 }
