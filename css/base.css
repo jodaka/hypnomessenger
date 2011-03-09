@@ -33,7 +33,7 @@ body {
     vertical-align: top;
 }
 
-#incoming_messages, #contact_holder {
+#incoming_messages, #contact_holder, #history_holder {
     text-align: left;
     padding: 0 40px 0 50px;
     overflow-y: auto;
@@ -136,11 +136,11 @@ input[type="button"] {
 }
 
 textarea {
-    width: 550px;
-    padding: 0 0.2em;
-    min-height: 100px;
+    width: 542px;
+    padding: 5px;
+    min-height: 210px;
     font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-    font-size: 11px;
+    font-size: 16px;
     color: #333;
     border: 1px solid #8496BA;
 }
@@ -332,26 +332,6 @@ div.contact_about {
 
 div.contact_info:hover div.contact_add, div.contact_info:hover div.contact_about {
     opacity: 1;
-}
-
-#history_holder {
-    text-align: left;
-    font-weight: bold;
-    font-size: 11px;
-    color: #777;
-}
-
-#history_header {
-    width: 550px;
-    border-bottom: 1px solid #777;
-    cursor: pointer;
-    color: #333;
-}
-
-#history {
-    padding: 1em 0 0 0.5em;
-    max-height: 300px;
-    overflow-y: scroll;
 }
 
 div.history_item {

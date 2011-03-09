@@ -41,7 +41,7 @@
     },
     
     "outgoing"   : {
-        "message"       : "Outgoing"
+        "message"       : "History"
     },
     
     "incoming"   : {

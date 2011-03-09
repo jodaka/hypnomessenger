@@ -100,8 +100,9 @@ var Bandog = {
         Init: function() {
             Bandog.Messages.Received.Load();
             Bandog.Messages.History.Init();
+            Bandog.Messages.New.Init();
         },
-        
+
         // this holds last 50 messages history 
         History: {
             items: [],
@@ -186,7 +187,33 @@ var Bandog = {
         },
 
         New: {
+            
             rcpt: [],
+            Init: function(){
+                $('#nm_to_value').bind('change', function(){
+                    Bandog.Messages.New.AddCustomNumber();
+                });
+            },
+
+            AddCustomNumber: function() {
+                // on number entering we should add it to list and clear input field
+                var self = $('#nm_to_value');
+                var value = self.val().trim();
+
+                if (!/[\d+]+/.test(value)) {
+                    alert('wrong symbols in number');
+                    return 0;
+                }
+
+                Bandog.Messages.New.rcpt.push({
+                    id      : new Date().getTime(),
+                    phone   : value,
+                    change  : 0
+                });
+
+                self.val('');
+                Bandog.Messages.New.RedrawRcpt();
+            },
 
             RedrawNotes: function() {
                 // count number of symbols in textarea
@@ -214,20 +241,25 @@ var Bandog = {
 
                 var recipients  = Bandog.Messages.New.rcpt;
                 //console.log(recipients);
-                
+
                 var rcpt_tmpl = '<div class="rcpt">\
-                                        <div class="rcpt_data">\
-                                            <div class="rcpt_name">${name}</div>\
-                                            <div class="rcpt_phone">${phone}</div>\
-                                        </div>\
-                                        <div class="rcpt_del"><img src="img/blank.png" alt=""/></div>\
-                                    </div>';
-                
+                                    <div class="rcpt_data">\
+                                        <div class="rcpt_name">${name}</div>\
+                                        <div class="rcpt_phone">${phone}</div>\
+                                    </div>\
+                                    <div class="rcpt_del"><img src="img/blank.png" alt=""/></div>\
+                                </div>';
+
                 for (var r = 0; r < recipients.length; r++) {
+
+                    var rcpt_id = recipients[r].id;
+                    var name    = (Bandog.Contacts.FindById(rcpt_id))  // rewrite this ugly code
+                        ? Bandog.Contacts.list[Bandog.Contacts.FindById(rcpt_id)].name
+                        : '';
 
                     // filling template with data
                     var rcpt = jQuery.tmpl(rcpt_tmpl, {
-                        name    : Bandog.Contacts.list[Bandog.Contacts.FindById(recipients[r].id)].name,
+                        name    : name,
                         phone   : recipients[r].phone
                     });
 
@@ -294,6 +326,12 @@ var Bandog = {
                             id      : cid,
                             phone   : 'click to sel',
                             change  : 1
+                        });
+                    } else {
+                        Bandog.Messages.New.rcpt.push({
+                            id      : cid,
+                            phone   : primary_number,
+                            change  : 0
                         });
                     }
 
@@ -423,14 +461,14 @@ var Bandog = {
 
             Draw: function() {
                 // setting header
-                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+Bandog.Messages.Received.list.length+')';
+                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+Bandog.Messages.Received.list.length+'/'+Bandog.Messages.Received.viewed.length+')';
                 
                 var items  = Bandog.Messages.Received.list;
                 var viewed = Bandog.Messages.Received.viewed;
                 var self = $('#incoming_messages');
                 self.html('');
 
-                for (var i = items.length-1; i >= 0 ; i--) {
+                for (var i = 0; i < items.length ; i++) {
                     var date      = new Date(items[i].create_time);
                     var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
                     var contact_id= Bandog.Contacts.FindByPhone(items[i].phone_number);
@@ -668,13 +706,17 @@ var Bandog = {
                 var list = Bandog.Contacts.list;
                 for (var i = 0; i < list.length; i++) {
                     for (var j = 0; j < list[i].phones.length; j++) {
-                        lookup[list[i].phones[j].number] = i;
+                        var number = list[i].phones[j].number;
+                            number = number.replace(/^\+/, '');
+                            number = number.replace(/\s/g, '');
+                        lookup[number] = i;
                     }
                 }
                 Bandog.Contacts.phones_lookup = lookup;
             }
+            phone = phone.replace(/^\+/, '');
+            phone = phone.replace(/\s/g, '');
             return lookup[phone];
-
         },
         FindById: function(id) {
             var list = Bandog.Contacts.list;
@@ -686,6 +728,7 @@ var Bandog = {
         },
 
         Filter: function(name_part) {
+            name_part = name_part.toLowerCase();
 
             // don't do filtering with empty strings
             if (!/\S/.test(name_part)) {
@@ -697,9 +740,10 @@ var Bandog = {
             var res  = [];
 
             for (var i = 0; i < list.length; i++) {
-                if (list[i].name.indexOf(name_part) != -1) {
+                var index_start = list[i].name.toLowerCase().indexOf(name_part);
+                if (index_start != -1) {
                     var el  = new cloneObject(list[i]);
-                    el.name = el.name.replace(name_part, '<u>'+name_part+'</u>');
+                    el.name = el.name.substring(0, index_start)+'<u>'+el.name.substr(index_start, name_part.length)+'</u>'+el.name.substring(index_start+name_part.length, el.name.length);
                     res.push(el);
                 }
             }
