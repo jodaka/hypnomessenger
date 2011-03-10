@@ -1,4 +1,5 @@
 {
+   "background_page": "background.html",
    "browser_action": {
       "default_icon": "icon_18.png",
       "name": "__MSG_description__"
@@ -10,6 +11,6 @@
    },
    "options_page": "index.html",
    "name": "__MSG_name__",
-   "permissions": [ "tabs", "http://6.latest.bandog812.appspot.com/" ],
+   "permissions": [ "tabs", "http://6.latest.bandog812.appspot.com/", "notifications" ],
    "version": "0.1"
 }

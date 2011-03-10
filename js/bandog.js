@@ -101,7 +101,8 @@ var Bandog = {
             $('#loading').hide();
 
             console.log('... UI.Load() started');
-            Bandog.Contacts.DrawUI(Bandog.Contacts.list);
+            Bandog.Contacts.Filter();
+            //Bandog.Contacts.DrawUI(Bandog.Contacts.list);
 
             $('#contacts_sort').bind('keyup', function(){
                 Bandog.Contacts.Filter(this.value);
@@ -126,6 +127,17 @@ var Bandog = {
             Bandog.Messages.New.RedrawNotes();
             console.log('... UI.Load() finished');
             return 1;
+        }
+    },
+
+
+    Notifications: {
+        UpdateIcon: function() {
+            if ($.browser.webkit) {
+                if ($.browser.webkit) {
+                    chrome.browserAction.setBadgeText({text: String(Bandog.Messages.Received.list.length)})
+                }
+            }
         }
     },
 
@@ -497,6 +509,8 @@ var Bandog = {
                 Bandog.Messages.Received.viewed.push(Bandog.Messages.Received.list[id]);
                 Bandog.Messages.Received.list.splice(id, 1);
                 Bandog.Messages.Received.Draw();
+                Bandog.Notifications.UpdateIcon();
+                Bandog.Contacts.Filter();
             },
 
             Draw: function() {
@@ -591,7 +605,12 @@ var Bandog = {
                             return false;
                         }
                             Bandog.Messages.Received.list = json.sms_list.slice(0);
+                            Bandog.Notifications.UpdateIcon();
                             Bandog.Messages.Received.Draw();
+                            if (Bandog.Messages.Received.list.length > 0) {
+                                console.log('got new messages... redrawing contact list');
+                                Bandog.Contacts.Filter();
+                            }
                         return 1;
                     }
                 });
@@ -773,14 +792,42 @@ var Bandog = {
             var list = Bandog.Contacts.list;
             var res  = [];
 
-            var rcpt_in_new_msg = [];
+            var rcpt_in_new_msg = {};
             for (var i = 0; i < Bandog.Messages.New.rcpt.length; i++) {
-                rcpt_in_new_msg.push(Bandog.Messages.New.rcpt[i].id);
+                rcpt_in_new_msg[Bandog.Messages.New.rcpt[i].id] = 1;
             }
+
+            var new_sms_rcpt = {};
+            for (var i = 0; i < Bandog.Messages.Received.list.length; i++) {
+                var phone   = Bandog.Messages.Received.list[i].phone_number;
+                var rcpt_id = Bandog.Contacts.FindByPhone(phone);
+                if (list[rcpt_id] && !rcpt_in_new_msg[rcpt_id]) {
+                    if (new_sms_rcpt[rcpt_id]) {
+                        new_sms_rcpt[rcpt_id]++;
+                    } else {
+                        new_sms_rcpt[rcpt_id] = 1;
+                    }
+                }
+            }
+
+            for (var i in new_sms_rcpt) {
+                var el      = new cloneObject(list[i]);
+                el.new_sms  = new_sms_rcpt[i];
+                if (name_part != '') {
+                    var index_start = list[i].name.toLowerCase().indexOf(name_part);
+                    if (index_start != -1) {
+                        el.name = el.name.substring(0, index_start)+'<u>'+el.name.substr(index_start, name_part.length)+'</u>'+el.name.substring(index_start+name_part.length, el.name.length);
+                        res.push(el);
+                    }
+                } else {
+                    res.push(el);
+                }
+            }
+
 
             for (var i = 0; i < list.length; i++) {
                 // don't show contacts that are already in new message rcpt list
-                if (jQuery.inArray(list[i].id, rcpt_in_new_msg) != -1) {
+                if (rcpt_in_new_msg[list[i].id] == 1 || new_sms_rcpt[list[i].id] == 1) {
                     continue;
                 }
                 if (name_part != '') {
@@ -881,9 +928,22 @@ var Bandog = {
             var holder = $('<ul></ul>');
 
             for (var i = 0; i < list.length; i++) {
-                var avatar = (list[i].avatar) ? list[i].avatar : 'img/av/'+Math.ceil(Math.random()*9)+'.png';
+                var avatar = '<div class="contact_avatar"><img src="img/av/'+Math.ceil(Math.random()*9)+'.png" alt=""></div>';
+                // draw number of new messages on avatar
+                if (list[i].new_sms) {
+                    avatar = $('<div class="contact_avatar"></div>')
+                        .append('<img src="img/av/'+Math.ceil(Math.random()*9)+'.png" alt="">')
+                        .append(
+                            $('<span class="avatar_sms">'+list[i].new_sms+'</span>')
+                            .bind('click', function(){
+                                // go to unread messages
+                                Bandog.UI.MenuClick('h2_incoming');
+                            })
+                        );
+                }
+                
                 var li = $('<li></li>')
-                    .append('<div class="contact_avatar"><img src="'+avatar+'" alt=""></div>')
+                    .append(avatar)
                     .append(
                         $('<div class="contact_info"></div>')
                             .append('<div class="contact_name">'+list[i].name+'</div>')
