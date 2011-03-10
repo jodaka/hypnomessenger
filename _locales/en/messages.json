@@ -70,5 +70,9 @@
     
     "_ui_loading": {
         "message"       : "Loading... please wait"
+    },
+    
+    "_ui_contact_anon": {
+        "message"       : "Anonymous"
     }
 }

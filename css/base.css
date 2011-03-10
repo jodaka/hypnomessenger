@@ -176,13 +176,19 @@ textarea {
 }
 
 #nm_to_value {
-    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-    font-size: 11px;
-    color: #333;
-    width: 96%;
+    font-size: 14px;
+    color: #6D84B4;
+    width: 20px;
     padding: 0 0.2em;
     margin: 0.5em;
     border: 0px;
+    cursor: pointer;
+}
+
+#nm_to_value:focus {
+    cursor: text;
+    width: 150px;
+    border: 1px solid #6D84B4;
 }
 
 #nm_send, #nm_notes {

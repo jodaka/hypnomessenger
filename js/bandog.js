@@ -1,3 +1,23 @@
+if ($.browser.mozilla) {
+    var chrome = {
+        i18n: {
+            getMessage: function(msg) {
+                if (i18 && i18[msg]) {
+                    return i18[msg];
+                } else {
+                    return 'lang resources are not available';
+                }
+            }
+        },
+    
+        extension: {
+            getURL: function(path) {
+                return path;
+            }
+        }
+    };
+}
+
 var Bandog = {
 
     version : -1,
@@ -202,8 +222,12 @@ var Bandog = {
         New: {
             rcpt: [],
             Init: function(){
-                $('#nm_to_value').bind('change', function(){
+                $('#nm_to_value').bind('focus', function(){
+                    $(this).val('');
+                });
+                $('#nm_to_value').bind('blur', function(){
                     Bandog.Messages.New.AddCustomNumber();
+                    $(this).val('+');
                 });
             },
 
@@ -267,7 +291,7 @@ var Bandog = {
                     var rcpt_id      = recipients[r].id;
                     var contact_id   = Bandog.Contacts.FindById(rcpt_id);
                     var name = (contact_id == -1)
-                        ? contact_id
+                        ? chrome.i18n.getMessage('_ui_contact_anon')
                         : Bandog.Contacts.list[contact_id].name
 
                     // filling template with data
@@ -671,12 +695,11 @@ var Bandog = {
                 }
             }
             self.append(phones_html);
-            
+
             self.append(
                 '<h3>'+chrome.i18n.getMessage('messages_history')+'</h3><div id="contact_history"></div>'
             );
-            
-            
+
             jQuery.ajax({
                 url: Bandog.Urls.messages_get+'&status=30&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
                 dataType: 'json',
@@ -846,10 +869,11 @@ var Bandog = {
                 },
 
                 error: function(data, e) {
-                    console.warn('unknown status');
+                    console.warn('=============================');
                     console.warn(e);
                     console.warn(data);
-                    return 0;
+                    console.warn('=============================');
+                    
                 }
             });
         },
