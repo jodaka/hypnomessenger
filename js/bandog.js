@@ -188,32 +188,27 @@ var Bandog = {
 
             Draw: function() {
                 var self = $('#history');
-                self.html('');
+                self.html('').append('<label>'+chrome.i18n.getMessage('_ui_sent_messages')+'</label>');
                 // showing history
                 var items = Bandog.Messages.History.items;
                 for (var i = items.length-1; i >= 0 ; i--) {
-                    var date      = new Date(items[i].timestamp);
-                    var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                    var contact_id= Bandog.Contacts.FindByPhone(items[i].rcpt);
-                    var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].rcpt;
-                    var item = $('<div class="history_item"></div>')
-                        .append(
-                            $('<div class="history_date"></div>')
-                                .append(fdate)
-                        )
-                        .append(
-                            $('<div class="history_rcpt"></div>')
-                                .append(rcpt_name)
-                        )
-                        .append(
-                            $('<div class="history_status"></div>')
-                                .append('<div class="status_'+items[i].status+'"></div>')
-                        )
-                        .append(
-                            $('<div class="history_text"></div>')
-                                .append(items[i].text)
-                        );
+                    var fdate       = Bandog.Messages.Received.formatTime(items[i].timestamp);
+                    var contact_id  = Bandog.Contacts.FindByPhone(items[i].rcpt);
+                    var rcpt_name   = (contact_id)                       ? Bandog.Contacts.list[contact_id].name : items[i].rcpt;
+                    var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id   : false;
 
+                    
+
+                    var item = $('<div class="history_item"></div>')
+                        .append('<div class="history_date">'+fdate+'</div>')
+                        .append(
+                            $('<div class="history_rcpt">'+rcpt_name+'</div>')
+                            .bind('click', {cid: real_id, cid2: contact_id}, function(event){
+                                if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                            })
+                        )
+                        .append('<div class="history_status"><div class="status_'+items[i].status+'"></div></div>')
+                        .append('<div class="history_text">'+items[i].text+'</div>');
                     self.append(item);
                 }
             }
@@ -482,6 +477,13 @@ var Bandog = {
             viewed      : [],
             check_timer : false,
 
+            formatTime: function(timestamp) {
+                var date      = new Date(timestamp);
+                var month     = chrome.i18n.getMessage('_ui_month'+(date.getMonth()+1));
+                var fdate     = date.getDate()+' '+month+' <span class="time">'+date.getHours()+':'+date.getMinutes()+'</span>';
+                return fdate;
+            },
+
             MarkAsRead: function(id) {
                 var real_msg_id = Bandog.Messages.Received.list[id].id;
                 jQuery.ajax({
@@ -504,54 +506,57 @@ var Bandog = {
                 var items  = Bandog.Messages.Received.list;
                 var viewed = Bandog.Messages.Received.viewed;
                 var self = $('#incoming_messages');
-                self.html('');
+                self.html('').
+                    append('<label>'+chrome.i18n.getMessage('_ui_new_messages')+'</label>');
 
                 for (var i = 0; i < items.length ; i++) {
-                    var date      = new Date(items[i].create_time);
-                    var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                    var contact_id= Bandog.Contacts.FindByPhone(items[i].phone_number);
-                    var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].phone_number;
-
-                    var item = $('<div class="history_item"></div>').
-                        bind('click', {id: i}, function(e){
-                            Bandog.Messages.Received.MarkAsRead(e.data.id);
-                        })
+                    var fdate       = Bandog.Messages.Received.formatTime(items[i].create_time);
+                    var contact_id  = Bandog.Contacts.FindByPhone(items[i].phone_number);
+                    var rcpt_name   = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].phone_number;
+                    var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id : false;
+                    var item = $('<div class="history_item"></div>')
+                        .append('<div class="history_date">'+fdate+'</div>')
                         .append(
-                            $('<div class="history_date"></div>')
-                                .append(fdate)
+                            $('<div class="history_rcpt">'+rcpt_name+'</div>')
+                                .bind('click', {cid: real_id}, function(event){
+                                    if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                                })
                         )
+                        .append('<div class="history_text">'+items[i].message+'</div>')
                         .append(
-                            $('<div class="history_rcpt"></div>')
-                                .append(rcpt_name)
-                        )
-                        .append(
-                            $('<div class="history_text"></div>')
-                                .append(items[i].message)
+                            $('<div class="history_ctrl"></div>')
+                                .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_read')+'">')
+                                .bind('click', {id: i}, function(e){
+                                    Bandog.Messages.Received.MarkAsRead(e.data.id);
+                                })
                         );
                     self.append(item);
                 }
                 
                 if (viewed.length > 0) {
-                    self.append('<h2>'+chrome.i18n.getMessage('messages_viewed')+'</h2><hr>');
+                    self.append('<label>'+chrome.i18n.getMessage('_ui_read_messages')+'</label>');
                     
                     for (var i = 0; i < viewed.length; i++) {
-                        var date      = new Date(viewed[i].create_time);
-                        var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                        var contact_id= Bandog.Contacts.FindByPhone(viewed[i].phone_number);
-                        var rcpt_name = (contact_id) ? Bandog.Contacts.list[contact_id].name : viewed[i].phone_number;
+                        var fdate       = Bandog.Messages.Received.formatTime(viewed[i].create_time);
+                        var contact_id  = Bandog.Contacts.FindByPhone(viewed[i].phone_number);
+                        var rcpt_name   = (contact_id) ? Bandog.Contacts.list[contact_id].name : viewed[i].phone_number;
+                        var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id : false;
                         var item = $('<div class="history_item"></div>')
+                            .append('<div class="history_date">'+fdate+'</div>')
                             .append(
-                                $('<div class="history_date"></div>')
-                                    .append(fdate)
+                                $('<div class="history_rcpt">'+rcpt_name+'</div>')
+                                    .bind('click', {cid: real_id}, function(event){
+                                        if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                                    })
                             )
+                            .append('<div class="history_text">'+viewed[i].message+'</div>')
                             .append(
-                                $('<div class="history_rcpt"></div>')
-                                    .append(rcpt_name)
-                            )
-                            .append(
-                                $('<div class="history_text"></div>')
-                                    .append(viewed[i].message)
-                            );
+                                $('<div class="history_ctrl"></div>')
+                                    .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_deleted')+'">')
+                                    .bind('click', {id: i}, function(e){
+                                        console.warn('DELETE SMS not implemented !!!!');
+                                    })
+                            );  
                         self.append(item);
                     }
                 }
@@ -697,7 +702,7 @@ var Bandog = {
             self.append(phones_html);
 
             self.append(
-                '<h3>'+chrome.i18n.getMessage('messages_history')+'</h3><div id="contact_history"></div>'
+                '<label>'+chrome.i18n.getMessage('messages_history')+'</label><div id="contact_history"></div>'
             );
 
             jQuery.ajax({
@@ -717,22 +722,15 @@ var Bandog = {
                         var self   = $('#contact_history');
                         self.html('');
                         for (var i = 0; i < viewed.length; i++) {
-                            var date      = new Date(viewed[i].create_time);
-                            var fdate     = date.getDate()+'-'+(date.getMonth()+1)+'-'+(date.getYear()+1900)+' '+date.getHours()+':'+date.getMinutes();
-                            var item = $('<div class="history_item"></div>')
-                                .append(
-                                    $('<div class="history_date"></div>')
-                                        .append(fdate)
-                                )
-                                .append(
-                                    $('<div class="history_text"></div>')
-                                        .append(viewed[i].message)
-                                );
-                            self.append(item);
+                            var fdate = Bandog.Messages.Received.formatTime(viewed[i].create_time);
+
+                            self.append(
+                                '<div class="history_item">\
+                                    <div class="history_date">'+fdate+'</div>\
+                                    <div class="history_text">'+viewed[i].message+'</div>\
+                                </div>'
+                            );
                         }
-                        
-                        
-                        return 1;
                     }
                 }
             });

@@ -119,7 +119,7 @@ label {
     overflow: auto;
 }
 
-input[type="button"] {
+#nm_send_btn {
     font-size: 13px;
     color: white;
     cursor: pointer;
@@ -365,10 +365,7 @@ div.contact_info:hover div.contact_add, div.contact_info:hover div.contact_about
 
 div.history_item {
     padding: 0.5em 0;
-}
-
-div.history_item:hover {
-    background-color: #FFFFEE;
+    font-size: 10pt;
 }
 
 div.history_item div {
@@ -376,17 +373,39 @@ div.history_item div {
     padding: 0.5em;
 }
 
+div.history_text {
+    width: 550px;
+}
+
 div.history_date {
-    font-weight: bold;
+    width: 90px;
+    color: #808080;
 }
 
 div.history_rcpt {
     color: #3B5998;
-    min-width: 110px;
+    width: 150px;
+    cursor: pointer;
+}
+
+div.history_ctrl {
+    overflow: hidden;
+    padding: 0.5em 0 !important;
 }
 
 div.status_delivered {
     height: 16px;
     width: 16px;
     background: url('/img/delivered.png') no-repeat;
+}
+
+div.history_status {
+    width: 40px;
+    padding: 0 !important;
+}
+
+div.history_status div {
+    padding: 0 !important;
+    width: 16px;
+    height: 16px;
 }
