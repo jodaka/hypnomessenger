@@ -411,14 +411,15 @@ div.history_status div {
 }
 
 span.avatar_sms {
+    font-family: sans-serif;
     cursor: pointer;
     background-color: #C11919;
     text-align: center;
-    width: 13px;
+    padding: 0 3px;
     color: #FFF;
     font-size: 9pt;
     z-index: 90;
-    margin: 34px 0 0 -18px;
-    position: absolute;
-    -webkit-border-radius: 4px;
+    margin: 0 0 0 -18px;
+    position: relative;
+    -webkit-border-radius: 3px;
 }
