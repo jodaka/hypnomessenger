@@ -36,6 +36,10 @@ var Hypno = {
                     chrome.tabs.create({url: Hypno.Urls.signIn});
                 });
             }
+            if (action == 'register') {
+                chrome.browserAction.setBadgeText({text: '!'});
+                chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_not_registered')});
+            }
         }
     },
 
