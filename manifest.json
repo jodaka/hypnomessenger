@@ -1,16 +1,16 @@
 {
-   "background_page": "background.html",
+   "background_page": "hypno_engine.html",
    "browser_action": {
       "default_icon": "icon_18.png",
       "name": "__MSG_description__"
    },
+   "popup": "hypno_gui.html",
    "default_locale": "en",
    "description": "__MSG_description__",
    "icons": {
       "128": "icon_120.png"
    },
-   "options_page": "index.html",
    "name": "__MSG_name__",
    "permissions": [ "tabs", "http://6.latest.bandog812.appspot.com/"],
-   "version": "0.2"
+   "version": "0.9"
 }

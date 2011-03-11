@@ -1,20 +1,20 @@
-var Bandog = {
+var HypnoToad = {
 
     version : -1,
 
     Init: function(ver) {
-        Bandog.version = ver;
+        HypnoToad.version = ver;
         // draw loading
-        Bandog.UI.DrawLoading();
+        HypnoToad.UI.DrawLoading();
 
         // initializing urls
-        Bandog.Urls.Init();
+        HypnoToad.Urls.Init();
 
         // init translations
-        Bandog.UI.DrawTranslations();
+        HypnoToad.UI.DrawTranslations();
 
         // get contacts list
-        Bandog.Contacts.Get();
+        HypnoToad.Contacts.Get();
 
     },
 
@@ -81,30 +81,30 @@ var Bandog = {
             $('#loading').hide();
 
             console.log('... UI.Load() started');
-            Bandog.Contacts.Filter();
-            //Bandog.Contacts.DrawUI(Bandog.Contacts.list);
+            HypnoToad.Contacts.Filter();
+            //HypnoToad.Contacts.DrawUI(HypnoToad.Contacts.list);
 
             $('#contacts_sort').bind('keyup', function(){
-                Bandog.Contacts.Filter(this.value);
+                HypnoToad.Contacts.Filter(this.value);
             });
 
             $('#nm_send_btn').bind('click', function(){
-                Bandog.Messages.New.Send();
+                HypnoToad.Messages.New.Send();
             });
 
             $('#nm_text_value').bind('change', function(){
-                Bandog.Messages.New.RedrawNotes();
+                HypnoToad.Messages.New.RedrawNotes();
             });
             $('#nm_text_value').bind('keyup', function(){
-                Bandog.Messages.New.RedrawNotes();
+                HypnoToad.Messages.New.RedrawNotes();
             });
 
             // bind menu
             $('#menu div').bind('click', function(){
-                Bandog.UI.MenuClick(this.id);
+                HypnoToad.UI.MenuClick(this.id);
             });
 
-            Bandog.Messages.New.RedrawNotes();
+            HypnoToad.Messages.New.RedrawNotes();
             console.log('... UI.Load() finished');
             return 1;
         }
@@ -112,22 +112,22 @@ var Bandog = {
 
     Notifications: {
         UpdateIcon: function() {
-            chrome.browserAction.setBadgeText({text: String(Bandog.Messages.Received.list.length)})
+            chrome.browserAction.setBadgeText({text: String(HypnoToad.Messages.Incoming.list.length)})
         }
     },
 
     Messages: {
         Init: function() {
-            Bandog.Messages.Received.Load();
-            Bandog.Messages.History.Init();
-            Bandog.Messages.New.Init();
+            HypnoToad.Messages.Incoming.Load();
+            HypnoToad.Messages.Outgoing.Init();
+            HypnoToad.Messages.New.Init();
         },
 
         // this holds last 50 messages history 
-        History: {
+        Outgoing: {
             items: [],
             Save: function(rcpt, text, key) {
-                Bandog.Messages.History.items.push({
+                HypnoToad.Messages.Outgoing.items.push({
                     'rcpt'          : rcpt,
                     'text'          : text,
                     'timestamp'     : new Date().getTime(),
@@ -135,41 +135,41 @@ var Bandog = {
                     'status'        : 'sent'
                 });
 
-                Bandog.Messages.History.Store();
-                Bandog.Messages.History.DrawTotal();
+                HypnoToad.Messages.Outgoing.Store();
+                HypnoToad.Messages.Outgoing.DrawTotal();
             },
 
             Store: function() {
                 window.localStorage.removeItem('bandog_history');
-                window.localStorage.setItem('bandog_history',  JSON.stringify(Bandog.Messages.History.items));
+                window.localStorage.setItem('bandog_history',  JSON.stringify(HypnoToad.Messages.Outgoing.items));
             },
 
             DrawTotal: function() {
                 // set proper header
                 document.getElementById('h2_outgoing').innerHTML =
-                    chrome.i18n.getMessage('outgoing')+' ('+Bandog.Messages.History.items.length+')';
+                    chrome.i18n.getMessage('outgoing')+' ('+HypnoToad.Messages.Outgoing.items.length+')';
             },
 
             Init: function() {
                 // get history from localstorage
                 var history = window.localStorage.getItem('bandog_history');
-                Bandog.Messages.History.items = (history)
+                HypnoToad.Messages.Outgoing.items = (history)
                     ? JSON.parse(history)
                     : [];
 
-                Bandog.Messages.History.DrawTotal();
-                Bandog.Messages.History.Draw();
+                HypnoToad.Messages.Outgoing.DrawTotal();
+                HypnoToad.Messages.Outgoing.Draw();
 
                 // every 10s we process sent queue
-                Bandog.Messages.Sent.queue_process_timer = setInterval(function(){
+                HypnoToad.Messages.Sent.queue_process_timer = setInterval(function(){
                     console.log('Processing sent queue');
-                    Bandog.Messages.Sent.ProcessQueue();
+                    HypnoToad.Messages.Sent.ProcessQueue();
                 }, 10000);
 
                 // every 30s we check for new messages
-                Bandog.Messages.Received.check_timer = setInterval(function(){
+                HypnoToad.Messages.Incoming.check_timer = setInterval(function(){
                     console.log('Checking for new messages...');
-                    Bandog.Messages.Received.Load();
+                    HypnoToad.Messages.Incoming.Load();
                 }, 30000);
             },
 
@@ -177,21 +177,19 @@ var Bandog = {
                 var self = $('#history');
                 self.html('').append('<label>'+chrome.i18n.getMessage('_ui_sent_messages')+'</label>');
                 // showing history
-                var items = Bandog.Messages.History.items;
+                var items = HypnoToad.Messages.Outgoing.items;
                 for (var i = items.length-1; i >= 0 ; i--) {
-                    var fdate       = Bandog.Messages.Received.formatTime(items[i].timestamp);
-                    var contact_id  = Bandog.Contacts.FindByPhone(items[i].rcpt);
-                    var rcpt_name   = (contact_id)                       ? Bandog.Contacts.list[contact_id].name : items[i].rcpt;
-                    var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id   : false;
-
-                    
+                    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].timestamp);
+                    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].rcpt);
+                    var rcpt_name   = (contact_id)                       ? HypnoToad.Contacts.list[contact_id].name : items[i].rcpt;
+                    var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id   : false;
 
                     var item = $('<div class="history_item"></div>')
                         .append('<div class="history_date">'+fdate+'</div>')
                         .append(
                             $('<div class="history_rcpt">'+rcpt_name+'</div>')
                             .bind('click', {cid: real_id, cid2: contact_id}, function(event){
-                                if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                                if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
                             })
                         )
                         .append('<div class="history_status"><div class="status_'+items[i].status+'"></div></div>')
@@ -208,7 +206,7 @@ var Bandog = {
                     $(this).val('');
                 });
                 $('#nm_to_value').bind('blur', function(){
-                    Bandog.Messages.New.AddCustomNumber();
+                    HypnoToad.Messages.New.AddCustomNumber();
                     $(this).val('+');
                 });
             },
@@ -223,14 +221,14 @@ var Bandog = {
                     return 0;
                 }
 
-                Bandog.Messages.New.rcpt.push({
+                HypnoToad.Messages.New.rcpt.push({
                     id      : new Date().getTime(),
                     phone   : value,
                     change  : 0
                 });
 
                 self.val('');
-                Bandog.Messages.New.RedrawRcpt();
+                HypnoToad.Messages.New.RedrawRcpt();
             },
 
             RedrawNotes: function() {
@@ -249,7 +247,7 @@ var Bandog = {
                 var note1 = 'Message length: '+text_length+' symbols <br />';
 
                 var sms_count = Math.ceil(text_length / 140);
-                var note2 = 'Messages to sent: '+sms_count*Bandog.Messages.New.rcpt.length;
+                var note2 = 'Messages to sent: '+sms_count*HypnoToad.Messages.New.rcpt.length;
                 $('#nm_notes').html(note1+note2);
             },
 
@@ -257,7 +255,7 @@ var Bandog = {
                 var rcpt_holder = $('#contact_recipients');
                 rcpt_holder.html('');
 
-                var recipients  = Bandog.Messages.New.rcpt;
+                var recipients  = HypnoToad.Messages.New.rcpt;
                 //console.log(recipients);
 
                 var rcpt_tmpl = '<div class="rcpt">\
@@ -271,10 +269,10 @@ var Bandog = {
                 for (var r = 0; r < recipients.length; r++) {
 
                     var rcpt_id      = recipients[r].id;
-                    var contact_id   = Bandog.Contacts.FindById(rcpt_id);
+                    var contact_id   = HypnoToad.Contacts.FindById(rcpt_id);
                     var name = (contact_id == -1)
                         ? chrome.i18n.getMessage('_ui_contact_anon')
-                        : Bandog.Contacts.list[contact_id].name
+                        : HypnoToad.Contacts.list[contact_id].name
 
                     // filling template with data
                     var rcpt = jQuery.tmpl(rcpt_tmpl, {
@@ -284,18 +282,18 @@ var Bandog = {
 
                     // binding removing client
                     $('div.rcpt_del', rcpt).bind('click', {cid: recipients[r].id}, function(event){
-                        Bandog.Messages.New.RemoveRcpt(event.data.cid);
-                        Bandog.Contacts.Filter();
+                        HypnoToad.Messages.New.RemoveRcpt(event.data.cid);
+                        HypnoToad.Contacts.Filter();
                     });
 
                     // binding number changing
                     $('div.rcpt_phone', rcpt).bind('click', {id: r, phone: recipients[r].phone, cid: recipients[r].id}, function(event){
-                        Bandog.Messages.New.ChangePhone(this, event.data.id, event.data.cid, event.data.phone);
+                        HypnoToad.Messages.New.ChangePhone(this, event.data.id, event.data.cid, event.data.phone);
                     });
 
                     rcpt_holder.append(rcpt);
                     if (recipients[r].change == 1) {
-                        Bandog.Messages.New.ChangePhone(rcpt, r, recipients[r].id, recipients[r].number);
+                        HypnoToad.Messages.New.ChangePhone(rcpt, r, recipients[r].id, recipients[r].number);
                     }
                 }
             },
@@ -304,12 +302,12 @@ var Bandog = {
                 var $rcpt_div = $(rcpt_div);
                 var pos       = $rcpt_div.position();
 
-                var pselect = Bandog.Messages.New.rcpt[id].change;
+                var pselect = HypnoToad.Messages.New.rcpt[id].change;
                 // changing number for contact with primary number
                 $('div.number_change').remove();
 
                 var select = $('<div class="number_change"></div>');
-                var phones = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)].phones;
+                var phones = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)].phones;
                 for (var i = 0, max = phones.length; i < max; i++) {
                     select.append(
                         $('<div class="phone"></div>')
@@ -317,10 +315,10 @@ var Bandog = {
                                 phones[i].number
                             )
                             .bind('click', {id: id, phone: phones[i].number}, function(event){
-                                Bandog.Messages.New.rcpt[event.data.id].phone  = event.data.phone;
-                                Bandog.Messages.New.rcpt[event.data.id].change = 0;
+                                HypnoToad.Messages.New.rcpt[event.data.id].phone  = event.data.phone;
+                                HypnoToad.Messages.New.rcpt[event.data.id].change = 0;
                                 $('div.number_change').remove();
-                                Bandog.Messages.New.RedrawRcpt();
+                                HypnoToad.Messages.New.RedrawRcpt();
                             })
                     );
                 }
@@ -334,7 +332,7 @@ var Bandog = {
 
             AddRcpt: function(cid) {
                 console.log('Adding rcpt '+cid);
-                var phones = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)].phones;
+                var phones = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)].phones;
                 if (phones.length > 1) {
                     var primary_number = false;
                     for (var i = 0, max = phones.length; i < max; i++) {
@@ -342,13 +340,13 @@ var Bandog = {
                     }
 
                     if (!primary_number) {
-                        Bandog.Messages.New.rcpt.push({
+                        HypnoToad.Messages.New.rcpt.push({
                             id      : cid,
                             phone   : 'click to sel',
                             change  : 1
                         });
                     } else {
-                        Bandog.Messages.New.rcpt.push({
+                        HypnoToad.Messages.New.rcpt.push({
                             id      : cid,
                             phone   : primary_number,
                             change  : 0
@@ -356,39 +354,39 @@ var Bandog = {
                     }
 
                 } else {
-                    Bandog.Messages.New.rcpt.push({
+                    HypnoToad.Messages.New.rcpt.push({
                         id      : cid,
                         phone   : phones[0].number,
                         change  : 0
                     });
                 }
 
-                Bandog.Messages.New.RedrawRcpt();
-                Bandog.Messages.New.RedrawNotes()
+                HypnoToad.Messages.New.RedrawRcpt();
+                HypnoToad.Messages.New.RedrawNotes()
             },
 
             RemoveRcpt: function(cid) {
                 console.log('Removing rcpt '+cid);
-                var rcpts = Bandog.Messages.New.rcpt;
+                var rcpts = HypnoToad.Messages.New.rcpt;
                 for (var i = 0, max = rcpts.length; i < max; i++) {
                     if (rcpts[i].id == cid) {
-                        Bandog.Messages.New.rcpt.splice(i, 1);
+                        HypnoToad.Messages.New.rcpt.splice(i, 1);
                         break;
                     }
                 }
-                //var index = Bandog.Messages.New.rcpt.indexOf(cid);
-                //if (index != -1) Bandog.Messages.New.rcpt.splice(index, 1);
-                Bandog.Messages.New.RedrawRcpt();
-                Bandog.Messages.New.RedrawNotes()
+                //var index = HypnoToad.Messages.New.rcpt.indexOf(cid);
+                //if (index != -1) HypnoToad.Messages.New.rcpt.splice(index, 1);
+                HypnoToad.Messages.New.RedrawRcpt();
+                HypnoToad.Messages.New.RedrawNotes()
             },
 
             Send: function() {
                 var phones = [];
 
-                var rcpts = Bandog.Messages.New.rcpt;
+                var rcpts = HypnoToad.Messages.New.rcpt;
 
                 for (var i = 0; i < rcpts.length; i++) {
-                    phones.push(Bandog.Contacts.list[Bandog.Contacts.FindById(rcpts[i].id)].phones[0].number);
+                    phones.push(HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(rcpts[i].id)].phones[0].number);
                 }
 
                 var to      = $('#nm_to_value').val().replace(/\s/g, '');
@@ -414,12 +412,12 @@ var Bandog = {
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))+
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))
 
-                    var send_url = Bandog.Urls.send+
+                    var send_url = HypnoToad.Urls.send+
                         '&collapse_key='+collapse_key+
                         '&phone_number='+encodeURIComponent(phone_number)+
                         '&message='+encodeURIComponent(text)
 
-                    Bandog.Messages.History.Save(phone_number, text, collapse_key);
+                    HypnoToad.Messages.Outgoing.Save(phone_number, text, collapse_key);
                     //alert('message sent turned off');
                     //return 1;
                     
@@ -442,13 +440,13 @@ var Bandog = {
                                 alert('Message SENT');
                                 // message was sent. Now we need to check periodically for
                                 // it's status
-                                Bandog.Messages.Sent.queue.push(collapse_key);
+                                HypnoToad.Messages.Sent.queue.push(collapse_key);
                                 return 1;
                             }
     
                             if (json.status == "SIGNIN_REQUIRED") {
                                 alert('ERROR');
-                                window.location.href = Bandog.Urls.signIn;
+                                window.location.href = HypnoToad.Urls.signIn;
                                 return 1;
                             }
                         }
@@ -459,7 +457,7 @@ var Bandog = {
             }
         },
 
-        Received: {
+        Incoming: {
             list        : [],
             viewed      : [],
             check_timer : false,
@@ -472,43 +470,43 @@ var Bandog = {
             },
 
             MarkAsRead: function(id) {
-                var real_msg_id = Bandog.Messages.Received.list[id].id;
+                var real_msg_id = HypnoToad.Messages.Incoming.list[id].id;
                 jQuery.ajax({
-                    url: Bandog.Urls.set_status+real_msg_id,
+                    url: HypnoToad.Urls.set_status+real_msg_id,
                     dataType: 'json',
                     complete: function(data) {
                         // actually we should check real response here... but we are lazy
-                        Bandog.Messages.Received.Store();
+                        HypnoToad.Messages.Incoming.Store();
                     }
                 });
-                Bandog.Messages.Received.viewed.push(Bandog.Messages.Received.list[id]);
-                Bandog.Messages.Received.list.splice(id, 1);
-                Bandog.Messages.Received.Draw();
-                Bandog.Notifications.UpdateIcon();
-                Bandog.Contacts.Filter();
+                HypnoToad.Messages.Incoming.viewed.push(HypnoToad.Messages.Incoming.list[id]);
+                HypnoToad.Messages.Incoming.list.splice(id, 1);
+                HypnoToad.Messages.Incoming.Draw();
+                HypnoToad.Notifications.UpdateIcon();
+                HypnoToad.Contacts.Filter();
             },
 
             Draw: function() {
                 // setting header
-                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+Bandog.Messages.Received.list.length+'/'+Bandog.Messages.Received.viewed.length+')';
+                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+HypnoToad.Messages.Incoming.list.length+'/'+HypnoToad.Messages.Incoming.viewed.length+')';
                 
-                var items  = Bandog.Messages.Received.list;
-                var viewed = Bandog.Messages.Received.viewed;
+                var items  = HypnoToad.Messages.Incoming.list;
+                var viewed = HypnoToad.Messages.Incoming.viewed;
                 var self = $('#incoming_messages');
                 self.html('').
                     append('<label>'+chrome.i18n.getMessage('_ui_new_messages')+'</label>');
 
                 for (var i = 0; i < items.length ; i++) {
-                    var fdate       = Bandog.Messages.Received.formatTime(items[i].create_time);
-                    var contact_id  = Bandog.Contacts.FindByPhone(items[i].phone_number);
-                    var rcpt_name   = (contact_id) ? Bandog.Contacts.list[contact_id].name : items[i].phone_number;
-                    var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id : false;
+                    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].create_time);
+                    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].phone_number);
+                    var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : items[i].phone_number;
+                    var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
                     var item = $('<div class="history_item"></div>')
                         .append('<div class="history_date">'+fdate+'</div>')
                         .append(
                             $('<div class="history_rcpt">'+rcpt_name+'</div>')
                                 .bind('click', {cid: real_id}, function(event){
-                                    if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                                    if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
                                 })
                         )
                         .append('<div class="history_text">'+items[i].message+'</div>')
@@ -516,7 +514,7 @@ var Bandog = {
                             $('<div class="history_ctrl"></div>')
                                 .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_read')+'">')
                                 .bind('click', {id: i}, function(e){
-                                    Bandog.Messages.Received.MarkAsRead(e.data.id);
+                                    HypnoToad.Messages.Incoming.MarkAsRead(e.data.id);
                                 })
                         );
                     self.append(item);
@@ -526,16 +524,16 @@ var Bandog = {
                     self.append('<label>'+chrome.i18n.getMessage('_ui_read_messages')+'</label>');
                     
                     for (var i = 0; i < viewed.length; i++) {
-                        var fdate       = Bandog.Messages.Received.formatTime(viewed[i].create_time);
-                        var contact_id  = Bandog.Contacts.FindByPhone(viewed[i].phone_number);
-                        var rcpt_name   = (contact_id) ? Bandog.Contacts.list[contact_id].name : viewed[i].phone_number;
-                        var real_id     = (Bandog.Contacts.list[contact_id]) ? Bandog.Contacts.list[contact_id].id : false;
+                        var fdate       = HypnoToad.Messages.Incoming.formatTime(viewed[i].create_time);
+                        var contact_id  = HypnoToad.Contacts.FindByPhone(viewed[i].phone_number);
+                        var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : viewed[i].phone_number;
+                        var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
                         var item = $('<div class="history_item"></div>')
                             .append('<div class="history_date">'+fdate+'</div>')
                             .append(
                                 $('<div class="history_rcpt">'+rcpt_name+'</div>')
                                     .bind('click', {cid: real_id}, function(event){
-                                        if (event.data.cid) Bandog.Contacts.Info(event.data.cid);
+                                        if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
                                     })
                             )
                             .append('<div class="history_text">'+viewed[i].message+'</div>')
@@ -555,7 +553,7 @@ var Bandog = {
                 var viewed = window.localStorage.getItem('bandog_received_viewed');
                 if (viewed) {
                     viewed = JSON.parse(viewed);
-                    Bandog.Messages.Received.viewed = viewed;
+                    HypnoToad.Messages.Incoming.viewed = viewed;
                     console.log('Viewed messages loaded');
                     console.log(viewed);
                 }
@@ -563,12 +561,12 @@ var Bandog = {
 
             Store: function() {
                 window.localStorage.removeItem('bandog_received_viewed');
-                window.localStorage.setItem('bandog_received_viewed',  JSON.stringify(Bandog.Messages.Received.viewed));
+                window.localStorage.setItem('bandog_received_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
             },
 
             Load: function() {
                 jQuery.ajax({
-                    url: Bandog.Urls.messages_get+'&status=0',
+                    url: HypnoToad.Urls.messages_get+'&status=0',
                     dataType: 'json',
                     complete: function(data) {
                         var json = {};
@@ -579,18 +577,18 @@ var Bandog = {
                             console.warn(err);
                             return false;
                         }
-                            Bandog.Messages.Received.list = json.sms_list.slice(0);
-                            Bandog.Notifications.UpdateIcon();
-                            Bandog.Messages.Received.Draw();
-                            if (Bandog.Messages.Received.list.length > 0) {
+                            HypnoToad.Messages.Incoming.list = json.sms_list.slice(0);
+                            HypnoToad.Notifications.UpdateIcon();
+                            HypnoToad.Messages.Incoming.Draw();
+                            if (HypnoToad.Messages.Incoming.list.length > 0) {
                                 console.log('got new messages... redrawing contact list');
-                                Bandog.Contacts.Filter();
+                                HypnoToad.Contacts.Filter();
                             }
                         return 1;
                     }
                 });
                 jQuery.ajax({
-                    url: Bandog.Urls.messages_get_viewed,
+                    url: HypnoToad.Urls.messages_get_viewed,
                     dataType: 'json',
                     complete: function(data) {
                         var json = {};
@@ -601,8 +599,8 @@ var Bandog = {
                             console.warn(err);
                             return false;
                         }
-                        Bandog.Messages.Received.viewed = json.sms_list.slice(0);
-                        Bandog.Messages.Received.Draw();
+                        HypnoToad.Messages.Incoming.viewed = json.sms_list.slice(0);
+                        HypnoToad.Messages.Incoming.Draw();
                         return 1;
                     }
                 });
@@ -615,7 +613,7 @@ var Bandog = {
             queue: [],
             GetStatus: function(collapse_key) {
                 jQuery.ajax({
-                    url: Bandog.Urls.send_status+collapse_key,
+                    url: HypnoToad.Urls.send_status+collapse_key,
                     dataType: 'json',
                     complete: function(data) {
                         try {
@@ -628,12 +626,12 @@ var Bandog = {
                         if (json.status == "OK") {
                             // message was sent. Now we need to check periodically for
                             // it's status
-                            Bandog.Messages.Sent.MarkAsDelivered(collapse_key);
+                            HypnoToad.Messages.Sent.MarkAsDelivered(collapse_key);
                             return 1;
                         }
 
                         if (json.status == "SIGNIN_REQUIRED") {
-                            window.location.href = Bandog.Urls.signIn;
+                            window.location.href = HypnoToad.Urls.signIn;
                             return 1;
                         }
                     }
@@ -641,27 +639,27 @@ var Bandog = {
             },
 
             ProcessQueue: function() {
-                var queue = Bandog.Messages.Sent.queue;
+                var queue = HypnoToad.Messages.Sent.queue;
                 if (queue.length == 0) return 0;
                 for (var i = 0; i < queue.length; i++) {
-                    Bandog.Messages.Sent.GetStatus(queue[i]);
+                    HypnoToad.Messages.Sent.GetStatus(queue[i]);
                 }
             },
 
             MarkAsDelivered: function(collapse_key) {
-                var items = Bandog.Messages.History.items;
+                var items = HypnoToad.Messages.Outgoing.items;
                 for (var i = 0; i < items.length; i++) {
                     if (items[i].collapsekey == collapse_key) {
                         items[i].status = 'delivered';
-                        Bandog.Messages.History.Store();
+                        HypnoToad.Messages.Outgoing.Store();
                         break;
                     }
                 }
                 
                 // delete from queue
-                var queue = Bandog.Messages.Sent.queue;
+                var queue = HypnoToad.Messages.Sent.queue;
                 queue = queue.splice(queue.indexOf(collapse_key), 1);
-                Bandog.Messages.Sent.queue = queue;
+                HypnoToad.Messages.Sent.queue = queue;
             }
         }
     },
@@ -675,8 +673,8 @@ var Bandog = {
         */
         Info: function(cid) {
             console.log(cid);
-            Bandog.UI.MenuClick('h2_contact');
-            var contact = Bandog.Contacts.list[Bandog.Contacts.FindById(cid)];
+            HypnoToad.UI.MenuClick('h2_contact');
+            var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
             var self = $('#contact_holder').html('');
 
             self.append(
@@ -700,7 +698,7 @@ var Bandog = {
             );
 
             jQuery.ajax({
-                url: Bandog.Urls.messages_get+'&status=30&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
+                url: HypnoToad.Urls.messages_get+'&status=30&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
                 dataType: 'json',
                 complete: function(data) {
                     try {
@@ -716,7 +714,7 @@ var Bandog = {
                         var self   = $('#contact_history');
                         self.html('');
                         for (var i = 0; i < viewed.length; i++) {
-                            var fdate = Bandog.Messages.Received.formatTime(viewed[i].create_time);
+                            var fdate = HypnoToad.Messages.Incoming.formatTime(viewed[i].create_time);
 
                             self.append(
                                 '<div class="history_item">\
@@ -731,11 +729,11 @@ var Bandog = {
         },
 
         FindByPhone: function(phone) {
-            var lookup = Bandog.Contacts.phones_lookup;
+            var lookup = HypnoToad.Contacts.phones_lookup;
             // if lookup is empty we need to init it first
             if (!lookup) {
                 lookup   = {};
-                var list = Bandog.Contacts.list;
+                var list = HypnoToad.Contacts.list;
                 for (var i = 0; i < list.length; i++) {
                     for (var j = 0; j < list[i].phones.length; j++) {
                         var number = list[i].phones[j].number;
@@ -744,14 +742,14 @@ var Bandog = {
                         lookup[number] = i;
                     }
                 }
-                Bandog.Contacts.phones_lookup = lookup;
+                HypnoToad.Contacts.phones_lookup = lookup;
             }
             phone = phone.replace(/^\+/, '');
             phone = phone.replace(/\s/g, '');
             return lookup[phone];
         },
         FindById: function(id) {
-            var list = Bandog.Contacts.list;
+            var list = HypnoToad.Contacts.list;
             for (var i = 0; i < list.length; i++) {
                 if (list[i].id == id) {
                     return i;
@@ -764,18 +762,18 @@ var Bandog = {
             if (!name_part) name_part = $('#contacts_sort').val().trim();
             name_part = name_part.toLowerCase();
 
-            var list = Bandog.Contacts.list;
+            var list = HypnoToad.Contacts.list;
             var res  = [];
 
             var rcpt_in_new_msg = {};
-            for (var i = 0; i < Bandog.Messages.New.rcpt.length; i++) {
-                rcpt_in_new_msg[Bandog.Messages.New.rcpt[i].id] = 1;
+            for (var i = 0; i < HypnoToad.Messages.New.rcpt.length; i++) {
+                rcpt_in_new_msg[HypnoToad.Messages.New.rcpt[i].id] = 1;
             }
 
             var new_sms_rcpt = {};
-            for (var i = 0; i < Bandog.Messages.Received.list.length; i++) {
-                var phone   = Bandog.Messages.Received.list[i].phone_number;
-                var rcpt_id = Bandog.Contacts.FindByPhone(phone);
+            for (var i = 0; i < HypnoToad.Messages.Incoming.list.length; i++) {
+                var phone   = HypnoToad.Messages.Incoming.list[i].phone_number;
+                var rcpt_id = HypnoToad.Contacts.FindByPhone(phone);
                 if (list[rcpt_id] && !rcpt_in_new_msg[rcpt_id]) {
                     if (new_sms_rcpt[rcpt_id]) {
                         new_sms_rcpt[rcpt_id]++;
@@ -818,7 +816,7 @@ var Bandog = {
             }
 
             if (res.length > 0) {
-                Bandog.Contacts.DrawUI(res);
+                HypnoToad.Contacts.DrawUI(res);
             } else {
                 $('#contacts_list').html(chrome.i18n.getMessage('_ui_no_contacts_math_filtering'));
             }
@@ -830,7 +828,7 @@ var Bandog = {
         // type could be 'name' or 'secondname'
         Sort: function(type) {
             if (type == 'name') {
-                return Bandog.Contacts.list.sort(function(a,b){
+                return HypnoToad.Contacts.list.sort(function(a,b){
                     if (a.name < b.name) return -1;
                     if (a.name > b.name) return 1;
                     return 0;
@@ -839,63 +837,10 @@ var Bandog = {
         },
 
         Get: function() {
-            console.log('... Contacts Get() sending request');
-
-            var cache       = window.localStorage.getItem('bandog_contacts_cache');
-
-            jQuery.ajax({
-                url: Bandog.Urls.contacts,
-                dataType: 'json',
-                complete: function(data) {
-                    var json = {};
-
-                    try {
-                        json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                    } catch (err) {
-                        console.warn(err);
-                        return false;
-                    }
-
-                    console.log('... Auth Contacts Get()  status = '+ json.status);
-                    if (json.status == "OK") {
-                        // caching result for 5 min
-                        var cache = {
-                            timestamp   : new Date().getTime()/1000,
-                            list        : json.contact_list
-                        };
-
-                        window.localStorage.removeItem('bandog_contacts_cache');
-                        window.localStorage.setItem('bandog_contacts_cache',  JSON.stringify(cache));
-
-                        // now we can load full UI
-                        Bandog.Contacts.list = json.contact_list;
-                        Bandog.Contacts.list = Bandog.Contacts.Sort('name');
-                        Bandog.UI.Load();
-                        // get messages from server
-                        Bandog.Messages.Init();
-
-                        return 1;
-                    }
-
-                    if (json.status == "SIGNIN_REQUIRED") {
-                        window.location.href = Bandog.Urls.signIn;
-                        return 1;
-                    }
-                    
-                    if (json.status == "DEVICE_NOT_REGISTERED") {
-                        Bandog.UI.DrawNotRegistered();
-                        return 1;
-                    }
-                },
-
-                error: function(data, e) {
-                    console.warn('=============================');
-                    console.warn(e);
-                    console.warn(data);
-                    console.warn('=============================');
-                    
-                }
-            });
+            console.log('... getting Contacts from local storage');
+            HypnoToad.Contacts.list = window.localStorage.getItem('bandog_contacts');
+            HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');
+            HypnoToad.UI.Load();
         },
 
         DrawUI: function(list) {
@@ -912,7 +857,7 @@ var Bandog = {
                             $('<span class="avatar_sms">'+list[i].new_sms+'</span>')
                             .bind('click', function(){
                                 // go to unread messages
-                                Bandog.UI.MenuClick('h2_incoming');
+                                HypnoToad.UI.MenuClick('h2_incoming');
                             })
                         );
                 }
@@ -926,14 +871,14 @@ var Bandog = {
                                 $('<div class="contact_add">&nbsp;</div>')
                                     .bind('click', {cid: list[i].id}, function(event){
                                         var self = $(this);
-                                        Bandog.Messages.New.AddRcpt(event.data.cid);
-                                        Bandog.Contacts.Filter();
+                                        HypnoToad.Messages.New.AddRcpt(event.data.cid);
+                                        HypnoToad.Contacts.Filter();
                                     })
                             )
                             .append(
                                 $('<div class="contact_about">&nbsp;</div>')
                                 .bind('click', {cid: list[i].id}, function(event){
-                                    Bandog.Contacts.Info(event.data.cid);
+                                    HypnoToad.Contacts.Info(event.data.cid);
                                 })
                             )
                     );
@@ -956,15 +901,15 @@ var Bandog = {
 
         Init: function() {
             console.log('... Urls.Init() started');
-            Bandog.Urls.appEngine   = "http://"+Bandog.version+".latest.bandog812.appspot.com/";
-            Bandog.Urls.signIn      = Bandog.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(Bandog.Urls.index)+"&ver="+Bandog.version;
-            Bandog.Urls.signOut     = Bandog.Urls.appEngine+"sign?action=signout&extret=OK&ver="+Bandog.version;
-            Bandog.Urls.contacts    = Bandog.Urls.appEngine+"contacts_list?action=get&ver="+Bandog.version;
-            Bandog.Urls.send        = Bandog.Urls.appEngine+"message?action=send&ver="+Bandog.version;
-            Bandog.Urls.send_status = Bandog.Urls.appEngine+"message?action=get_status&ver="+Bandog.version+'&collapse_key=';
-            Bandog.Urls.messages_get= Bandog.Urls.appEngine+"sms?action=get&ver="+Bandog.version;
-            Bandog.Urls.messages_get_viewed= Bandog.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+Bandog.version;
-            Bandog.Urls.set_status  = Bandog.Urls.appEngine+"sms?action=update_status&ver="+Bandog.version+"&status=30&id=";
+            HypnoToad.Urls.appEngine   = "http://"+HypnoToad.version+".latest.bandog812.appspot.com/";
+            HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(HypnoToad.Urls.index)+"&ver="+HypnoToad.version;
+            HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret=OK&ver="+HypnoToad.version;
+            HypnoToad.Urls.contacts    = HypnoToad.Urls.appEngine+"contacts_list?action=get&ver="+HypnoToad.version;
+            HypnoToad.Urls.send        = HypnoToad.Urls.appEngine+"message?action=send&ver="+HypnoToad.version;
+            HypnoToad.Urls.send_status = HypnoToad.Urls.appEngine+"message?action=get_status&ver="+HypnoToad.version+'&collapse_key=';
+            HypnoToad.Urls.messages_get= HypnoToad.Urls.appEngine+"sms?action=get&ver="+HypnoToad.version;
+            HypnoToad.Urls.messages_get_viewed= HypnoToad.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+HypnoToad.version;
+            HypnoToad.Urls.set_status  = HypnoToad.Urls.appEngine+"sms?action=update_status&ver="+HypnoToad.version+"&status=30&id=";
             console.log('... Urls.Init() finished');
         }
     }

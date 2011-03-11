@@ -1,7 +1,13 @@
 <html><head></head>
 <body>
 <canvas id="canvas" style="display: none"></canvas>
+<!--<script src="js/lang.js" type="text/javascript"></script>-->
+<script src="js/jquery.js" type="text/javascript"></script>
 <script type="text/javascript">
+//function reset_icon() {
+//    chrome.extension.sendRequest({action: 'reset_icon'});
+//}
+
 var Hypno = {
     version: -1,
     auth_and_register: false,  // this flag shows that we have Authorized (on google) and Registered on Android
@@ -12,13 +18,13 @@ var Hypno = {
         // initializing urls
         Hypno.Urls.Init();
         // get contacts list
-        Hypno.Contacts.Get();
+        Hypno.Contacts.Init();
     },
 
     Notifications: {
         Icon: function(action, msg) {
             if (action == 'new') {
-                chrome.browserAction.setBadgeText({text: msg});
+                chrome.browserAction.setBadgeText({text: String(msg)});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_new_messages')});
                 // bind click to go to new messages
             }
@@ -70,6 +76,7 @@ var Hypno = {
             timer       : false,
 
             Load: function() {
+                console.log('... getting incoming messages');
                 jQuery.ajax({
                     url: Hypno.Urls.messages_get+'&status=0',
                     dataType: 'json',
@@ -83,10 +90,15 @@ var Hypno = {
                             return false;
                         }
 
-                        if (Hypno.Messages.Incoming.list != json.sms_list.slice(0)) {
+                        if (JSON.stringify(Hypno.Messages.Incoming.list) != JSON.stringify(json.sms_list.slice(0))) {
+                            console.log('==> got new incoming messages');
+                            console.warn('list');
+                            console.log(Hypno.Messages.Incoming.list);
+                            console.warn('new');
+                            console.log(json.sms_list.slice(0));
                             Hypno.Messages.Incoming.list = json.sms_list.slice(0);
                             window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.Incoming.list));
-                            Hypno.Notifications.UpdateIcon('new', Hypno.Messages.Incoming.list.length);
+                            Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
                             // TODO FIXME
                             // check if main screen is active and send signal to redraw contact list
                         }
@@ -205,8 +217,9 @@ var Hypno = {
                     if (json.status == "OK") {
                         Hypno.auth_and_register = true;
 
-                        if (Hypno.Contacts.list != json.contact_list) {
-                            window.localStorage.setItem('Hypno_contacts',  JSON.stringify(json.contact_list));
+                        if (JSON.stringify(Hypno.Contacts.list) != JSON.stringify(json.contact_list)) {
+                            console.log('==> got new contacts list');
+                            window.localStorage.setItem('Hypno_contacts', JSON.stringify(json.contact_list));
                             Hypno.Contacts.list = json.contact_list;
                             // TODO FIXME
                             // send signal to main window to update contacts list
@@ -218,6 +231,7 @@ var Hypno = {
                     }
 
                     if (json.status == "SIGNIN_REQUIRED") {
+                        console.log('... SIGNIN_REQUIRED');
                         Hypno.auth_and_register = false;
                         Hypno.Messages.Init();
                         Hypno.Notifications.Icon('auth', 0);
@@ -225,6 +239,7 @@ var Hypno = {
                     }
 
                     if (json.status == "DEVICE_NOT_REGISTERED") {
+                        console.log('... DEVICE_NOT_REGISTERED');
                         Hypno.auth_and_register = false;
                         Hypno.Messages.Init();
                         Hypno.Notifications.Icon('register', 0);

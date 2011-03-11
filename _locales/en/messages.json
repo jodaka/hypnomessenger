@@ -1,9 +1,9 @@
 {
     "name": {
-        "message"       : "Hypnotoad Messenger"
+        "message"       : "Hypno Messenger"
     },
     "description": {
-        "message"       : "One ring to rule them all"
+        "message"       : "All glory to the Hypno Messenger!"
     },
     "_ui_send_btn" : {
         "message"       : "Send message"
@@ -26,7 +26,7 @@
     },
     
     "_ui_header"        : {
-        "message"       : "Bandog Messenger (beta)"
+        "message"       : "HypnoMessenger (alfa)"
     },
     
     "_history_header"   : {
@@ -88,7 +88,19 @@
     "_ui_mark_as_deleted": {
         "message"       : "Delete"
     },
-    
+
+    "_icon_authorization_fail": {
+        "message"       : "Click to authorize"
+    },
+
+    "_icon_new_messages": {
+        "message"       : "Click to read new messages"
+    },
+
+    "_icon_not_registered": {
+        "message"       : "You need to register your android phone"
+    },
+
     "_ui_month1": { "message" : "Jan" },
     "_ui_month2": { "message" : "Feb" },
     "_ui_month3": { "message" : "Mar" },
