@@ -14,8 +14,9 @@ var HypnoToad = {
         HypnoToad.UI.DrawTranslations();
 
         // get contacts list
-        HypnoToad.Contacts.Get();
+        HypnoToad.Contacts.Init();
 
+        HypnoToad.Messages.Init();
     },
 
     UI: {
@@ -565,45 +566,27 @@ var HypnoToad = {
             },
 
             Load: function() {
-                jQuery.ajax({
-                    url: HypnoToad.Urls.messages_get+'&status=0',
-                    dataType: 'json',
-                    complete: function(data) {
-                        var json = {};
+                var need_redraw = false;
 
-                        try {
-                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                        } catch (err) {
-                            console.warn(err);
-                            return false;
-                        }
-                            HypnoToad.Messages.Incoming.list = json.sms_list.slice(0);
-                            HypnoToad.Notifications.UpdateIcon();
-                            HypnoToad.Messages.Incoming.Draw();
-                            if (HypnoToad.Messages.Incoming.list.length > 0) {
-                                console.log('got new messages... redrawing contact list');
-                                HypnoToad.Contacts.Filter();
-                            }
-                        return 1;
-                    }
-                });
-                jQuery.ajax({
-                    url: HypnoToad.Urls.messages_get_viewed,
-                    dataType: 'json',
-                    complete: function(data) {
-                        var json = {};
+                var list = window.localStorage.getItem('Hypno_incoming_list');
+                if (list) {
+                    HypnoToad.Messages.Incoming.list = JSON.parse(list);
+                    need_redraw = true;
+                }
 
-                        try {
-                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                        } catch (err) {
-                            console.warn(err);
-                            return false;
-                        }
-                        HypnoToad.Messages.Incoming.viewed = json.sms_list.slice(0);
-                        HypnoToad.Messages.Incoming.Draw();
-                        return 1;
+                var viewed = window.localStorage.getItem('Hypno_incoming_viewed');
+                if (viewed) {
+                    HypnoToad.Messages.Incoming.viewed = JSON.parse(viewed);
+                    need_redraw = true;
+                }
+
+                if (need_redraw) {
+                    HypnoToad.Messages.Incoming.Draw();
+                    if (HypnoToad.Messages.Incoming.list.length > 0) {
+                        console.log('got new messages... redrawing contact list');
+                        HypnoToad.Contacts.Filter();
                     }
-                });
+                }
             }
         },
 
@@ -836,7 +819,7 @@ var HypnoToad = {
             }
         },
 
-        Get: function() {
+        Init: function() {
             console.log('... getting Contacts from local storage');
             HypnoToad.Contacts.list = JSON.parse(window.localStorage.getItem('Hypno_contacts'));
             HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');

@@ -3,8 +3,8 @@ body {
     margin: 0;
     padding: 0;
     font-family: Sans;
-    
-    min-width: 949px;
+
+    min-width: 749px;
     min-height: 470px;
 }
 
@@ -22,7 +22,7 @@ body {
 }
 
 #main {
-    width: 1000px;
+    width: 750px;
     margin: 0 auto;
     -webkit-box-shadow: 0 0px 15px black;
     text-align: center;
@@ -34,7 +34,7 @@ body {
  same size as main div
 */
 #loading {
-    width: 1000px;
+    width: 700px;
     height: 450px;
     position: absolute;
     z-index: 100;
@@ -50,7 +50,7 @@ body {
 }
 
 #fl {
-    width: 600px;
+    width: 400px;
     display: inline-block;
     vertical-align: top;
 }
@@ -110,7 +110,7 @@ label {
 }
 
 #contacts {
-    width: 300px;
+    width: 270px;
     height: 300px;
     display: inline-block;
     overflow: hidden;
@@ -118,7 +118,7 @@ label {
 }
 
 #contacts_list {
-    height: 268px;
+    height: 238px;
     overflow: auto;
 }
 
@@ -158,7 +158,7 @@ label {
 }
 
 textarea {
-    width: 542px;
+    width: 342px;
     padding: 5px;
     min-height: 210px;
     font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
@@ -170,7 +170,7 @@ textarea {
 #nm_to {
     border: 1px solid #8496BA;
     padding: 3px 0 0 3px;
-    width: 550px;
+    width: 350px;
 }
 
 #nm_to div {
