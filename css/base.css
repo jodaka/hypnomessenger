@@ -3,6 +3,9 @@ body {
     margin: 0;
     padding: 0;
     font-family: Sans;
+    
+    min-width: 949px;
+    min-height: 470px;
 }
 
 #header {

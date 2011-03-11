@@ -140,8 +140,8 @@ var HypnoToad = {
             },
 
             Store: function() {
-                window.localStorage.removeItem('bandog_history');
-                window.localStorage.setItem('bandog_history',  JSON.stringify(HypnoToad.Messages.Outgoing.items));
+                window.localStorage.removeItem('Hypno_history');
+                window.localStorage.setItem('Hypno_history',  JSON.stringify(HypnoToad.Messages.Outgoing.items));
             },
 
             DrawTotal: function() {
@@ -152,7 +152,7 @@ var HypnoToad = {
 
             Init: function() {
                 // get history from localstorage
-                var history = window.localStorage.getItem('bandog_history');
+                var history = window.localStorage.getItem('Hypno_history');
                 HypnoToad.Messages.Outgoing.items = (history)
                     ? JSON.parse(history)
                     : [];
@@ -550,7 +550,7 @@ var HypnoToad = {
             },
 
             LoadViewed: function() {
-                var viewed = window.localStorage.getItem('bandog_received_viewed');
+                var viewed = window.localStorage.getItem('Hypno_received_viewed');
                 if (viewed) {
                     viewed = JSON.parse(viewed);
                     HypnoToad.Messages.Incoming.viewed = viewed;
@@ -560,8 +560,8 @@ var HypnoToad = {
             },
 
             Store: function() {
-                window.localStorage.removeItem('bandog_received_viewed');
-                window.localStorage.setItem('bandog_received_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
+                window.localStorage.removeItem('Hypno_received_viewed');
+                window.localStorage.setItem('Hypno_received_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
             },
 
             Load: function() {
@@ -838,7 +838,7 @@ var HypnoToad = {
 
         Get: function() {
             console.log('... getting Contacts from local storage');
-            HypnoToad.Contacts.list = window.localStorage.getItem('bandog_contacts');
+            HypnoToad.Contacts.list = JSON.parse(window.localStorage.getItem('Hypno_contacts'));
             HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');
             HypnoToad.UI.Load();
         },

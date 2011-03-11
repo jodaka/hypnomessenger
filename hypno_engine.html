@@ -92,10 +92,6 @@ var Hypno = {
 
                         if (JSON.stringify(Hypno.Messages.Incoming.list) != JSON.stringify(json.sms_list.slice(0))) {
                             console.log('==> got new incoming messages');
-                            console.warn('list');
-                            console.log(Hypno.Messages.Incoming.list);
-                            console.warn('new');
-                            console.log(json.sms_list.slice(0));
                             Hypno.Messages.Incoming.list = json.sms_list.slice(0);
                             window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.Incoming.list));
                             Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
@@ -259,7 +255,6 @@ var Hypno = {
         index       : chrome.extension.getURL('index.html'),
 
         Init: function() {
-            console.log('... Urls.Init() started');
             Hypno.Urls.appEngine   = "http://"+Hypno.version+".latest.bandog812.appspot.com/";
             Hypno.Urls.signIn      = Hypno.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(Hypno.Urls.index)+"&ver="+Hypno.version;
             Hypno.Urls.signOut     = Hypno.Urls.appEngine+"sign?action=signout&extret=OK&ver="+Hypno.version;
@@ -269,7 +264,6 @@ var Hypno = {
             Hypno.Urls.messages_get= Hypno.Urls.appEngine+"sms?action=get&ver="+Hypno.version;
             Hypno.Urls.messages_get_viewed= Hypno.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+Hypno.version;
             Hypno.Urls.set_status  = Hypno.Urls.appEngine+"sms?action=update_status&ver="+Hypno.version+"&status=30&id=";
-            console.log('... Urls.Init() finished');
         }
     }
 }
