@@ -113,7 +113,11 @@ var HypnoToad = {
 
     Notifications: {
         UpdateIcon: function() {
-            chrome.browserAction.setBadgeText({text: String(HypnoToad.Messages.Incoming.list.length)})
+            if (HypnoToad.Messages.Incoming.list.length > 0) {
+                chrome.browserAction.setBadgeText({text: String(HypnoToad.Messages.Incoming.list.length)})
+            } else {
+                chrome.browserAction.setBadgeText({text: ''});
+            }
         }
     },
 
@@ -122,67 +126,54 @@ var HypnoToad = {
             HypnoToad.Messages.Incoming.Load();
             HypnoToad.Messages.Outgoing.Init();
             HypnoToad.Messages.New.Init();
+
+            //// every 10s we process sent queue
+            //HypnoToad.Messages.Sent.queue_process_timer = setInterval(function(){
+            //    console.log('Processing sent queue');
+            //    HypnoToad.Messages.Sent.ProcessQueue();
+            //}, 10000);
         },
 
         // this holds last 50 messages history 
         Outgoing: {
-            items: [],
+            list: [],
             Save: function(rcpt, text, key) {
-                HypnoToad.Messages.Outgoing.items.push({
+                HypnoToad.Messages.Outgoing.list.push({
                     'rcpt'          : rcpt,
                     'text'          : text,
                     'timestamp'     : new Date().getTime(),
                     'collapsekey'   : key,
                     'status'        : 'sent'
                 });
-
-                HypnoToad.Messages.Outgoing.Store();
+                window.localStorage.setItem('Hypno_outgoing_list',  JSON.stringify(HypnoToad.Messages.Outgoing.list));
                 HypnoToad.Messages.Outgoing.DrawTotal();
-            },
-
-            Store: function() {
-                window.localStorage.removeItem('Hypno_history');
-                window.localStorage.setItem('Hypno_history',  JSON.stringify(HypnoToad.Messages.Outgoing.items));
             },
 
             DrawTotal: function() {
                 // set proper header
                 document.getElementById('h2_outgoing').innerHTML =
-                    chrome.i18n.getMessage('outgoing')+' ('+HypnoToad.Messages.Outgoing.items.length+')';
+                    chrome.i18n.getMessage('outgoing')+' ('+HypnoToad.Messages.Outgoing.list.length+')';
             },
 
             Init: function() {
                 // get history from localstorage
-                var history = window.localStorage.getItem('Hypno_history');
-                HypnoToad.Messages.Outgoing.items = (history)
+                var history = window.localStorage.getItem('Hypno_outgoing_list');
+                HypnoToad.Messages.Outgoing.list = (history)
                     ? JSON.parse(history)
                     : [];
-
                 HypnoToad.Messages.Outgoing.DrawTotal();
                 HypnoToad.Messages.Outgoing.Draw();
-
-                // every 10s we process sent queue
-                HypnoToad.Messages.Sent.queue_process_timer = setInterval(function(){
-                    console.log('Processing sent queue');
-                    HypnoToad.Messages.Sent.ProcessQueue();
-                }, 10000);
-
-                // every 30s we check for new messages
-                HypnoToad.Messages.Incoming.check_timer = setInterval(function(){
-                    console.log('Checking for new messages...');
-                    HypnoToad.Messages.Incoming.Load();
-                }, 30000);
             },
 
             Draw: function() {
                 var self = $('#history');
                 self.html('').append('<label>'+chrome.i18n.getMessage('_ui_sent_messages')+'</label>');
                 // showing history
-                var items = HypnoToad.Messages.Outgoing.items;
+                var items = HypnoToad.Messages.Outgoing.list;
                 for (var i = items.length-1; i >= 0 ; i--) {
-                    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].timestamp);
-                    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].rcpt);
-                    var rcpt_name   = (contact_id)                       ? HypnoToad.Contacts.list[contact_id].name : items[i].rcpt;
+                    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].create_time);
+                    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].phone_number);
+                    var rcpt_name   = (contact_id && contact_id != -1) ? HypnoToad.Contacts.list[contact_id].name : items[i].phone_number;
                     var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id   : false;
 
                     var item = $('<div class="history_item"></div>')
@@ -194,7 +185,7 @@ var HypnoToad = {
                             })
                         )
                         .append('<div class="history_status"><div class="status_'+items[i].status+'"></div></div>')
-                        .append('<div class="history_text">'+items[i].text+'</div>');
+                        .append('<div class="history_text">'+items[i].message+'</div>');
                     self.append(item);
                 }
             }
@@ -630,7 +621,7 @@ var HypnoToad = {
             },
 
             MarkAsDelivered: function(collapse_key) {
-                var items = HypnoToad.Messages.Outgoing.items;
+                var items = HypnoToad.Messages.Outgoing.list;
                 for (var i = 0; i < items.length; i++) {
                     if (items[i].collapsekey == collapse_key) {
                         items[i].status = 'delivered';
@@ -681,7 +672,7 @@ var HypnoToad = {
             );
 
             jQuery.ajax({
-                url: HypnoToad.Urls.messages_get+'&status=30&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
+                url: HypnoToad.Urls.messages.get.unread+'&status=30&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
                 dataType: 'json',
                 complete: function(data) {
                     try {
@@ -721,12 +712,13 @@ var HypnoToad = {
                     for (var j = 0; j < list[i].phones.length; j++) {
                         var number = list[i].phones[j].number;
                             number = number.replace(/^\+/, '');
-                            number = number.replace(/\s/g, '');
+                            number = number.replace(/\s|-/g, '');
                         lookup[number] = i;
                     }
                 }
                 HypnoToad.Contacts.phones_lookup = lookup;
             }
+            if (!phone) return -1;
             phone = phone.replace(/^\+/, '');
             phone = phone.replace(/\s/g, '');
             return lookup[phone];
@@ -890,8 +882,7 @@ var HypnoToad = {
             HypnoToad.Urls.contacts    = HypnoToad.Urls.appEngine+"contacts_list?action=get&ver="+HypnoToad.version;
             HypnoToad.Urls.send        = HypnoToad.Urls.appEngine+"message?action=send&ver="+HypnoToad.version;
             HypnoToad.Urls.send_status = HypnoToad.Urls.appEngine+"message?action=get_status&ver="+HypnoToad.version+'&collapse_key=';
-            HypnoToad.Urls.messages_get= HypnoToad.Urls.appEngine+"sms?action=get&ver="+HypnoToad.version;
-            HypnoToad.Urls.messages_get_viewed= HypnoToad.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+HypnoToad.version;
+            
             HypnoToad.Urls.set_status  = HypnoToad.Urls.appEngine+"sms?action=update_status&ver="+HypnoToad.version+"&status=30&id=";
             console.log('... Urls.Init() finished');
         }

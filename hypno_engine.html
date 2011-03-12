@@ -19,6 +19,20 @@ var Hypno = {
         Hypno.Urls.Init();
         // get contacts list
         Hypno.Contacts.Init();
+        
+        chrome.browserAction.onClicked.addListener(Hypno.OpenGui()); 
+    },
+
+    // open popup
+    OpenGui: function() {
+        console.log('OPEN POPUP clicked');
+        chrome.browserAction.setPopup({
+            popup: "hypno_gui.html"
+        });
+    },
+    
+    OpenAuth: function() {
+        chrome.tabs.create({url: Hypno.Urls.signIn});
     },
 
     Notifications: {
@@ -31,10 +45,10 @@ var Hypno = {
             if (action == 'auth') {
                 chrome.browserAction.setBadgeText({text: '!'});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
+                // remove popup listener
+                chrome.browserAction.onClicked.removeListener(Hypno.OpenGui());
                 // bind click to go signin page
-                chrome.browserAction.onClicked.addListener(function(tab){
-                    chrome.tabs.create({url: Hypno.Urls.signIn});
-                });
+                chrome.browserAction.onClicked.addListener(function(){Hypno.OpenAuth()});
             }
             if (action == 'register') {
                 chrome.browserAction.setBadgeText({text: '!'});
@@ -50,6 +64,7 @@ var Hypno = {
             if (Hypno.auth_and_register) {
                 if (!Hypno.Messages.iniated) {
                     Hypno.Messages.Incoming.Load();
+                    Hypno.Messages.Outgoing.Load();
 
                     // check for new MSG every 30 sec
                     Hypno.Messages.Incoming.timer = setInterval(function(){
@@ -66,12 +81,30 @@ var Hypno = {
 
         // this holds last 50 messages history 
         Outgoing: {
-            items: [],
+            list: [],
+            Load: function() {
+                jQuery.ajax({
+                    url: Hypno.Urls.messages.get.outgoing,
+                    dataType: 'json',
+                    complete: function(data) {
+                        var json = {};
 
-            Init: function() {
-                // every 15s we check for new messages
-                
-            },
+                        try {
+                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                        } catch (err) {
+                            console.warn(err);
+                            return false;
+                        }
+
+                        if (JSON.stringify(Hypno.Messages.Outgoing.list) != JSON.stringify(json.message_list.slice(0))) {
+                            console.log('==> got history messages');
+                            Hypno.Messages.Outgoing.list = json.message_list.slice(0);
+                            window.localStorage.setItem('Hypno_outgoing_list', JSON.stringify(Hypno.Messages.Outgoing.list));
+                        }
+                        return 1;
+                    }
+                });
+            }
         },
 
         Incoming: {
@@ -82,7 +115,7 @@ var Hypno = {
             Load: function() {
                 console.log('... getting incoming messages');
                 jQuery.ajax({
-                    url: Hypno.Urls.messages_get+'&status=0',
+                    url: Hypno.Urls.messages.get.unread+'&status=0',
                     dataType: 'json',
                     complete: function(data) {
                         var json = {};
@@ -106,15 +139,15 @@ var Hypno = {
                     }
                 });
                 jQuery.ajax({
-                    url: Hypno.Urls.messages_get_viewed,
+                    url: Hypno.Urls.messages.get.viewed,
                     dataType: 'json',
                     complete: function(data) {
                         var json = {};
-
                         try {
                             json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
                         } catch (err) {
                             console.warn(err);
+                            console.warn(data);
                             return false;
                         }
 
@@ -233,16 +266,16 @@ var Hypno = {
                     if (json.status == "SIGNIN_REQUIRED") {
                         console.log('... SIGNIN_REQUIRED');
                         Hypno.auth_and_register = false;
-                        Hypno.Messages.Init();
                         Hypno.Notifications.Icon('auth', 0);
+                        Hypno.Messages.Init();
                         return 1;
                     }
 
                     if (json.status == "DEVICE_NOT_REGISTERED") {
                         console.log('... DEVICE_NOT_REGISTERED');
                         Hypno.auth_and_register = false;
-                        Hypno.Messages.Init();
                         Hypno.Notifications.Icon('register', 0);
+                        Hypno.Messages.Init();
                         return 1;
                     }
                 }
@@ -256,7 +289,7 @@ var Hypno = {
         signOut     : false,
         contacts    : false,
         send        : false,
-        index       : chrome.extension.getURL('index.html'),
+        index       : chrome.extension.getURL('close.html'),
 
         Init: function() {
             Hypno.Urls.appEngine   = "http://"+Hypno.version+".latest.bandog812.appspot.com/";
@@ -265,9 +298,15 @@ var Hypno = {
             Hypno.Urls.contacts    = Hypno.Urls.appEngine+"contacts_list?action=get&ver="+Hypno.version;
             Hypno.Urls.send        = Hypno.Urls.appEngine+"message?action=send&ver="+Hypno.version;
             Hypno.Urls.send_status = Hypno.Urls.appEngine+"message?action=get_status&ver="+Hypno.version+'&collapse_key=';
-            Hypno.Urls.messages_get= Hypno.Urls.appEngine+"sms?action=get&ver="+Hypno.version;
-            Hypno.Urls.messages_get_viewed= Hypno.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+Hypno.version;
-            Hypno.Urls.set_status  = Hypno.Urls.appEngine+"sms?action=update_status&ver="+Hypno.version+"&status=30&id=";
+            
+
+            Hypno.Urls.messages = {
+                'get': {
+                    unread  : Hypno.Urls.appEngine+"sms?action=get&ver="+Hypno.version,
+                    viewed  : Hypno.Urls.appEngine+"sms?action=get&status=30&from=0&to=10&ver="+Hypno.version,
+                    outgoing: Hypno.Urls.appEngine+'message?action=get&ver='+Hypno.version
+                }
+            };
         }
     }
 }
