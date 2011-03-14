@@ -808,19 +808,20 @@ var HypnoToad = {
                 var phone   = HypnoToad.Messages.Incoming.list[i].phone_number;
                 var rcpt_id = HypnoToad.Contacts.FindByPhone(phone);
                 if (list[rcpt_id] && !rcpt_in_new_msg[rcpt_id]) {
-                    if (new_sms_rcpt[rcpt_id]) {
-                        new_sms_rcpt[rcpt_id]++;
+                    if (new_sms_rcpt[list[rcpt_id].id]) {
+                        new_sms_rcpt[list[rcpt_id].id]++;
                     } else {
-                        new_sms_rcpt[rcpt_id] = 1;
+                        new_sms_rcpt[list[rcpt_id].id] = 1;
                     }
                 }
             }
 
             for (var i in new_sms_rcpt) {
-                var el      = new cloneObject(list[i]);
+                var id      = HypnoToad.Contacts.FindById(i);
+                var el      = new cloneObject(list[id]);
                 el.new_sms  = new_sms_rcpt[i];
                 if (name_part != '') {
-                    var index_start = list[i].name.toLowerCase().indexOf(name_part);
+                    var index_start = list[id].name.toLowerCase().indexOf(name_part);
                     if (index_start != -1) {
                         el.name = el.name.substring(0, index_start)+'<u>'+el.name.substr(index_start, name_part.length)+'</u>'+el.name.substring(index_start+name_part.length, el.name.length);
                         res.push(el);
@@ -830,10 +831,9 @@ var HypnoToad = {
                 }
             }
 
-
             for (var i = 0; i < list.length; i++) {
                 // don't show contacts that are already in new message rcpt list
-                if (rcpt_in_new_msg[list[i].id] == 1 || new_sms_rcpt[list[i].id] == 1) {
+                if (rcpt_in_new_msg[list[i].id] == 1 || new_sms_rcpt[list[i].id]) {
                     continue;
                 }
                 if (name_part != '') {
