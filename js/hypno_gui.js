@@ -13,6 +13,13 @@ var HypnoToad = {
         // init translations
         HypnoToad.UI.DrawTranslations();
 
+
+        if (window.localStorage.getItem('Hypno_status') == 'device_not_registered') {
+            console.error('DEV NOT REGISTERED CATCHED');
+            HypnoToad.UI.DrawNotRegistered();
+            return 1;
+        }
+
         // get contacts list
         HypnoToad.Contacts.Init();
 
@@ -732,7 +739,16 @@ var HypnoToad = {
                 if (ajax2[1] == 'success') to = ajax2[0].message_list;
                 
                 for (var m = 0; m < to.length; m++) {
+                    var found = 0;
                     for (var s = 0; s < from.length; s++) {
+                        if (from[s].timestamp > to[m].creation_time) {
+                            continue;
+                        } else {
+                            from.splice(s, 0, {
+                                
+                            });
+                            break;
+                        }
                         // merge messages here
                     }
                 }

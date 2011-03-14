@@ -31,7 +31,7 @@ body {
  same size as main div
 */
 #loading {
-    width: 700px;
+    width: 750px;
     height: 450px;
     position: absolute;
     z-index: 100;

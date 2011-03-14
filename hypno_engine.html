@@ -20,17 +20,55 @@ var Hypno = {
         // get contacts list
         Hypno.Contacts.Init();
         
-        chrome.browserAction.onClicked.addListener(Hypno.OpenGui()); 
+        Hypno.Actions.Init();
+        
+        
     },
 
-    // open popup
-    OpenGui: function() {
-        console.log('OPEN POPUP clicked');
-        chrome.browserAction.setPopup({
-            popup: "hypno_gui.html"
-        });
+    Actions: {
+        openPopup : false,
+        openAuth  : false,
+        openGui   : false,
+
+        Init: function() {
+            Hypno.Actions.openAuth  = function(){ Hypno.OpenAuth() };
+        },
+
+        NewMessagesAvailable: function() {
+            Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
+            // bind click to go to new messages
+            chrome.browserAction.setPopup({
+                popup: "hypno_gui.html"
+            });
+        },
+
+        DeviceNotRegistered: function() {
+            Hypno.auth_and_register = false;
+            Hypno.Notifications.Icon('register');
+            console.error('DEV NOT REGISTERED FIRED');
+            window.localStorage.setItem('Hypno_status', 'device_not_registered');
+            // TODO clear event listeners
+            //chrome.browserAction.onClicked.removeListener(Hypno.Actions.openGui);
+            
+
+            chrome.browserAction.setPopup({
+                popup: "hypno_gui.html"
+            });
+        },
+
+        NotAuthorized: function() {
+            Hypno.auth_and_register = false;
+            console.log('Binded Auth to icon click');
+            // remove popup listener
+            // TODO clear event listeners
+            //chrome.browserAction.onClicked.removeListener(Hypno.Actions.openGui);
+            
+            // bind click to go signin page
+            chrome.browserAction.onClicked.addListener(Hypno.Actions.openAuth);
+            Hypno.Notifications.Icon('auth');
+        }
     },
-    
+
     OpenAuth: function() {
         chrome.tabs.create({url: Hypno.Urls.signIn});
     },
@@ -40,15 +78,12 @@ var Hypno = {
             if (action == 'new') {
                 chrome.browserAction.setBadgeText({text: String(msg)});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_new_messages')});
-                // bind click to go to new messages
+                
             }
             if (action == 'auth') {
                 chrome.browserAction.setBadgeText({text: '!'});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
-                // remove popup listener
-                chrome.browserAction.onClicked.removeListener(Hypno.OpenGui());
-                // bind click to go signin page
-                chrome.browserAction.onClicked.addListener(function(){Hypno.OpenAuth()});
+                
             }
             if (action == 'register') {
                 chrome.browserAction.setBadgeText({text: '!'});
@@ -131,7 +166,8 @@ var Hypno = {
                             console.log('==> got new incoming messages');
                             Hypno.Messages.Incoming.list = json.sms_list.slice(0);
                             window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.Incoming.list));
-                            Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
+                            
+                            Hypno.Actions.NewMessagesAvailable();
                             // TODO FIXME
                             // check if main screen is active and send signal to redraw contact list
                         }
@@ -265,16 +301,14 @@ var Hypno = {
 
                     if (json.status == "SIGNIN_REQUIRED") {
                         console.log('... SIGNIN_REQUIRED');
-                        Hypno.auth_and_register = false;
-                        Hypno.Notifications.Icon('auth', 0);
+                        Hypno.Actions.NotAuthorized();
                         Hypno.Messages.Init();
                         return 1;
                     }
 
                     if (json.status == "DEVICE_NOT_REGISTERED") {
                         console.log('... DEVICE_NOT_REGISTERED');
-                        Hypno.auth_and_register = false;
-                        Hypno.Notifications.Icon('register', 0);
+                        Hypno.Actions.DeviceNotRegistered();
                         Hypno.Messages.Init();
                         return 1;
                     }
