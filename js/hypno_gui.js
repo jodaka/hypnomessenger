@@ -540,7 +540,7 @@ var HypnoToad = {
             },
 
             LoadViewed: function() {
-                var viewed = window.localStorage.getItem('Hypno_received_viewed');
+                var viewed = window.localStorage.getItem('Hypno_messages_viewed');
                 if (viewed) {
                     viewed = JSON.parse(viewed);
                     HypnoToad.Messages.Incoming.viewed = viewed;
@@ -550,20 +550,20 @@ var HypnoToad = {
             },
 
             Store: function() {
-                window.localStorage.removeItem('Hypno_received_viewed');
-                window.localStorage.setItem('Hypno_received_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
+                window.localStorage.removeItem('Hypno_messages_viewed');
+                window.localStorage.setItem('Hypno_messages_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
             },
 
             Load: function() {
                 var need_redraw = false;
 
-                var list = window.localStorage.getItem('Hypno_incoming_list');
+                var list = window.localStorage.getItem('Hypno_messages_incoming');
                 if (list) {
                     HypnoToad.Messages.Incoming.list = JSON.parse(list);
                     need_redraw = true;
                 }
 
-                var viewed = window.localStorage.getItem('Hypno_incoming_viewed');
+                var viewed = window.localStorage.getItem('Hypno_messages_viewed');
                 if (viewed) {
                     HypnoToad.Messages.Incoming.viewed = JSON.parse(viewed);
                     need_redraw = true;
@@ -672,23 +672,6 @@ var HypnoToad = {
                 '<label>'+chrome.i18n.getMessage('messages_history')+'</label><div id="contact_history"></div>'
             );
 
-
-                //complete: function(data) {
-                //        try {
-                //            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                //        } catch (err) {
-                //            console.warn(err);
-                //            return false;
-                //        }
-                //
-                //        if (json.status == "OK") {
-                //            var from = json.sms_list.splice(0);
-                //            console.error('FROM NOW');
-                //            console.warn(from);
-                //            console.warn(json);
-                //        }
-                //    }
-
             jQuery.when(
                 jQuery.ajax({
                     url: HypnoToad.Urls.messages.get.unread+'&phone_numbers='+encodeURIComponent(phones_numbers)+'&from=0&to=20',
@@ -703,21 +686,12 @@ var HypnoToad = {
             ).done(function(ajax1, ajax2){
                 var from = [];
                 var to   = [];
-            
-                console.log(ajax1);
-                console.log(ajax2);
-            
+
                 if (ajax1[1] == 'success') from = ajax1[0].sms_list;
                 if (ajax2[1] == 'success') to   = ajax2[0].message_list;
-                
-                console.error('TO');
-                console.warn(to);
-                //
-                console.error('FROM');
-                console.warn(from);
-                
+
+                // merging of 2 lists
                 for (var t = 0; t < to.length; t++) {
-                    var found = 0;
                     for (var f = 0; f < from.length; f++) {
                         if (from[f].create_time > to[t].create_time) {
                             continue;
@@ -725,10 +699,10 @@ var HypnoToad = {
                             from.splice(f, 0, to[t]);
                             break;
                         }
-                        // merge messages here
                     }
                 }
 
+                // Drawing
                 var list = from;
                 var self = $('#contact_history');
                 self.html('');

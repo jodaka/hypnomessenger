@@ -23,7 +23,7 @@ var Hypno = {
 
     Actions: {
         NewMessagesAvailable: function() {
-            Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
+            Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             // bind click to go to new messages
             chrome.browserAction.setPopup({
                 popup: "hypno_gui.html"
@@ -78,12 +78,19 @@ var Hypno = {
 
     Messages: {
         iniated: false,
+        list: {
+            incoming: [],
+            outgoing: [],
+            viewed  : [],
+            history : []
+        },
 
         Init: function() {
             if (Hypno.auth_and_register) {
                 if (!Hypno.Messages.iniated) {
-                    Hypno.Messages.Incoming.Load();
-                    Hypno.Messages.Outgoing.Load();
+                    Hypno.Messages.Load();
+                    //Hypno.Messages.Incoming.Load();
+                    //Hypno.Messages.Outgoing.Load();
 
                     // check for new MSG every 30 sec
                     Hypno.Messages.Incoming.timer = setInterval(function(){
@@ -98,41 +105,120 @@ var Hypno = {
             }
         },
 
-        // this holds last 50 messages history 
-        Outgoing: {
-            list: [],
-            Load: function() {
+        // creates huge history list from combined incoming/outgoing
+        MergeLists: function() {
+            
+            var local = {
+                incoming: Hypno.Messages.list.incoming,
+                outgoing: Hypno.Messages.list.outgoing,
+                viewed: Hypno.Messages.list.viewed,
+                history: [],
+            };
+            
+            local.history = local.viewed.slice(0);
+            
+            for (var n = 0; n < local.incoming.length; n++) {
+                for (var h = 0; h < local.history.length; h++) {
+                    if (local.history[h].create_time > local.incoming[n].create_time) {
+                        continue;
+                    } else {
+                        local.history.splice(h, 0, local.incoming[n]);
+                        break;
+                    }
+                }
+            }
+
+            //console.log('VIEWED MERGED');
+            //console.warn('local.history');
+            //console.log(local.history);
+
+            // 2)
+            // merge outgoing with incoming
+            for (var n = 0, max = local.outgoing.length; n < max; n++) {
+                for (var h = 0, max2 = local.history.length; h < max2; h++) {
+                    if (local.history[h].create_time > local.outgoing[n].create_time) {
+                        continue;
+                    } else {
+                        local.history.splice(h, 0, local.outgoing[n]);
+                        break;
+                    }
+                }
+            }
+
+            //console.log('MERGE FINISHED');
+            //console.warn('local.history');
+            //console.log(local.history);
+            Hypno.Messages.list.history = local.history.slice();
+            window.localStorage.setItem('Hypno_messages_history', JSON.stringify(Hypno.Messages.list.history));
+        },
+
+        Load: function(){
+            jQuery.when(
+            
+                jQuery.ajax({
+                        url: Hypno.Urls.messages.get.unread+'&status=0',
+                        dataType: 'json'
+                }),
+                jQuery.ajax({
+                    url: Hypno.Urls.messages.get.viewed,
+                    dataType: 'json'
+                }),
+
                 jQuery.ajax({
                     url: Hypno.Urls.messages.get.outgoing,
-                    dataType: 'json',
-                    complete: function(data) {
-                        var json = {};
+                    dataType: 'json'
+                })
+            ).done(function(ajax_new_list, ajax_viewed_list, ajax_outgoing_list){
+                var local = {
+                    incoming: [],
+                    viewed  : [],
+                    outgoing: [],
+                    history : []
+                };
+                //
+                //console.warn(ajax_new_list);
+                //console.warn(ajax_viewed_list);
+                //console.warn(ajax_outgoing_list);
 
-                        try {
-                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                        } catch (err) {
-                            console.warn(err);
-                            return false;
-                        }
+                if (ajax_new_list[1] == 'success')      local.incoming  = ajax_new_list[0].sms_list.slice();
+                if (ajax_viewed_list[1] == 'success')   local.viewed    = ajax_viewed_list[0].sms_list.slice(0);
+                if (ajax_outgoing_list[1] == 'success') local.outgoing  = ajax_outgoing_list[0].message_list.slice(0);
 
-                        if (JSON.stringify(Hypno.Messages.Outgoing.list) != JSON.stringify(json.message_list.slice(0))) {
-                            console.log('==> got history messages');
-                            Hypno.Messages.Outgoing.list = json.message_list.slice(0);
-                            window.localStorage.setItem('Hypno_outgoing_list', JSON.stringify(Hypno.Messages.Outgoing.list));
-                        }
-                        return 1;
-                    }
-                });
-            }
+                var merge_needed = 0;
+
+                // handling of new messages
+                if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(local.incoming)) {
+                    console.log('... got new messages');
+                    Hypno.Messages.list.incoming = local.incoming.slice();
+                    Hypno.Actions.NewMessagesAvailable();
+                    window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
+                    merge_needed = 1;
+                }
+
+                // handling of viewed incoming messages
+                if (JSON.stringify(Hypno.Messages.list.viewed) != JSON.stringify(local.viewed)) {
+                    console.log('... got incoming messages');
+                    Hypno.Messages.list.viewed = local.viewed.slice();
+                    window.localStorage.setItem('Hypno_messages_viewed', JSON.stringify(Hypno.Messages.list.viewed));
+                    merge_needed = 1;
+                }
+
+                // handling of outgoing messages
+                if (JSON.stringify(Hypno.Messages.list.outgoing) != JSON.stringify(local.outgoing)) {
+                    console.log('... got outgoing messages');
+                    Hypno.Messages.list.outgoing = local.outgoing.slice();
+                    window.localStorage.setItem('Hypno_messages_outgoing', JSON.stringify(Hypno.Messages.list.outgoing));
+                    merge_needed = 1;
+                }
+
+                if (merge_needed || Hypno.Messages.list.history.length == 0) Hypno.Messages.MergeLists();
+            });
         },
 
         Incoming: {
-            list        : [],
-            viewed      : [],
             timer       : false,
 
             Load: function() {
-                console.log('... getting incoming messages');
                 jQuery.ajax({
                     url: Hypno.Urls.messages.get.unread+'&status=0',
                     dataType: 'json',
@@ -146,34 +232,14 @@ var Hypno = {
                             return false;
                         }
 
-                        if (JSON.stringify(Hypno.Messages.Incoming.list) != JSON.stringify(json.sms_list.slice(0))) {
+                        if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(json.sms_list.slice(0))) {
                             console.log('==> got new incoming messages');
-                            Hypno.Messages.Incoming.list = json.sms_list.slice(0);
-                            window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.Incoming.list));
-                            
+                            Hypno.Messages.list.incoming = json.sms_list.slice(0);
+                            window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.list.incoming));
                             Hypno.Actions.NewMessagesAvailable();
+                            Hypno.Messages.MergeLists();
                             // TODO FIXME
                             // check if main screen is active and send signal to redraw contact list
-                        }
-                        return 1;
-                    }
-                });
-                jQuery.ajax({
-                    url: Hypno.Urls.messages.get.viewed,
-                    dataType: 'json',
-                    complete: function(data) {
-                        var json = {};
-                        try {
-                            json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                        } catch (err) {
-                            console.warn(err);
-                            console.warn(data);
-                            return false;
-                        }
-
-                        if (Hypno.Messages.Incoming.viewed != json.sms_list.slice(0)) {
-                            Hypno.Messages.Incoming.viewed  = json.sms_list.slice(0);
-                            window.localStorage.setItem('Hypno_incoming_viewed', JSON.stringify(Hypno.Messages.Incoming.viewed));
                         }
                         return 1;
                     }
