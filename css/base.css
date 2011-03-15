@@ -364,16 +364,46 @@ div.history_item {
     font-size: 10pt;
 }
 
+div.me {
+    color: blue;
+}
+
+div.me > div.history_text {
+    text-align: right;
+    background-color: #CECEFE;
+    border-radius: 0.7em;
+    -webkit-border-radius: 20px;
+    -webkit-border-top-right-radius: 0;
+    border-radius: 20px;
+    border-top-right-radius: 0;
+}
+
+div.notme > div.history_text {
+    background-color: #CECECE;
+    border-radius: 0.7em;
+    -webkit-border-radius: 20px;
+    -webkit-border-top-left-radius: 0;
+    border-radius: 20px;
+    border-top-left-radius: 0;
+}
+
 div.history_item div {
     display: inline-block;
     padding: 0.5em;
+    
 }
 
 div.history_text {
     width: 350px;
 }
 
+#contact_history div.history_text {
+    width: 550px;
+}
+
+
 div.history_date {
+    background-color: #CECECE;
     width: 90px;
     color: #808080;
 }

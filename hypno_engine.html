@@ -19,21 +19,9 @@ var Hypno = {
         Hypno.Urls.Init();
         // get contacts list
         Hypno.Contacts.Init();
-        
-        Hypno.Actions.Init();
-        
-        
     },
 
     Actions: {
-        openPopup : false,
-        openAuth  : false,
-        openGui   : false,
-
-        Init: function() {
-            Hypno.Actions.openAuth  = function(){ Hypno.OpenAuth() };
-        },
-
         NewMessagesAvailable: function() {
             Hypno.Notifications.Icon('new', Hypno.Messages.Incoming.list.length);
             // bind click to go to new messages
@@ -45,11 +33,9 @@ var Hypno = {
         DeviceNotRegistered: function() {
             Hypno.auth_and_register = false;
             Hypno.Notifications.Icon('register');
-            console.error('DEV NOT REGISTERED FIRED');
             window.localStorage.setItem('Hypno_status', 'device_not_registered');
             // TODO clear event listeners
-            //chrome.browserAction.onClicked.removeListener(Hypno.Actions.openGui);
-            
+            chrome.browserAction.onClicked = null;
 
             chrome.browserAction.setPopup({
                 popup: "hypno_gui.html"
@@ -59,18 +45,16 @@ var Hypno = {
         NotAuthorized: function() {
             Hypno.auth_and_register = false;
             console.log('Binded Auth to icon click');
-            // remove popup listener
-            // TODO clear event listeners
-            //chrome.browserAction.onClicked.removeListener(Hypno.Actions.openGui);
-            
+            // TODO FIXME remove popup listener
+
+            // clear event listeners
+            chrome.browserAction.onClicked = null;
             // bind click to go signin page
-            chrome.browserAction.onClicked.addListener(Hypno.Actions.openAuth);
+            chrome.browserAction.onClicked.addListener(function() {
+                chrome.tabs.create({url: Hypno.Urls.signIn});
+            });
             Hypno.Notifications.Icon('auth');
         }
-    },
-
-    OpenAuth: function() {
-        chrome.tabs.create({url: Hypno.Urls.signIn});
     },
 
     Notifications: {
@@ -332,7 +316,6 @@ var Hypno = {
             Hypno.Urls.contacts    = Hypno.Urls.appEngine+"contacts_list?action=get&ver="+Hypno.version;
             Hypno.Urls.send        = Hypno.Urls.appEngine+"message?action=send&ver="+Hypno.version;
             Hypno.Urls.send_status = Hypno.Urls.appEngine+"message?action=get_status&ver="+Hypno.version+'&collapse_key=';
-            
 
             Hypno.Urls.messages = {
                 'get': {
