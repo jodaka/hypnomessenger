@@ -37,12 +37,12 @@
         "message"       : "Compose"
     },
     
-    "outgoing"   : {
+    "history"   : {
         "message"       : "History"
     },
     
-    "incoming"   : {
-        "message"       : "Incoming"
+    "new"   : {
+        "message"       : "new"
     },
 
     "contact_details": {

@@ -57,7 +57,7 @@ var HypnoToad = {
             document.getElementById('nw_rcpt_label').innerHTML = chrome.i18n.getMessage('_ui_nw_rcpt_label');
             document.getElementById('nw_text_label').innerHTML = chrome.i18n.getMessage('_ui_nw_text_label');
 
-            document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming');
+            document.getElementById('h2_history').innerHTML = chrome.i18n.getMessage('incoming');
             document.getElementById('h2_compose').innerHTML = chrome.i18n.getMessage('compose');
 
             document.getElementById('header').innerHTML      = chrome.i18n.getMessage('_ui_header');
@@ -119,8 +119,8 @@ var HypnoToad = {
 
     Notifications: {
         UpdateIcon: function() {
-            if (HypnoToad.Messages.Incoming.list.length > 0) {
-                chrome.browserAction.setBadgeText({text: String(HypnoToad.Messages.Incoming.list.length)})
+            if (HypnoToad.Messages.list.incoming.length > 0) {
+                chrome.browserAction.setBadgeText({text: String(HypnoToad.Messages.list.incoming.length)})
             } else {
                 chrome.browserAction.setBadgeText({text: ''});
             }
@@ -128,66 +128,54 @@ var HypnoToad = {
     },
 
     Messages: {
+        list : {
+            incoming: [],
+            outgoing: [],
+            viewed  : [],
+            history : []
+        },
+        
         Init: function() {
-            HypnoToad.Messages.Incoming.Load();
+            HypnoToad.Messages.Load();
             //HypnoToad.Messages.Outgoing.Init();
             HypnoToad.Messages.New.Init();
-
-            //// every 10s we process sent queue
-            //HypnoToad.Messages.Sent.queue_process_timer = setInterval(function(){
-            //    console.log('Processing sent queue');
-            //    HypnoToad.Messages.Sent.ProcessQueue();
-            //}, 10000);
         },
+        
+        Load: function() {
+            var need_redraw = false;
+            var local = {
+                incoming: [],
+                outgoing: [],
+                viewed  : [],
+                history : []
+            };
 
-        // this holds last 50 messages history 
-        //Outgoing: {
-        //    list: [],
-            //Save: function(rcpt, text, key) {
-            //    HypnoToad.Messages.Outgoing.list.push({
-            //        'rcpt'          : rcpt,
-            //        'text'          : text,
-            //        'timestamp'     : new Date().getTime(),
-            //        'collapsekey'   : key,
-            //        'status'        : 'sent'
-            //    });
-            //    window.localStorage.setItem('Hypno_outgoing_list',  JSON.stringify(HypnoToad.Messages.Outgoing.list));
-            //},
+            local.incoming = window.localStorage.getItem('Hypno_messages_incoming');
+            if (local.incoming) {
+                HypnoToad.Messages.list.incoming = JSON.parse(local.incoming);
+                need_redraw = true;
+            }
 
-            //Init: function() {
-            //    // get history from localstorage
-            //    var history = window.localStorage.getItem('Hypno_outgoing_list');
-            //    HypnoToad.Messages.Outgoing.list = (history)
-            //        ? JSON.parse(history)
-            //        : [];
-            //    HypnoToad.Messages.Outgoing.Draw();
-            //},
+            local.viewed = window.localStorage.getItem('Hypno_messages_viewed');
+            if (local.viewed) {
+                HypnoToad.Messages.list.history = JSON.parse(local.viewed);
+                need_redraw = true;
+            }
 
-            //Draw: function() {
-            //    var self = $('#history');
-            //    self.html('').append('<label>'+chrome.i18n.getMessage('_ui_sent_messages')+'</label>');
-            //    // showing history
-            //    var items = HypnoToad.Messages.Outgoing.list;
-            //    for (var i = items.length-1; i >= 0 ; i--) {
-            //        var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].create_time);
-            //        var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].phone_number);
-            //        var rcpt_name   = (contact_id && contact_id != -1) ? HypnoToad.Contacts.list[contact_id].name : items[i].phone_number;
-            //        var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id   : false;
-            //
-            //        var item = $('<div class="history_item"></div>')
-            //            .append('<div class="history_date">'+fdate+'</div>')
-            //            .append(
-            //                $('<div class="history_rcpt">'+rcpt_name+'</div>')
-            //                .bind('click', {cid: real_id, cid2: contact_id}, function(event){
-            //                    if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
-            //                })
-            //            )
-            //            .append('<div class="history_status"><div class="status_'+items[i].status+'"></div></div>')
-            //            .append('<div class="history_text">'+items[i].message+'</div>');
-            //        self.append(item);
-            //    }
-            //}
-        //},
+            local.history = window.localStorage.getItem('Hypno_messages_history');
+            if (local.history) {
+                HypnoToad.Messages.list.history = JSON.parse(local.history);
+                need_redraw = true;
+            }
+
+            if (need_redraw) {
+                HypnoToad.Messages.Incoming.Draw();
+                if (HypnoToad.Messages.list.incoming.length > 0) {
+                    console.log('got new messages... redrawing contact list');
+                    HypnoToad.Contacts.Filter();
+                }
+            }
+        },
 
         New: {
             rcpt: [],
@@ -460,7 +448,7 @@ var HypnoToad = {
             },
 
             MarkAsRead: function(id) {
-                var real_msg_id = HypnoToad.Messages.Incoming.list[id].id;
+                var real_msg_id = HypnoToad.Messages.list.incoming[id].id;
                 jQuery.ajax({
                     url: HypnoToad.Urls.set_status+real_msg_id,
                     dataType: 'json',
@@ -469,8 +457,8 @@ var HypnoToad = {
                         HypnoToad.Messages.Incoming.Store();
                     }
                 });
-                HypnoToad.Messages.Incoming.viewed.push(HypnoToad.Messages.Incoming.list[id]);
-                HypnoToad.Messages.Incoming.list.splice(id, 1);
+                HypnoToad.Messages.list.viewed.push(HypnoToad.Messages.list.incoming[id]);
+                HypnoToad.Messages.list.incoming.splice(id, 1);
                 HypnoToad.Messages.Incoming.Draw();
                 HypnoToad.Notifications.UpdateIcon();
                 HypnoToad.Contacts.Filter();
@@ -478,72 +466,95 @@ var HypnoToad = {
 
             Draw: function() {
                 // setting header
-                document.getElementById('h2_incoming').innerHTML = chrome.i18n.getMessage('incoming')+' ('+HypnoToad.Messages.Incoming.list.length+'/'+HypnoToad.Messages.Incoming.viewed.length+')';
-                
-                var items  = HypnoToad.Messages.Incoming.list;
-                var viewed = HypnoToad.Messages.Incoming.viewed;
-                var self = $('#incoming_messages');
+                var total_label = (HypnoToad.Messages.list.incoming.length > 0)
+                    ? ' ('+chrome.i18n.getMessage('new')+' '+HypnoToad.Messages.list.incoming.length+')'
+                    : '';
+                document.getElementById('h2_history').innerHTML = chrome.i18n.getMessage('history')+total_label;
+
+                var items  = HypnoToad.Messages.list.incoming;
+                var viewed = HypnoToad.Messages.list.viewed;
+                var self = $('#history_messages');
                 self.html('').
                     append('<label>'+chrome.i18n.getMessage('_ui_new_messages')+'</label>');
 
-                for (var i = 0; i < items.length ; i++) {
-                    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].create_time);
-                    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].phone_number);
-                    var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : items[i].phone_number;
-                    var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
-                    var item = $('<div class="history_item"></div>')
-                        .append('<div class="history_date">'+fdate+'</div>')
-                        .append(
-                            $('<div class="history_rcpt">'+rcpt_name+'</div>')
-                                .bind('click', {cid: real_id}, function(event){
-                                    if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
-                                })
-                        )
-                        .append('<div class="history_text">'+items[i].message+'</div>')
-                        .append(
-                            $('<div class="history_ctrl"></div>')
-                                .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_read')+'">')
-                                .bind('click', {id: i}, function(e){
-                                    HypnoToad.Messages.Incoming.MarkAsRead(e.data.id);
-                                })
-                        );
-                    self.append(item);
-                }
-                
-                if (viewed.length > 0) {
-                    self.append('<label>'+chrome.i18n.getMessage('_ui_read_messages')+'</label>');
+                list = HypnoToad.Messages.list.history;
+                console.warn(list);
+
+                for (var i = 0, max = list.length; i < max; i++) {
+                    var style = (list[i].hasOwnProperty('id')) ? 'notme' : 'me';
+                    var fdate = HypnoToad.Messages.Incoming.formatTime(list[i].create_time);
                     
-                    for (var i = 0; i < viewed.length; i++) {
-                        var fdate       = HypnoToad.Messages.Incoming.formatTime(viewed[i].create_time);
-                        var contact_id  = HypnoToad.Contacts.FindByPhone(viewed[i].phone_number);
-                        var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : viewed[i].phone_number;
-                        var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
-                        var item = $('<div class="history_item"></div>')
-                            .append('<div class="history_date">'+fdate+'</div>')
-                            .append(
-                                $('<div class="history_rcpt">'+rcpt_name+'</div>')
-                                    .bind('click', {cid: real_id}, function(event){
-                                        if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
-                                    })
-                            )
-                            .append('<div class="history_text">'+viewed[i].message+'</div>')
-                            .append(
-                                $('<div class="history_ctrl"></div>')
-                                    .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_deleted')+'">')
-                                    .bind('click', {id: i}, function(e){
-                                        console.warn('DELETE SMS not implemented !!!!');
-                                    })
-                            );  
-                        self.append(item);
-                    }
+                    var contact_id  = HypnoToad.Contacts.FindByPhone(list[i].phone_number);
+                    var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : list[i].phone_number;
+                    var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
+                    
+                    self.append(
+                        '<div class="history_item '+style+'">\
+                            <div class="history_date">'+fdate+'</div>\
+                            <div class="history_rcpt">'+rcpt_name+'</div>\
+                            <div class="history_text">'+list[i].message+'</div>\
+                        </div>'
+                    );
                 }
+
+                //for (var i = 0; i < items.length ; i++) {
+                //    var fdate       = HypnoToad.Messages.Incoming.formatTime(items[i].create_time);
+                //    var contact_id  = HypnoToad.Contacts.FindByPhone(items[i].phone_number);
+                //    var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : items[i].phone_number;
+                //    var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
+                //    var item = $('<div class="history_item"></div>')
+                //        .append('<div class="history_date">'+fdate+'</div>')
+                //        .append(
+                //            $('<div class="history_rcpt">'+rcpt_name+'</div>')
+                //                .bind('click', {cid: real_id}, function(event){
+                //                    if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
+                //                })
+                //        )
+                //        .append('<div class="history_text">'+items[i].message+'</div>')
+                //        .append(
+                //            $('<div class="history_ctrl"></div>')
+                //                .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_read')+'">')
+                //                .bind('click', {id: i}, function(e){
+                //                    HypnoToad.Messages.Incoming.MarkAsRead(e.data.id);
+                //                })
+                //        );
+                //    self.append(item);
+                //}
+                
+                //if (viewed.length > 0) {
+                //    self.append('<label>'+chrome.i18n.getMessage('_ui_read_messages')+'</label>');
+                //    
+                //    for (var i = 0; i < viewed.length; i++) {
+                //        var fdate       = HypnoToad.Messages.Incoming.formatTime(viewed[i].create_time);
+                //        var contact_id  = HypnoToad.Contacts.FindByPhone(viewed[i].phone_number);
+                //        var rcpt_name   = (contact_id) ? HypnoToad.Contacts.list[contact_id].name : viewed[i].phone_number;
+                //        var real_id     = (HypnoToad.Contacts.list[contact_id]) ? HypnoToad.Contacts.list[contact_id].id : false;
+                //        var item = $('<div class="history_item"></div>')
+                //            .append('<div class="history_date">'+fdate+'</div>')
+                //            .append(
+                //                $('<div class="history_rcpt">'+rcpt_name+'</div>')
+                //                    .bind('click', {cid: real_id}, function(event){
+                //                        if (event.data.cid) HypnoToad.Contacts.Info(event.data.cid);
+                //                    })
+                //            )
+                //            .append('<div class="history_text">'+viewed[i].message+'</div>')
+                //            .append(
+                //                $('<div class="history_ctrl"></div>')
+                //                    .append('<input type="button" value="'+chrome.i18n.getMessage('_ui_mark_as_deleted')+'">')
+                //                    .bind('click', {id: i}, function(e){
+                //                        console.warn('DELETE SMS not implemented !!!!');
+                //                    })
+                //            );  
+                //        self.append(item);
+                //    }
+                //}
             },
 
             LoadViewed: function() {
                 var viewed = window.localStorage.getItem('Hypno_messages_viewed');
                 if (viewed) {
                     viewed = JSON.parse(viewed);
-                    HypnoToad.Messages.Incoming.viewed = viewed;
+                    HypnoToad.Messages.list.viewed = viewed;
                     console.log('Viewed messages loaded');
                     console.log(viewed);
                 }
@@ -551,31 +562,7 @@ var HypnoToad = {
 
             Store: function() {
                 window.localStorage.removeItem('Hypno_messages_viewed');
-                window.localStorage.setItem('Hypno_messages_viewed',  JSON.stringify(HypnoToad.Messages.Incoming.viewed));
-            },
-
-            Load: function() {
-                var need_redraw = false;
-
-                var list = window.localStorage.getItem('Hypno_messages_incoming');
-                if (list) {
-                    HypnoToad.Messages.Incoming.list = JSON.parse(list);
-                    need_redraw = true;
-                }
-
-                var viewed = window.localStorage.getItem('Hypno_messages_viewed');
-                if (viewed) {
-                    HypnoToad.Messages.Incoming.viewed = JSON.parse(viewed);
-                    need_redraw = true;
-                }
-
-                if (need_redraw) {
-                    HypnoToad.Messages.Incoming.Draw();
-                    if (HypnoToad.Messages.Incoming.list.length > 0) {
-                        console.log('got new messages... redrawing contact list');
-                        HypnoToad.Contacts.Filter();
-                    }
-                }
+                window.localStorage.setItem('Hypno_messages_viewed',  JSON.stringify(HypnoToad.Messages.list.viewed));
             }
         },
 
@@ -764,8 +751,8 @@ var HypnoToad = {
             }
 
             var new_sms_rcpt = {};
-            for (var i = 0; i < HypnoToad.Messages.Incoming.list.length; i++) {
-                var phone   = HypnoToad.Messages.Incoming.list[i].phone_number;
+            for (var i = 0; i < HypnoToad.Messages.list.incoming.length; i++) {
+                var phone   = HypnoToad.Messages.list.incoming[i].phone_number;
                 var rcpt_id = HypnoToad.Contacts.FindByPhone(phone);
                 if (list[rcpt_id] && !rcpt_in_new_msg[rcpt_id]) {
                     if (new_sms_rcpt[list[rcpt_id].id]) {
@@ -849,7 +836,7 @@ var HypnoToad = {
                             $('<span class="avatar_sms">'+list[i].new_sms+'</span>')
                             .bind('click', function(){
                                 // go to unread messages
-                                HypnoToad.UI.MenuClick('h2_incoming');
+                                HypnoToad.UI.MenuClick('h2_history');
                             })
                         );
                 }
