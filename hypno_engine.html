@@ -19,10 +19,31 @@ var Hypno = {
         Hypno.Urls.Init();
         // get contacts list
         Hypno.Contacts.Init();
+        
+        // add listener to communicate with popup page
+        chrome.extension.onRequest.addListener(
+            function(request, sender, sendResponse) {
+                console.log('~~~~~> got signal'+request['action']);
+                if (request['action'] == 'message_sent') {
+                    Hypno.Actions.MessageSent(request);
+                }
+            }
+        );
     },
 
     Actions: {
+        MessageSent: function(request) {
+            console.warn('Message sent detected');
+            console.log(request);
+            if (request.hasOwnProperty('message')) {
+                Hypno.Messages.list.outgoing.push(request.message);
+                Hypno.Messages.MergeLists();
+                chrome.extension.sendRequest({action: 'reload_data'});
+            }
+        },
+        
         NewMessagesAvailable: function() {
+            window.localStorage.setItem('Hypno_status', 'ok');
             Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             // bind click to go to new messages
             chrome.browserAction.setPopup({
@@ -34,9 +55,8 @@ var Hypno = {
             Hypno.auth_and_register = false;
             Hypno.Notifications.Icon('register');
             window.localStorage.setItem('Hypno_status', 'device_not_registered');
-            // TODO clear event listeners
-            chrome.browserAction.onClicked = null;
-
+            // clear event listeners
+            chrome.browserAction.onClicked.listeners = [];
             chrome.browserAction.setPopup({
                 popup: "hypno_gui.html"
             });
@@ -47,8 +67,7 @@ var Hypno = {
             console.log('Binded Auth to icon click');
             // TODO FIXME remove popup listener
 
-            // clear event listeners
-            chrome.browserAction.onClicked = null;
+            chrome.browserAction.onClicked.listeners = [];
             // bind click to go signin page
             chrome.browserAction.onClicked.addListener(function() {
                 chrome.tabs.create({url: Hypno.Urls.signIn});

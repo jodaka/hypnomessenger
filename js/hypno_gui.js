@@ -13,6 +13,18 @@ var HypnoToad = {
         // init translations
         HypnoToad.UI.DrawTranslations();
 
+        // add listener to communicate with popup page
+        chrome.extension.onRequest.addListener(
+            function(request, sender, sendResponse) {
+                console.log('~~~~~> got signal'+request['action']);
+                if (request['action'] == 'reload_lists') {
+                    HypnoToad.Messages.Load();
+                }
+                if (request['action'] == 'reload_contacts') {
+                    HypnoToad.Contacts.Load();
+                }
+            }
+        );
 
         if (window.localStorage.getItem('Hypno_status') == 'device_not_registered') {
             console.error('DEV NOT REGISTERED CATCHED');
@@ -385,7 +397,8 @@ var HypnoToad = {
 
                 for (var p = 0; p < phones.length; p++) {
                     var phone_number = phones[p];
-                    
+                    if (phone_number == '+') continue;
+
                     var collapse_key = new Date().getTime()/1000+
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))+
                         rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))
@@ -398,35 +411,40 @@ var HypnoToad = {
                     //HypnoToad.Messages.Outgoing.Save(phone_number, text, collapse_key);
                     //alert('message sent turned off');
                     //return 1;
-                    
-                    // disable button
-                    $('#nm_send_btn').attr('disabled', 'disabled');
 
-                    jQuery.ajax({
-                        url: send_url,
-                        dataType: 'json',
-                        complete: function(data) {
-                            try {
-                                json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-                            } catch (err) {
-                                console.warn(err);
-                                return false;
-                            }
-                            $('#nm_send_btn').removeAttr('disabled');
-    
-                            if (json.status == "OK") {
-                                alert('Message SENT');
-                                // message was sent. Now we need to check periodically for
-                                // it's status
-                                HypnoToad.Messages.Sent.queue.push(collapse_key);
-                                return 1;
-                            }
-    
-                            if (json.status == "SIGNIN_REQUIRED") {
-                                alert('ERROR');
-                                window.location.href = HypnoToad.Urls.signIn;
-                                return 1;
-                            }
+                    // disable button
+                    $('#nm_send_btn').hide();
+                    $('#sending_icon').show();
+
+                    jQuery.when(
+                        jQuery.ajax({
+                            url: send_url,
+                            dataType: 'json'
+                        })
+                    ).done(function(ajax){
+                        $('#sending_icon').hide();
+                        $('#nm_send_btn').show();
+
+                        if (ajax['status'] == 'OK') {
+
+                            chrome.extension.sendRequest({
+                                action : 'message_sent',
+                                message: {
+                                    'create_time'   : new Date().getTime(),
+                                    'message'       : text,
+                                    'collapse_key'  : collapse_key,
+                                    'phone_number'  : phone_number,
+                                    'status'        : 0
+                                }
+                            });
+
+                            $('#nm_text_value').val('');
+                            // message was sent. Now we need to check periodically for
+                            // it's status
+                            //HypnoToad.Messages.Sent.queue.push(collapse_key);
+                        } else {
+                            console.error('message NOT sent');
+                            console.error(ajax);
                         }
                     });
                 }
@@ -476,9 +494,7 @@ var HypnoToad = {
                 var self = $('#history_messages');
                 self.html('').
                     append('<label>'+chrome.i18n.getMessage('_ui_new_messages')+'</label>');
-
                 list = HypnoToad.Messages.list.history;
-                console.warn(list);
 
                 for (var i = 0, max = list.length; i < max; i++) {
                     var style = (list[i].hasOwnProperty('id')) ? 'notme' : 'me';
@@ -764,6 +780,8 @@ var HypnoToad = {
             }
 
             for (var i in new_sms_rcpt) {
+                if (!new_sms_rcpt.hasOwnProperty(i)) continue;
+                if (rcpt_in_new_msg.hasOwnProperty(i)) continue; // skip contacts added to new SMS
                 var id      = HypnoToad.Contacts.FindById(i);
                 var el      = new cloneObject(list[id]);
                 el.new_sms  = new_sms_rcpt[i];
@@ -816,10 +834,14 @@ var HypnoToad = {
         },
 
         Init: function() {
+            HypnoToad.Contacts.Load();
+            HypnoToad.UI.Load();
+        },
+
+        Load: function() {
             console.log('... getting Contacts from local storage');
             HypnoToad.Contacts.list = JSON.parse(window.localStorage.getItem('Hypno_contacts'));
             HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');
-            HypnoToad.UI.Load();
         },
 
         DrawUI: function(list) {
