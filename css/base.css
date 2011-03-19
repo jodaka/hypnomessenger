@@ -128,7 +128,16 @@ label {
     margin: 10px 0 0 0;
 }
 
-#contacts {
+#signout {
+    margin: 0 0 0 20px;
+    font-size: 9pt;
+}
+
+#contact {
+    text-align: left;
+}
+
+#contact, #contacts {
     width: 100%;
     height: 410px;
     overflow: hidden;
@@ -354,6 +363,7 @@ div.contact_avatar {
 div.contact_name {
     width: 200px;
     display: inline-block;
+    margin-left: 4px;
 }
 
 div.contact_add, div.contact_about {
@@ -395,20 +405,6 @@ div.history_text {
     width: 310px;
     color: #4B6E95;
     
-}
-
-div.me {
-    color: blue;
-}
-
-div.me > div.history_text {
-    text-align: right;
-    background-color: #CECEFE;
-    border-radius: 0.7em;
-    -webkit-border-radius: 20px;
-    -webkit-border-top-right-radius: 0;
-    border-radius: 20px;
-    border-top-right-radius: 0;
 }
 
 div.history_item div {
@@ -462,4 +458,10 @@ div.avatar_sms {
     color: #FFF;
     font-size: 9pt;
     -webkit-border-radius: 3px;
+}
+
+
+ul.phones_list {
+    list-style: square;
+    color: #FFF;
 }

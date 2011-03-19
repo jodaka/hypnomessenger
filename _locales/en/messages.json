@@ -53,6 +53,14 @@
         "message"       : "Messages History"
     },
     
+    "_me": {
+        "message"       : "Me"
+    },
+    
+    "_phones_list": {
+        "message"       : "Phones list"
+    },
+    
     "_ui_device_not_registered_text": {
         "message"       : "You need to install Bandog Messenger app on your android phone and press 'Register' button"
     },
