@@ -432,10 +432,6 @@ var HypnoToad = {
                         '&phone_number='+encodeURIComponent(phone_number)+
                         '&message='+encodeURIComponent(text)
 
-                    //HypnoToad.Messages.Outgoing.Save(phone_number, text, collapse_key);
-                    //alert('message sent turned off');
-                    //return 1;
-
                     // disable button
                     $('#nm_send_btn').hide();
                     $('#sending_icon').show();
