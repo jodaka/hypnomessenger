@@ -394,6 +394,11 @@ var HypnoToad = {
                 HypnoToad.Messages.New.RedrawNotes()
             },
 
+            
+            SendReply: function() {
+                console.log('Send Reply called');
+            },
+            
             Send: function() {
                 var phones = [];
 
@@ -683,6 +688,12 @@ var HypnoToad = {
                 var list = from;
                 var self = $('#contact_history');
                 self.html('');
+                
+                // TODO FIXME
+                self.append(
+                    '<textarea id="replysms" rows="3">type a reply here (out of order)</textarea>\
+                    <input type="button" value="_send reply" />'
+                );
                 
                 for (var i = 0, max = list.length; i < max; i++) {
                     var style = (list[i].hasOwnProperty('id')) ? 'notme' : 'me';
