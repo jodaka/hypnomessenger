@@ -1,7 +1,4 @@
-<html><head></head>
-<body>
-<canvas id="canvas" style="display: none"></canvas>
-<!--<script src="js/lang.js" type="text/javascript"></script>-->
+<html><head></head><body>
 <script src="js/jquery.js" type="text/javascript"></script>
 <script type="text/javascript">
 //function reset_icon() {
@@ -67,12 +64,19 @@ var Hypno = {
             console.log('Binded Auth to icon click');
             // TODO FIXME remove popup listener
 
+            window.localStorage.setItem('Hypno_status', 'auth');
+            // clear event listeners
             chrome.browserAction.onClicked.listeners = [];
-            // bind click to go signin page
-            chrome.browserAction.onClicked.addListener(function() {
-                chrome.tabs.create({url: Hypno.Urls.signIn});
+            chrome.browserAction.setPopup({
+                popup: "hypno_gui.html"
             });
-            Hypno.Notifications.Icon('auth');
+
+            //chrome.browserAction.onClicked.listeners = [];
+            //// bind click to go signin page
+            //chrome.browserAction.onClicked.addListener(function() {
+            //    chrome.tabs.create({url: Hypno.Urls.signIn});
+            //});
+            //Hypno.Notifications.Icon('auth');
         }
     },
 

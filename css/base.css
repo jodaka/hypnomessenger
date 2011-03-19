@@ -9,7 +9,6 @@ body {
 }
 
 #header {
-    width: 949px;
     margin: 0 0 25px 0;
     background: #6D84B4;
     border: 1px solid #3B5998;
@@ -46,10 +45,37 @@ body {
     margin: 20px 50px 50px 50px;
 }
 
+
+
+#left {
+    width: 460px;
+    position: absolute;
+    left: 0px;
+    top: 40px;
+}
+
+#right {
+    position: absolute;
+    left: 460px;
+    top: 0px;
+    width: 290px;
+    background-color: #4b6e95;
+}
+
+
 #fl {
     width: 400px;
     display: inline-block;
     vertical-align: top;
+}
+
+h2 {
+    margin: 5px 0 15px 18px;
+    text-align: left;
+    font-size: 16pt;
+    background-color: #4B6E95;
+    color: #FFF;
+    padding: 3px 0 3px 3px;
 }
 
 #history_messages, #contact_holder, #history_holder {
@@ -103,15 +129,13 @@ label {
 }
 
 #contacts {
-    width: 300px;
-    height: 300px;
-    display: inline-block;
+    width: 100%;
+    height: 410px;
     overflow: hidden;
-    margin-top: 13px;
 }
 
 #contacts_list {
-    height: 238px;
+    height: 400px;
     overflow: auto;
 }
 
@@ -285,8 +309,6 @@ div.rcpt_del img:hover {
 }
 
 #contacts_header {
-    background-color: #F2F2F2;
-    border-top: solid 1px #E2E2E2;
     padding: 4px 5px 5px;
     font-size: 11px;
     color:#333;
@@ -299,23 +321,19 @@ div.rcpt_del img:hover {
     padding: 0;
 }
 
-#contacts_list li {
-    /*font-weight: bold;*/
-    /*color: #3B5998;*/
+li.contact {
     color: #6D84B4;
-    
-    /*font-family: "lucida grande",tahoma,verdana,arial,sans-serif;*/
-    /*font-size: 11px;*/
     list-style: none;
     padding: 2px 0 2px 5px;
+    height: 30px;
 }
 
-#contacts_list li:hover {
+li.contact:hover {
     background-color: #EEEEFF;
 }
 
-#contacts_list li.selected {
-    background-color: #FFFFEE;
+li.contact:hover div.contact_name {
+    color: #4B6E95;
 }
 
 div.contact_avatar, div.contact_info {
@@ -323,9 +341,9 @@ div.contact_avatar, div.contact_info {
 }
 
 div.contact_info {
-    font-size: 10pt;
+    color: #FFF;
+    font-size: 12pt;
     vertical-align: top;
-    width: 185px;
 }
 
 div.contact_avatar {
@@ -334,24 +352,23 @@ div.contact_avatar {
 }
 
 div.contact_name {
-    height: 25px;
-    padding: 0 0 0 25px;
+    width: 200px;
+    display: inline-block;
 }
 
 div.contact_add, div.contact_about {
     opacity: 0;
     cursor: pointer;
     display: inline-block;
-    height: 25px;
-    min-width: 45px;
 }
 
 div.contact_add {
     background: url('/img/add.png') no-repeat;
-    margin-left: 25px;
+    width: 20px;
 }
 
 div.contact_about {
+    width: 20px;
     background: url('/img/info.png') no-repeat;
 }
 
@@ -359,9 +376,25 @@ div.contact_info:hover div.contact_add, div.contact_info:hover div.contact_about
     opacity: 1;
 }
 
+
 div.history_item {
-    padding: 0.5em 0;
+    margin-bottom: 25px;
     font-size: 10pt;
+    display: table;
+    vertical-align: top;
+}
+
+div.history_rcpt {
+    background-color: #FFFFFF;
+    color: #3B5998;
+    width: 100px;
+    cursor: pointer;
+}
+
+div.history_text {
+    width: 310px;
+    color: #4B6E95;
+    
 }
 
 div.me {
@@ -378,23 +411,9 @@ div.me > div.history_text {
     border-top-right-radius: 0;
 }
 
-div.notme > div.history_text {
-    background-color: #CECECE;
-    border-radius: 0.7em;
-    -webkit-border-radius: 20px;
-    -webkit-border-top-left-radius: 0;
-    border-radius: 20px;
-    border-top-left-radius: 0;
-}
-
 div.history_item div {
-    display: inline-block;
-    padding: 0.5em;
-    
-}
-
-div.history_text {
-    width: 350px;
+    display: table-cell;
+    /*padding: 0.5em;*/
 }
 
 #contact_history div.history_text {
@@ -402,17 +421,11 @@ div.history_text {
 }
 
 
-div.history_date {
-    background-color: #CECECE;
-    width: 90px;
+span.date {
+    font-size: 9pt;
     color: #808080;
 }
 
-div.history_rcpt {
-    color: #3B5998;
-    width: 150px;
-    cursor: pointer;
-}
 
 div.history_ctrl {
     overflow: hidden;
@@ -436,16 +449,17 @@ div.history_status div {
     height: 16px;
 }
 
-span.avatar_sms {
+div.avatar_sms {
+    width: 15px;
+    text-align:center;
+
+    display: inline-block;
     font-family: sans-serif;
     cursor: pointer;
     background-color: #C11919;
-    text-align: center;
+
     padding: 0 3px;
     color: #FFF;
     font-size: 9pt;
-    z-index: 90;
-    margin: 0 0 0 -18px;
-    position: relative;
     -webkit-border-radius: 3px;
 }
