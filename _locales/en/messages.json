@@ -61,6 +61,10 @@
         "message"       : "Phones list"
     },
     
+    "_send_reply": {
+        "message"       : "Send reply"
+    },
+    
     "_ui_device_not_registered_text": {
         "message"       : "You need to install Bandog Messenger app on your android phone and press 'Register' button"
     },

@@ -205,6 +205,7 @@ var HypnoToad = {
         },
 
         New: {
+            reply_number: '',  // used in send_reply form 
             rcpt: [],
             Init: function(){
                 $('#nm_to_value').bind('focus', function(){
@@ -652,7 +653,7 @@ var HypnoToad = {
 
             $('#history').html('').append('<h2>'+chrome.i18n.getMessage('messages_history')+'</h2>').append(self);
 
-            self.append('<div id="contact_history"></div>');
+            self.append('<div id="contact_history">'+chrome.i18n.getMessage('loading')+'</div>');
 
             jQuery.when(
                 jQuery.ajax({
@@ -692,11 +693,16 @@ var HypnoToad = {
                 // TODO FIXME
                 self.append(
                     '<textarea id="replysms" rows="3">type a reply here (out of order)</textarea>\
-                    <input type="button" value="_send reply" />'
+                    <input id="replysmsbtn" type="button" value="'+chrome.i18n.getMessage('_send_reply')+'" onclick="HypnoToad.Messages.New.SendReply()" />'
                 );
+                
+                HypnoToad.Messages.New.reply_number = '';
                 
                 for (var i = 0, max = list.length; i < max; i++) {
                     var style = (list[i].hasOwnProperty('id')) ? 'notme' : 'me';
+                    if (style == 'notme' && HypnoToad.Messages.New.reply_number == '') {
+                        HypnoToad.Messages.New.reply_number = list[i].phone_number;
+                    }
                     var fdate = HypnoToad.Messages.Incoming.formatTime(list[i].create_time);
                     var rcpt_name = (list[i].hasOwnProperty('id')) ? contact.name : chrome.i18n.getMessage('_me');
 
@@ -711,6 +717,11 @@ var HypnoToad = {
                             //HypnoToad.Messages.Incoming.MarkAsRead(e.data.id);
                         })
                     );
+                }
+                if (HypnoToad.Messages.New.reply_number == '') {
+                    // we don't have a number for quick reply!
+                    $('#replysms').remove();
+                    $('#replysmsbtn').remove();
                 }
             });
         },

@@ -204,6 +204,8 @@ textarea {
     border: 1px solid #8496BA;
     padding: 3px 0 0 3px;
     width: 350px;
+    max-height: 50px;
+    overflow: auto;
 }
 
 #nm_to div {
