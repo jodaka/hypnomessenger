@@ -48,7 +48,19 @@
     "contact_details": {
         "message"       : "Contact Details"
     },
-    
+
+    "_select_number": {
+        "message"       : "Please select phone number"
+    },
+
+    "_rcpt_already_added": {
+        "message"       : "This recipient is already added"
+    },
+
+    "_close_info": {
+        "message"       : "Close info"
+    },
+
     "messages_history": {
         "message"       : "Messages History"
     },
