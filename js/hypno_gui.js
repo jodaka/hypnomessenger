@@ -16,11 +16,15 @@ var HypnoToad = {
         // add listener to communicate with popup page
         chrome.extension.onRequest.addListener(
             function(request, sender, sendResponse) {
-                console.log('~~~~~> got signal'+request['action']);
+                console.log('~~~~~> GUI got signal'+request['action']);
                 if (request['action'] == 'reload_lists') {
                     HypnoToad.Messages.Load();
                 }
                 if (request['action'] == 'reload_contacts') {
+                    HypnoToad.Contacts.Load();
+                }
+                
+                if (request['action'] == 'reload_messages') {
                     HypnoToad.Contacts.Load();
                 }
             }
@@ -160,8 +164,15 @@ var HypnoToad = {
             });
 
             $('#signout').bind('click', function(){
-                chrome.extension.sendRequest({action: 'signout'});
-                window.location.href = HypnoToad.Urls.signOut;
+                jQuery.ajax({
+                    url: HypnoToad.Urls.signOut,
+                    dataType: 'json',
+                    complete: function(data) {
+                        console.log(data);
+                        chrome.extension.sendRequest({action: 'signout'});
+                        window.close();
+                    }
+                });
             });
 
             // bind menu
@@ -192,13 +203,13 @@ var HypnoToad = {
             viewed  : [],
             history : []
         },
-        
+
         Init: function() {
             HypnoToad.Messages.Load();
             //HypnoToad.Messages.Outgoing.Init();
             HypnoToad.Messages.New.Init();
         },
-        
+
         Load: function() {
             var need_redraw = false;
             var local = {
