@@ -1,10 +1,8 @@
 <html><head></head>
 <body>
-<canvas id="canvas" style="display: none"></canvas>
 <script type="text/javascript">
-chrome.browserAction.setPopup({
-    popup: "hypno_gui.html"
-});
+chrome.extension.sendRequest({action: 'signout'});
+console.log('WE SHOULD CLOSE POPUP NOW!');
 window.close();
 </script>
 <!-- Written just for fun by Anton Kudris (aka jodaka) kudris@gmail.com -->

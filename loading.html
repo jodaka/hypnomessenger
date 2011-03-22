@@ -1,0 +1,21 @@
+<html><head></head>
+<body>
+<img src="img/sending.gif" alt="" valign="absmiddle"/><div id="loading" style="display: inline-block">_Loading... </div> 
+<script type="text/javascript">
+document.getElementById('loading').innerHTML = chrome.i18n.getMessage('_ui_loading');
+
+// send auth request signal to background process
+chrome.extension.sendRequest({action: 'reload_data'});
+
+// wating for BG process to reply
+chrome.extension.onRequest.addListener(
+    function(request, sender, sendResponse) {
+        if (request['action'] == 'reload_contacts') {
+            console.log('We have auth. Reloading popup');
+            window.parent.location.href = chrome.extension.getURL('hypno_gui.html');
+        }
+    }
+);
+</script>
+<!-- Written just for fun by Anton Kudris (aka jodaka) kudris@gmail.com -->
+</body></html>

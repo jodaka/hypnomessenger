@@ -35,9 +35,17 @@ var HypnoToad = {
             break;
             
             case 'auth':
-                console.error('Need authorization');
+                
                 //HypnoToad.UI.DrawNotRegistered();
-                window.location.href = HypnoToad.Urls.signIn;
+                if ($('body iframe').length == 0) {
+                    console.error('Redirecting to Google');
+                    $(body).html('\
+                        <iframe src="'+HypnoToad.Urls.signIn+'" width="100%" height="100%" frameborder="0">\
+                    ');
+                } else {
+                    console.log('Auth complete');
+                }
+                //window.location.href = HypnoToad.Urls.signIn;
                 return 1;
             break;
         
@@ -114,7 +122,6 @@ var HypnoToad = {
             var $id = $('#'+id);
             var $div = $('#'+id.replace(/h2_/, ''));
 
-
             if ($div.is(":visible")) return 1;
             
             if (id == 'h2_compose' && $('#contact').is(":visible")) {
@@ -150,6 +157,11 @@ var HypnoToad = {
             });
             $('#nm_text_value').bind('keyup', function(){
                 HypnoToad.Messages.New.RedrawNotes();
+            });
+
+            $('#signout').bind('click', function(){
+                chrome.extension.sendRequest({action: 'signout'});
+                window.location.href = HypnoToad.Urls.signOut;
             });
 
             // bind menu
@@ -567,13 +579,16 @@ var HypnoToad = {
                     : '';
                 document.getElementById('h2_history').innerHTML = chrome.i18n.getMessage('history')+total_label;
 
-                var items  = HypnoToad.Messages.list.incoming;
-
                 var self = $('#history_messages');
                 self.html('');
-                $('#history').html('').append('<h2>'+chrome.i18n.getMessage('_ui_new_messages')+'</h2>').append(self);
 
-                var list = HypnoToad.Messages.list.incoming;
+                var list  = HypnoToad.Messages.list.incoming;
+                if (list.length > 0) {
+                    $('#history').html('').append('<h2>'+chrome.i18n.getMessage('_ui_new_messages')+'</h2>').append(self);
+                } else {
+                    list  = HypnoToad.Messages.list.history;
+                    $('#history').html('').append('<h2>'+chrome.i18n.getMessage('history')+'</h2>').append(self);
+                }
 
                 for (var i = 0, max = list.length; i < max; i++) {
                     var style = (list[i].hasOwnProperty('id')) ? 'notme' : 'me';
@@ -778,7 +793,7 @@ var HypnoToad = {
                 if (HypnoToad.Messages.New.reply_number == '') {
                     // we don't have a number for quick reply!
                     $('#replysms').remove();
-                    $('#replysmsbtn').remove();
+                    $('#nm_reply').remove();
                 }
             });
         },
@@ -961,8 +976,8 @@ var HypnoToad = {
         Init: function() {
             console.log('... Urls.Init() started');
             HypnoToad.Urls.appEngine   = "http://"+HypnoToad.version+".latest.bandog812.appspot.com/";
-            HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(HypnoToad.Urls.index)+"&ver="+HypnoToad.version;
-            HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret=OK&ver="+HypnoToad.version;
+            HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(chrome.extension.getURL('loading.html'))+"&ver="+HypnoToad.version;
+            HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret="+encodeURIComponent(chrome.extension.getURL('close.html'))+"&ver="+HypnoToad.version;
             HypnoToad.Urls.contacts    = HypnoToad.Urls.appEngine+"contacts_list?action=get&ver="+HypnoToad.version;
             HypnoToad.Urls.send        = HypnoToad.Urls.appEngine+"message?action=send&ver="+HypnoToad.version;
             HypnoToad.Urls.send_status = HypnoToad.Urls.appEngine+"message?action=get_status&ver="+HypnoToad.version+'&collapse_key=';
