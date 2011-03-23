@@ -68,6 +68,7 @@ var Hypno = {
 
         NewMessagesAvailable: function() {
             window.localStorage.setItem('Hypno_status', 'ok');
+            console.log('== NewMessagesAvailable fired');
             if (Hypno.Messages.list.incoming.length > 0) {
                 Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             } else {
@@ -242,9 +243,6 @@ var Hypno = {
                 if (ajax_new_list[1] == 'success')      local.incoming  = ajax_new_list[0].sms_list.slice();
                 if (ajax_viewed_list[1] == 'success')   local.viewed    = ajax_viewed_list[0].sms_list.slice();
                 if (ajax_outgoing_list[1] == 'success') local.outgoing  = ajax_outgoing_list[0].message_list.slice();
-
-                //console.log([ajax_new_list, ajax_viewed_list, ajax_outgoing_list]);
-
                 var merge_needed = 0;
 
                 // handling of new messages

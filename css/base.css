@@ -96,7 +96,11 @@ h2 {
     padding: 3px 0 3px 3px;
 }
 
-#history_messages, #contact_holder, #history_holder {
+#history h2, #user h2 {
+    display: inline-block;
+}
+
+#history_messages, #contact_holder, #history_holder, #user_messages {
     text-align: left;
     padding: 0 20px 0 20px;
     overflow-y: auto;
