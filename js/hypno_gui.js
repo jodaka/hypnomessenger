@@ -65,7 +65,7 @@ var HypnoToad = {
     },
 
     UI: {
-        section: 'compose',
+        section: 'new',
         body: document.getElementById('body'),
 
         Close: function() {
@@ -94,7 +94,7 @@ var HypnoToad = {
         
         DrawNew: function() {
             $('#h2_history').html(
-                jQuery.tmpl('${history_label}{{if got_new_messages}} (${new_label} ${got_new_messages}){{/if}}', {
+                jQuery.tmpl('${new_label} ${got_new_messages}', {
                     history_label       : chrome.i18n.getMessage('history'),
                     new_label           : chrome.i18n.getMessage('new'),
                     got_new_messages    : HypnoToad.Messages.list.incoming.length
@@ -628,59 +628,49 @@ var HypnoToad = {
                 HypnoToad.Contacts.Filter();
             },
 
-            Draw: function(section) {
+            Draw: function() {
 
-                var list = (section == 'new')
-                    ? HypnoToad.Messages.list.incoming
-                    : HypnoToad.Messages.list.history;
+                var list = HypnoToad.Messages.list.incoming;
 
-                // if no new messages
-                if (section == 'new' && list.length == 0) {
-                    list    = HypnoToad.Messages.list.history;
-                    section = 'history';
-                }
-
-                var hdr_tmpl = '\
-                    {{if history}}\
-                    <h2>${history_title}</h2>{{if got_new_messages}}<a href="javascript:HypnoToad.UI.Show(\'new\')">${new_title}</a>{{else}}${new_title}{{/if}}\
-                    {{else}}\
-                    <h2>${new_title}</h2><a href="javascript:HypnoToad.UI.Show(\'history\')">${history_title}</a>\
-                    {{/if}}';
-
+                var hdr_tmpl = '<h2>${new_title}</h2>';
                 $('#history_header').html(
                     jQuery.tmpl(hdr_tmpl, {
-                        history_title       : chrome.i18n.getMessage('history'),
+                        //history_title       : chrome.i18n.getMessage('history'),
                         new_title           : chrome.i18n.getMessage('_ui_new_messages'),
                         got_new_messages    : HypnoToad.Messages.list.incoming.length
                     })
                 );
 
                 var messages = [];
-                for (var i = 0, max = list.length; i < max; i++) {
-                    var message = {
-                        'id'    : i,
-                        'class' : (list[i].hasOwnProperty('id')) ? 'notme' : 'me',
-                        'date'  : HypnoToad.Messages.Incoming.formatTime(list[i].create_time),
-                        'name'  : (list[i].hasOwnProperty('id')) ? contact.name : chrome.i18n.getMessage('_me'),
-                        'text'  : list[i].message
-                    };
-                    messages.push(message);
+                if (list.length > 0) {
+                    for (var i = 0, max = list.length; i < max; i++) {
+                        var message = {
+                            'id'    : i,
+                            'class' : (list[i].hasOwnProperty('id')) ? 'notme' : 'me',
+                            'date'  : HypnoToad.Messages.Incoming.formatTime(list[i].create_time),
+                            'name'  : (list[i].hasOwnProperty('id')) ? contact.name : chrome.i18n.getMessage('_me'),
+                            'text'  : list[i].message
+                        };
+                        messages.push(message);
+                    }
+    
+                    var history_tmpl = '\
+                        {{each items}}\
+                            <div class="history_item ${$value.class}">\
+                                <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
+                                <div class="history_text" onclick="HypnoToad.Messages.Incoming.MarkAsRead(\'${$value.id}\'); HypnoToad.Messages.Incoming.Draw()">${$value.text}</div>\
+                            </div>\
+                        {{/each}}\
+                        ';
+    
+                    $('#history_messages').html(
+                        jQuery.tmpl(history_tmpl, {
+                            items           : messages
+                        })
+                    );
+                } else {
+                    $('#history_messages').html('_no_new_messages_');
                 }
-
-                var history_tmpl = '\
-                    {{each items}}\
-                        <div class="history_item ${$value.class}">\
-                            <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
-                            <div class="history_text" onclick="HypnoToad.Messages.Incoming.MarkAsRead(\'${$value.id}\')">${$value.text}</div>\
-                        </div>\
-                    {{/each}}\
-                    ';
-
-                $('#history_messages').html(
-                    jQuery.tmpl(history_tmpl, {
-                        items           : messages
-                    })
-                );
             },
 
             LoadViewed: function() {
@@ -761,7 +751,7 @@ var HypnoToad = {
         phones_lookup: false,
         info_data: {
             to: [],
-            from: [],
+            from: []
         },
         /*
             Takes contact id and shows a detailed contact info
@@ -784,7 +774,7 @@ var HypnoToad = {
             var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
             var phones  = [];
             for (var i = 0; i < contact.phones.length; i++) {
-                if (!contact.phones[i].number.match(/^\+/)) contact.phones[i].number = '+'+contact.phones[i].number; // HACK REMOVE ME!!! FIXME (after server fixed)
+                //if (!contact.phones[i].number.match(/^\+/)) contact.phones[i].number = '+'+contact.phones[i].number; // HACK REMOVE ME!!! FIXME (after server fixed)
                 phones.push(contact.phones[i].number);
             }
 
@@ -915,11 +905,6 @@ var HypnoToad = {
 
             var list = HypnoToad.Contacts.list;
             var res  = [];
-
-            //var rcpt_in_new_msg = {};
-            //for (var i = 0; i < HypnoToad.Messages.New.rcpt.length; i++) {
-            //    rcpt_in_new_msg[HypnoToad.Messages.New.rcpt[i].id] = 1;
-            //}
 
             var new_sms_rcpt = {};
             for (var i = 0; i < HypnoToad.Messages.list.incoming.length; i++) {

@@ -50,8 +50,8 @@ var Hypno = {
             window.localStorage.setItem('Hypno_messages_outgoing', JSON.stringify(Hypno.Messages.list.outgoing));
             window.localStorage.setItem('Hypno_messages_viewed', JSON.stringify(Hypno.Messages.list.viewed));
             window.localStorage.setItem('Hypno_messages_history', JSON.stringify(Hypno.Messages.list.history));
-            clearInterval(Hypno.Messages.Incoming.timer);
-            Hypno.Messages.Incoming.timer = false;
+            clearInterval(Hypno.Messages.incoming_timer);
+            Hypno.Messages.incoming_timer = false;
             Hypno.Contacts.list = [];
         },
 
@@ -94,6 +94,13 @@ var Hypno = {
             //});
         },
 
+        Registered: function() {
+            Hypno.auth_and_register = true;
+            Hypno.Notifications.Icon('');
+            window.localStorage.setItem('Hypno_status', 'ok');
+            chrome.extension.sendRequest({action: 'got_registration'});
+        },
+
         NotAuthorized: function() {
             Hypno.auth_and_register = false;
             console.log('Binded Auth to icon click');
@@ -113,7 +120,6 @@ var Hypno = {
             if (action == 'auth') {
                 chrome.browserAction.setBadgeText({text: '!'});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
-                
             }
             if (action == 'register') {
                 chrome.browserAction.setBadgeText({text: '!'});
@@ -124,6 +130,7 @@ var Hypno = {
 
     Messages: {
         iniated: false,
+        incoming_timer: false,
         list: {
             incoming: [],
             outgoing: [],
@@ -133,7 +140,7 @@ var Hypno = {
 
         BindReloadTimer: function() {
             console.log(' => messages reloading timer binded');
-            Hypno.Messages.Incoming.timer = setInterval(function(){
+            Hypno.Messages.incoming_timer = setInterval(function(){
                 console.log('Checking for new messages...');
                 //console.log(Hypno);
                 Hypno.Messages.Load();
@@ -152,17 +159,18 @@ var Hypno = {
                 if (!Hypno.Messages.iniated) {
                     Hypno.Messages.Load();
                     // check for new MSG every 30 sec
-                    if (!Hypno.Messages.Incoming.timer) Hypno.Messages.BindReloadTimer();
+                    if (!Hypno.Messages.incoming_timer) Hypno.Messages.BindReloadTimer();
                     Hypno.Messages.iniated = true;
                 }
             } else {
-                clearInterval(Hypno.Messages.Incoming.timer);
-                Hypno.Messages.Incoming.timer = false;
+                clearInterval(Hypno.Messages.incoming_timer);
+                Hypno.Messages.incoming_timer = false;
             }
         },
 
         // creates huge history list from combined incoming/outgoing
         MergeLists: function() {
+            return 1;
             console.log('merge called');
             var local = {
                 incoming: Hypno.Messages.list.incoming,
@@ -217,98 +225,23 @@ var Hypno = {
         Load: function(){
             
             console.log(' Messages.Load() called');
-            
             jQuery.when(
                 jQuery.ajax({
                     url: Hypno.Urls.messages.get.unread+'&status=0',
                     dataType: 'json'
-                }),
-                jQuery.ajax({
-                    url: Hypno.Urls.messages.get.viewed,
-                    dataType: 'json'
-                }),
-                jQuery.ajax({
-                    url: Hypno.Urls.messages.get.outgoing,
-                    dataType: 'json'
                 })
-            ).done(function(ajax_new_list, ajax_viewed_list, ajax_outgoing_list){
-
-                var local = {
-                    incoming: [],
-                    viewed  : [],
-                    outgoing: [],
-                    history : []
-                };
-
-                if (ajax_new_list[1] == 'success')      local.incoming  = ajax_new_list[0].sms_list.slice();
-                if (ajax_viewed_list[1] == 'success')   local.viewed    = ajax_viewed_list[0].sms_list.slice();
-                if (ajax_outgoing_list[1] == 'success') local.outgoing  = ajax_outgoing_list[0].message_list.slice();
-                var merge_needed = 0;
-
+            ).done(function(ajax_new_list){
+                var new_sms = [];
+                if (ajax_new_list['status'] == 'OK') new_sms = ajax_new_list.sms_list.slice();
                 // handling of new messages
-                if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(local.incoming)) {
-                    console.log('... got new messages');
-                    Hypno.Messages.list.incoming = local.incoming.slice();
+                if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
+                    Hypno.Messages.list.incoming = new_sms.slice();
                     Hypno.Actions.NewMessagesAvailable();
                     window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
-                    merge_needed = 1;
-                }
-
-                // handling of viewed incoming messages
-                if (JSON.stringify(Hypno.Messages.list.viewed) != JSON.stringify(local.viewed)) {
-                    console.log('... got incoming messages');
-                    Hypno.Messages.list.viewed = local.viewed.slice();
-                    window.localStorage.setItem('Hypno_messages_viewed', JSON.stringify(Hypno.Messages.list.viewed));
-                    merge_needed = 1;
-                }
-
-                // handling of outgoing messages
-                if (JSON.stringify(Hypno.Messages.list.outgoing) != JSON.stringify(local.outgoing)) {
-                    console.log('... got outgoing messages');
-                    Hypno.Messages.list.outgoing = local.outgoing.slice();
-                    window.localStorage.setItem('Hypno_messages_outgoing', JSON.stringify(Hypno.Messages.list.outgoing));
-                    merge_needed = 1;
-                }
-
-                if (merge_needed || Hypno.Messages.list.history.length == 0) {
                     chrome.extension.sendRequest({action: 'reload_lists'});
-                    Hypno.Messages.MergeLists();
                 }
             });
         },
-
-        Incoming: {
-            timer       : false,
-            //
-            //Load: function() {
-            //    jQuery.ajax({
-            //        url: Hypno.Urls.messages.get.unread+'&status=0',
-            //        dataType: 'json',
-            //        complete: function(data) {
-            //            var json = {};
-            //
-            //            try {
-            //                json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
-            //            } catch (err) {
-            //                console.warn(err);
-            //                return false;
-            //            }
-            //
-            //            if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(json.sms_list.slice(0))) {
-            //                console.log('==> got new incoming messages');
-            //                Hypno.Messages.list.incoming = json.sms_list.slice(0);
-            //                window.localStorage.setItem('Hypno_incoming_list', JSON.stringify(Hypno.Messages.list.incoming));
-            //                Hypno.Actions.NewMessagesAvailable();
-            //                Hypno.Messages.MergeLists();
-            //                // TODO FIXME
-            //                // check if main screen is active and send signal to redraw contact list
-            //            }
-            //            return 1;
-            //        }
-            //    });
-            //}
-        },
-
         // this will hold SMS that were already sent by web interface
 
         Store: function() {
@@ -402,6 +335,10 @@ var Hypno = {
                     if (json.status == "OK") {
                         Hypno.auth_and_register = true;
 
+                        if (!Hypno.auth_and_register) {
+                            Hypno.Actions.Registered();
+                        }
+
                         if (JSON.stringify(Hypno.Contacts.list) != JSON.stringify(json.contact_list)) {
                             console.log('==> got new contacts list');
                             window.localStorage.setItem('Hypno_contacts', JSON.stringify(json.contact_list));
@@ -412,7 +349,7 @@ var Hypno = {
                         }
 
                         // this handle login/logout timer handling
-                        if (!Hypno.Messages.Incoming.timer) Hypno.Messages.BindReloadTimer();
+                        if (!Hypno.Messages.incoming_timer) Hypno.Messages.BindReloadTimer();
 
                         // getting messages from server
                         Hypno.Messages.Init();
