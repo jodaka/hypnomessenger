@@ -45,9 +45,8 @@ var HypnoToad = {
                 window.close();
                 return 1;
             break;
-        
             default:
-                console.log('all is fine');
+                //console.log('all is fine');
             break;
         }
 
@@ -234,6 +233,20 @@ var HypnoToad = {
             outgoing: [],
             viewed  : [],
             history : []
+        },
+
+        RemoveById: function(id, list, copy2list) {
+            var obj;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].hasOwnProperty(id)) {
+                    if (list[i].id == id) {
+                        obj = list[i];
+                        if (copy2list) push.copy2list(obj);
+                        list.splice(i, 1);
+                        break;
+                    }
+                }
+            }
         },
 
         Init: function() {
@@ -600,17 +613,17 @@ var HypnoToad = {
             },
 
             MarkAsRead: function(id) {
-                var real_msg_id = HypnoToad.Messages.list.incoming[id].id;
+                console.log('Marking as read id'+id);
                 jQuery.ajax({
-                    url: HypnoToad.Urls.set_status+real_msg_id,
+                    url: HypnoToad.Urls.set_status+id,
                     dataType: 'json',
                     complete: function(data) {
+                        console.log(data);
                         // actually we should check real response here... but we are lazy
                         HypnoToad.Messages.Incoming.Store();
                     }
                 });
-                HypnoToad.Messages.list.viewed.push(HypnoToad.Messages.list.incoming[id]);
-                HypnoToad.Messages.list.incoming.splice(id, 1);
+                HypnoToad.Messages.RemoveById(id, HypnoToad.Messages.list.incoming, HypnoToad.Messages.list.viewed);
                 //HypnoToad.Messages.Incoming.Draw();
                 HypnoToad.Notifications.UpdateIcon();
                 HypnoToad.Contacts.Filter();
@@ -822,6 +835,9 @@ var HypnoToad = {
                         'text'  : from[i].message
                     };
                     messages.push(message);
+                    console.log(from[i]);
+                    console.log(from[i].id);
+                    HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
                     if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
                         HypnoToad.Messages.New.reply_number = from[i].phone_number;
                     }
@@ -989,14 +1005,14 @@ var HypnoToad = {
                             .append(
                                 $('<div class="contact_name">'+list[i].name+'</div>')
                                 .bind('click', {cid: list[i].id}, function(event){
-                                    if ($('#h2_compose').hasClass('active_h2')) {
-                                        // we are on 'Compose' tab
-                                        HypnoToad.Messages.New.AddRcpt(event.data.cid);
-                                        HypnoToad.Contacts.Filter();
-                                    } else {
+                                    //if ($('#h2_compose').hasClass('active_h2')) {
+                                    //    // we are on 'Compose' tab
+                                    //    HypnoToad.Messages.New.AddRcpt(event.data.cid);
+                                    //    HypnoToad.Contacts.Filter();
+                                    //} else {
                                         // we are on history tab
                                         HypnoToad.UI.Show('user', event.data.cid);
-                                    }
+                                    //}
                                 })
                             )
                     );

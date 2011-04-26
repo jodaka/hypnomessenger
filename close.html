@@ -1,18 +1,18 @@
 <html><head></head>
 <body>
-    HELO
+    You have signed out. Have fun
 <script type="text/javascript">
 //chrome.extension.sendRequest({action: 'signout'});
-console.log('WE SHOULD CLOSE POPUP NOW!');
+
     // send auth request signal to background process
     chrome.extension.sendRequest({action: 'signout'});
 
-    window.close();
-    chrome.windows.getCurrent(function(window){
-        chrome.tabs.getSelected(window.id, function(tab){
-            chrome.tabs.remove(tab.id);
-        });
-    });
+    //window.close();
+    //chrome.windows.getCurrent(function(window){
+    //    chrome.tabs.getSelected(window.id, function(tab){
+    //        chrome.tabs.remove(tab.id);
+    //    });
+    //});
 </script>
 <!-- Written just for fun by Anton Kudris (aka jodaka) kudris@gmail.com -->
 </body></html>
