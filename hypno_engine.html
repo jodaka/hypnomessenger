@@ -38,6 +38,7 @@ var Hypno = {
     Actions: {
         
         Signout: function() {
+            Hypno.Notifications.Icon('clear', '');
             console.log('Signout called. All data cleared');
             window.localStorage.setItem('Hypno_status', 'auth');
             Hypno.Messages.list = {
@@ -124,6 +125,11 @@ var Hypno = {
             if (action == 'register') {
                 chrome.browserAction.setBadgeText({text: '!'});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_not_registered')});
+            }
+            if (action == 'clear') {
+                chrome.browserAction.setBadgeText('');
+                chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
+                
             }
         }
     },

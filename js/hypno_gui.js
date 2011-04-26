@@ -42,10 +42,9 @@ var HypnoToad = {
                 
                 //HypnoToad.UI.DrawNotRegistered();
                 if ($('body iframe').length == 0) {
-                    console.error('Redirecting to Google');
-                    $(body).html('\
-                        <iframe src="'+HypnoToad.Urls.signIn+'" width="100%" height="100%" frameborder="0">\
-                    ');
+                    chrome.tabs.create({
+                        'url': HypnoToad.Urls.signIn
+                    });
                 } else {
                     console.log('Auth complete');
                 }

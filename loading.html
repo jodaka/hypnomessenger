@@ -11,8 +11,13 @@ chrome.extension.sendRequest({action: 'reload_data'});
 chrome.extension.onRequest.addListener(
     function(request, sender, sendResponse) {
         if (request['action'] == 'reload_contacts') {
-            console.log('We have auth. Reloading popup');
-            window.parent.location.href = chrome.extension.getURL('hypno_gui.html');
+            // closing current tab
+            chrome.windows.getCurrent(function(window){
+                chrome.tabs.getSelected(window.id, function(tab){
+                    chrome.tabs.remove(tab.id);
+                });
+            });
+            
         }
     }
 );
