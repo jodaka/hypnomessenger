@@ -252,6 +252,7 @@ var HypnoToad = {
             HypnoToad.Messages.Load();
             //HypnoToad.Messages.Outgoing.Init();
             HypnoToad.Messages.New.Init();
+            HypnoToad.Messages.Incoming.Draw('history');
         },
 
         Load: function() {
@@ -784,8 +785,7 @@ var HypnoToad = {
                     phone            : phones,
                     close_info_label : chrome.i18n.getMessage('_close_info')
                 })
-            )
-            .show();
+            ).show();
             var phones_numbers = phones.join(',');
             //console.log(phones_numbers);
             $('#user_header').html(chrome.i18n.getMessage('messages_history'));
@@ -840,15 +840,13 @@ var HypnoToad = {
                 }
 
                 var history_tmpl = '\
-                    {{if reply_form}}\
-                        <textarea id="replysms" rows="3"> </textarea>\
-                        <div id="nm_reply">\
-                            <label id="send_label" for="replysmsbtn">\
-                                <input type="button" value="${send_reply_label}" id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()"/>\
-                                    <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
-                            </label>\
-                        </div>\
-                    {{/if}}\
+                    <textarea id="replysms" rows="3"></textarea>\
+                    <div id="nm_reply">\
+                        <label id="send_label" for="replysmsbtn">\
+                            <input type="button" value="${send_reply_label}" id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()"/>\
+                                <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
+                        </label>\
+                    </div>\
                     {{each items}}\
                         <div class="history_item ${$value.class}">\
                             <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
@@ -856,10 +854,10 @@ var HypnoToad = {
                         </div>\
                     {{/each}}\
                     ';
-
+                console.log('reply number '+HypnoToad.Messages.New.reply_number);
                 $('#contact_history').html(
                     jQuery.tmpl(history_tmpl, {
-                        reply_form      : (HypnoToad.Messages.New.reply_number == '') ? 1 : 0,
+                        reply_form      : HypnoToad.Messages.New.reply_number,
                         send_reply_label: chrome.i18n.getMessage('_send_reply'),
                         items           : messages
                     })
