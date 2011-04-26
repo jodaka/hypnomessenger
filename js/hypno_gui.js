@@ -23,9 +23,14 @@ var HypnoToad = {
                 if (request['action'] == 'reload_contacts') {
                     HypnoToad.Contacts.Load();
                 }
-                
                 if (request['action'] == 'reload_messages') {
                     HypnoToad.Contacts.Load();
+                }
+                if (request['action'] == 'not_registered') {
+                    HypnoToad.UI.DrawNotRegistered();
+                }
+                if (request['action'] == 'registered') {
+                    HypnoToad.UI.DrawRegistered();
                 }
             }
         );
@@ -104,6 +109,9 @@ var HypnoToad = {
             return 1;
         },
 
+        DrawRegistered: function() {
+            $('#loading').hide();
+        },
         DrawNotRegistered: function() {
             var loading = $('#loading');
             loading.show().html('<h2>'+chrome.i18n.getMessage('_ui_device_not_registered_header')+'</h2>\
@@ -645,11 +653,12 @@ var HypnoToad = {
                 var messages = [];
                 if (list.length > 0) {
                     for (var i = 0, max = list.length; i < max; i++) {
+                        var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindByPhone(list[i].phone_number)];
                         var message = {
                             'id'    : i,
                             'class' : (list[i].hasOwnProperty('id')) ? 'notme' : 'me',
                             'date'  : HypnoToad.Messages.Incoming.formatTime(list[i].create_time),
-                            'name'  : (list[i].hasOwnProperty('id')) ? contact.name : chrome.i18n.getMessage('_me'),
+                            'name'  : (contact) ? contact.name : list[i].phone_number,
                             'text'  : list[i].message
                         };
                         messages.push(message);
@@ -835,8 +844,8 @@ var HypnoToad = {
                         'text'  : from[i].message
                     };
                     messages.push(message);
-                    console.log(from[i]);
-                    console.log(from[i].id);
+                    //console.log(from[i]);
+                    //console.log(from[i].id);
                     HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
                     if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
                         HypnoToad.Messages.New.reply_number = from[i].phone_number;
