@@ -38,8 +38,8 @@ var Hypno = {
     Actions: {
         
         Signout: function() {
-            Hypno.Notifications.Icon('clear', '');
             console.log('Signout called. All data cleared');
+            Hypno.Notifications.Icon('clear');
             window.localStorage.setItem('Hypno_status', 'auth');
             Hypno.Messages.list = {
                 incoming: [],
@@ -113,6 +113,7 @@ var Hypno = {
 
     Notifications: {
         Icon: function(action, msg) {
+            console.log('Notify.Icon called action='+action);
             if (action == 'new') {
                 chrome.browserAction.setBadgeText({text: String(msg)});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_new_messages')});
@@ -127,9 +128,9 @@ var Hypno = {
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_not_registered')});
             }
             if (action == 'clear') {
-                chrome.browserAction.setBadgeText('');
+                console.log('clearing icon');
+                chrome.browserAction.setBadgeText({text: ''});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
-                
             }
         }
     },

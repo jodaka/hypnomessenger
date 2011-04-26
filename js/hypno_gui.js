@@ -39,16 +39,10 @@ var HypnoToad = {
             break;
             
             case 'auth':
-                
-                //HypnoToad.UI.DrawNotRegistered();
-                if ($('body iframe').length == 0) {
-                    chrome.tabs.create({
-                        'url': HypnoToad.Urls.signIn
-                    });
-                } else {
-                    console.log('Auth complete');
-                }
-                //window.location.href = HypnoToad.Urls.signIn;
+                chrome.tabs.create({
+                    'url': HypnoToad.Urls.signIn
+                });
+                window.close();
                 return 1;
             break;
         
@@ -206,15 +200,9 @@ var HypnoToad = {
             });
 
             $('#signout').bind('click', function(){
-                jQuery.ajax({
-                    url: HypnoToad.Urls.signOut,
-                    dataType: 'json',
-                    complete: function(data) {
-                        console.log(data);
-                        chrome.extension.sendRequest({action: 'signout'});
-                        window.close();
-                    }
-                });
+                chrome.extension.sendRequest({action: 'signout'});
+                chrome.tabs.create({url: HypnoToad.Urls.signOut});
+                window.close();
             });
 
             // bind menu
