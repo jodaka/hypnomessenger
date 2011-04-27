@@ -88,12 +88,12 @@ body {
 }
 
 h2 {
-    margin: 5px 0 15px 18px;
+    margin: 0 0 15px 0;
     text-align: left;
     font-size: 16pt;
     background-color: #4B6E95;
     color: #FFF;
-    padding: 3px 0 3px 3px;
+    padding: 3px 0 3px 17px;
 }
 
 #history_messages, #contact_holder, #history_holder, #user_messages {
@@ -101,6 +101,11 @@ h2 {
     padding: 0 20px 0 20px;
     /*overflow-y: auto;*/
     /*max-height: 310px;*/
+}
+
+#history_list {
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 div.h2 {

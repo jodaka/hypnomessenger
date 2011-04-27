@@ -648,14 +648,7 @@ var HypnoToad = {
 
                 var list = HypnoToad.Messages.list.incoming;
 
-                var hdr_tmpl = '<h2>${new_title}</h2>';
-                $('#history_header').html(
-                    jQuery.tmpl(hdr_tmpl, {
-                        //history_title       : chrome.i18n.getMessage('history'),
-                        new_title           : chrome.i18n.getMessage('_ui_new_messages'),
-                        got_new_messages    : HypnoToad.Messages.list.incoming.length
-                    })
-                );
+                $('#history_header').html(chrome.i18n.getMessage('_ui_new_messages'));
 
                 var messages = [];
                 if (list.length > 0) {
@@ -681,11 +674,15 @@ var HypnoToad = {
                         {{/each}}\
                         ';
     
-                    $('#history_messages').html(
-                        jQuery.tmpl(history_tmpl, {
-                            items           : messages
-                        })
+                    $('#history_messages').html('')
+                    .append(
+                        $('<div id="history_list"></div>').html(
+                            jQuery.tmpl(history_tmpl, {
+                                items           : messages
+                            })
+                        )
                     );
+                    
                 } else {
                     $('#history_messages').html('_no_new_messages_');
                 }
