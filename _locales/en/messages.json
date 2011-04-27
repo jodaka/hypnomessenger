@@ -106,7 +106,7 @@
     },
 
     "_ui_mark_as_read": {
-        "message"       : "Read"
+        "message"       : "Mark as read"
     },
     
     "_ui_mark_as_deleted": {

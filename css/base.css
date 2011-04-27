@@ -99,8 +99,8 @@ h2 {
 #history_messages, #contact_holder, #history_holder, #user_messages {
     text-align: left;
     padding: 0 20px 0 20px;
-    overflow-y: auto;
-    max-height: 400px;
+    /*overflow-y: auto;*/
+    /*max-height: 310px;*/
 }
 
 div.h2 {
@@ -459,18 +459,26 @@ div.history_rcpt {
     background-color: #FFFFFF;
     color: #3B5998;
     width: 100px;
-    cursor: pointer;
 }
 
 div.history_text {
     width: 310px;
     color: #4B6E95;
-    
+}
+
+#history_messages div.history_text {
+    cursor: pointer;
 }
 
 div.history_item div {
     display: table-cell;
     /*padding: 0.5em;*/
+}
+
+#user_messages #contact_history {
+    max-height: 195px;
+    overflow-y: auto;
+    margin-bottom: 15px;
 }
 
 #contact_history div.history_text {

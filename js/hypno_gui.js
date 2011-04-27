@@ -666,7 +666,8 @@ var HypnoToad = {
                             'class' : (list[i].hasOwnProperty('id')) ? 'notme' : 'me',
                             'date'  : HypnoToad.Messages.Incoming.formatTime(list[i].create_time),
                             'name'  : (contact) ? contact.name : list[i].phone_number,
-                            'text'  : list[i].message
+                            'text'  : list[i].message,
+                         'markread' : chrome.i18n.getMessage('_ui_mark_as_read')
                         };
                         messages.push(message);
                     }
@@ -675,7 +676,7 @@ var HypnoToad = {
                         {{each items}}\
                             <div class="history_item ${$value.class}">\
                                 <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
-                                <div class="history_text" onclick="HypnoToad.Messages.Incoming.MarkAndRemove(\'${$value.id}\'); ">${$value.text}</div>\
+                                <div class="history_text" title="${markread}" onclick="HypnoToad.Messages.Incoming.MarkAndRemove(\'${$value.id}\'); ">${$value.text}</div>\
                             </div>\
                         {{/each}}\
                         ';
@@ -789,7 +790,7 @@ var HypnoToad = {
 
             var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
             var phones  = [];
-            for (var i = 0; i < contact.phones.length; i++) {
+            for (var i = contact.phones.length-1; i >= 0; i--) {
                 //if (!contact.phones[i].number.match(/^\+/)) contact.phones[i].number = '+'+contact.phones[i].number; // HACK REMOVE ME!!! FIXME (after server fixed)
                 phones.push(contact.phones[i].number);
             }
@@ -841,7 +842,7 @@ var HypnoToad = {
 
                 HypnoToad.Messages.New.reply_number = '';
                 var messages = [];
-                for (var i = 0, max = from.length; i < max; i++) {
+                for (var i = from.length-1; i >= 0; i--) {
                     var message = {
                         'id'    : i,
                         'class' : (from[i].hasOwnProperty('id')) ? 'notme' : 'me',
@@ -850,37 +851,44 @@ var HypnoToad = {
                         'text'  : from[i].message
                     };
                     messages.push(message);
-                    //console.log(from[i]);
-                    //console.log(from[i].id);
-                    HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
+                    if (from[i].status != 30) HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
                     if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
                         HypnoToad.Messages.New.reply_number = from[i].phone_number;
                     }
                 }
 
                 var history_tmpl = '\
+                    {{each items}}\
+                        <div class="history_item ${$value.class}">\
+                            <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
+                            <div class="history_text">${$value.text}</div>\
+                        </div>\
+                    {{/each}}';
+                
+                var input_tmpl = '\
                     <textarea id="replysms" rows="3"></textarea>\
                     <div id="nm_reply">\
                         <label id="send_label" for="replysmsbtn">\
                             <input type="button" value="${send_reply_label}" id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()"/>\
                                 <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
                         </label>\
-                    </div>\
-                    {{each items}}\
-                        <div class="history_item ${$value.class}">\
-                            <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
-                            <div class="history_text">${$value.text}</div>\
-                        </div>\
-                    {{/each}}\
-                    ';
+                    </div>';
                 console.log('reply number '+HypnoToad.Messages.New.reply_number);
-                $('#contact_history').html(
-                    jQuery.tmpl(history_tmpl, {
-                        reply_form      : HypnoToad.Messages.New.reply_number,
-                        send_reply_label: chrome.i18n.getMessage('_send_reply'),
-                        items           : messages
+                
+                $('#user_messages').html('')
+                .append(
+                    $('<div id="contact_history"></div>').html(
+                        jQuery.tmpl(history_tmpl, {
+                            items           : messages
+                        })
+                    )
+                )
+                .append(
+                    jQuery.tmpl(input_tmpl, {
+                        send_reply_label: chrome.i18n.getMessage('_send_reply')
                     })
                 );
+                $("#contact_history").animate({ scrollTop: $("#contact_history").attr("scrollHeight") }, 1000);
             });
         },
 
