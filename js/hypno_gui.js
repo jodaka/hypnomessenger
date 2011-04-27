@@ -3,6 +3,9 @@ var HypnoToad = {
     version : -1,
 
     Init: function(ver) {
+        // send request to background page
+        chrome.extension.sendRequest({action: 'checkAuthReg'});
+        
         HypnoToad.version = ver;
         // draw loading
         HypnoToad.UI.DrawLoading();
@@ -613,6 +616,11 @@ var HypnoToad = {
             viewed      : [],
             check_timer : false,
 
+            MarkAndRemove: function(id){
+                HypnoToad.Messages.Incoming.MarkAsRead(id);
+                HypnoToad.Messages.Incoming.Draw();
+            },
+
             formatTime: function(timestamp) {
                 var date      = new Date(timestamp);
                 var month     = chrome.i18n.getMessage('_ui_month'+(date.getMonth()+1));
@@ -621,12 +629,11 @@ var HypnoToad = {
             },
 
             MarkAsRead: function(id) {
-                console.log('Marking as read id'+id);
+                console.log('Marking as read id='+id);
                 jQuery.ajax({
                     url: HypnoToad.Urls.set_status+id,
                     dataType: 'json',
                     complete: function(data) {
-                        console.log(data);
                         // actually we should check real response here... but we are lazy
                         HypnoToad.Messages.Incoming.Store();
                     }
@@ -655,7 +662,7 @@ var HypnoToad = {
                     for (var i = 0, max = list.length; i < max; i++) {
                         var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindByPhone(list[i].phone_number)];
                         var message = {
-                            'id'    : i,
+                            'id'    : list[i].id,
                             'class' : (list[i].hasOwnProperty('id')) ? 'notme' : 'me',
                             'date'  : HypnoToad.Messages.Incoming.formatTime(list[i].create_time),
                             'name'  : (contact) ? contact.name : list[i].phone_number,
@@ -668,7 +675,7 @@ var HypnoToad = {
                         {{each items}}\
                             <div class="history_item ${$value.class}">\
                                 <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
-                                <div class="history_text" onclick="HypnoToad.Messages.Incoming.MarkAsRead(\'${$value.id}\'); HypnoToad.Messages.Incoming.Draw()">${$value.text}</div>\
+                                <div class="history_text" onclick="HypnoToad.Messages.Incoming.MarkAndRemove(\'${$value.id}\'); ">${$value.text}</div>\
                             </div>\
                         {{/each}}\
                         ';
@@ -689,7 +696,6 @@ var HypnoToad = {
                     viewed = JSON.parse(viewed);
                     HypnoToad.Messages.list.viewed = viewed;
                     console.log('Viewed messages loaded');
-                    console.log(viewed);
                 }
             },
 

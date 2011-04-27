@@ -17,15 +17,27 @@ var Hypno = {
         chrome.extension.onRequest.addListener(
             function(request, sender, sendResponse) {
                 console.log('~~~~~> ENGINE got signal'+request['action']);
-                if (request['action'] == 'message_sent') {
-                    Hypno.Actions.MessageSent(request);
-                }
-                if (request['action'] == 'reload_data') {
-                    Hypno.Contacts.Load();
-                    Hypno.Messages.Load();
-                }
-                if (request['action'] == 'signout') {
-                    Hypno.Actions.Signout();
+                switch(request['action']) {
+                    case 'message_sent':
+                        Hypno.Actions.MessageSent(request)
+                    break;
+                
+                    case 'reload_data':
+                        Hypno.Contacts.Load();
+                        Hypno.Messages.Load();
+                    break;
+                
+                    case 'signout':
+                        Hypno.Actions.Signout();
+                    break;
+                
+                    case 'checkAuthReg':
+                        Hypno.Actions.checkAuthAndReg()
+                    break;
+                
+                    default:
+                    
+                    break;
                 }
             }
         );
@@ -36,6 +48,26 @@ var Hypno = {
     },
 
     Actions: {
+        // this function is called from gui
+        // every time a popup is open
+        // it just check then we have auth and reg
+        checkAuthAndReg: function() {
+            jQuery.ajax({
+                url: Hypno.Urls.send_status+'0',
+                dataType: 'json',
+                complete: function(res) {
+                    try {
+                        json = eval('('+res['responseText']+')');  // obj = this.getResponseJSON();
+                    } catch (err) {
+                        console.warn(err);
+                        return false;
+                    }
+
+                    console.warn(json);
+                    Hypno.Actions.checkStatus(json.status);
+                }
+            });
+        },
         
         checkStatus: function(status) {
 
