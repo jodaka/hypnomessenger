@@ -1,53 +1,33 @@
 <!DOCTYPE html>
-<html><head>
-<link rel="stylesheet" type="text/css" href="css/base.css"/>
-<link  href="http://fonts.googleapis.com/css?family=Ubuntu:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" >
-</head>
-<body id="body">
-    <div id="loading">_loading... </div>
-    <div id="main">
-        <div id="header" style="display: none"></div>
-        <div id="menu">
-            <div class="h2" id="h2_compose">_Compose</div>
-            <div class="h2 active_h2" id="h2_history">_Incoming</div>
-            <div class="h2" id="h2_contact" style="display:none">_Contact_Details</div>
-            <a href="#" id="signout">Sign Out</a>
-        </div>
-        <div id="left">
-            <div id="compose" class="section" style="display: none">
-                <div id="fl">
-                    <div id="newmessage">
-                        <label for="nm_to" id="nw_rcpt_label"></label>
-                        <div id="nm_to">
-                            <div id="contact_recipients"></div>
-                            <div ><input type="text" id="nm_to_value" value="+" /></div>
-                        </div>
-                        <label for="newmessage" id="nw_text_label"></label>
-                        <div id="nm_text">
-                            <textarea id="nm_text_value"></textarea>
-                        </div>
-                        <div id="nm_send">
-                            <label id="send_label" for="nm_send_btn"><input type="button" value="__SEND__" id="nm_send_btn" /><img id="sending_icon" src="img/sending.gif" alt="" style="display: none" /></label>
-                        </div>
-                        <div id="nm_notes">__NOTES__
-                        </div>
-                    </div>
-                </div>
-            </div>
-           <div id="user" class="section" style="display: none"><h2 id="user_header"></h2><div id="user_messages"><div id="contact_history"></div></div></div>
-            <div id="history" class="section"><h2 id="history_header"></h2><div id="history_messages"></div>
-
+<html><head><link rel="stylesheet" type="text/css" href="css/base.css"/></head>
+<body>
+<div id="main">
+    <div id="content">
+        <div id="user" class="section" style="display: none">
+            <h2 id="user_header"></h2>
+            <div id="user_messages">
+                <div id="contact_history"></div>
             </div>
         </div>
-        <div id="right">
-            <div id="contacts">
-                <div id="contacts_header"><div id="contacts_header_title"></div><div id="contacts_sort_holder"><input type="text" id="contacts_sort" /></div></div>
-                <div id="contacts_list">...loading...</div>
-            </div>
-            <div id="contact" class="section" style="display: none"></div>
+        <div id="history" class="section">
+            <h2 id="history_header"></h2>
+            <div id="history_messages"></div>
         </div>
     </div>
-
+    <div id="sidebar">
+        <div id="contacts">
+            <div id="contacts_header">
+                <div id="contacts_header_title"></div>
+                <div id="contacts_sort_holder">
+                    <input type="text" id="contacts_sort" /><div id="signout">Sign Out</div>
+                </div>
+            </div>
+            <div id="contacts_list">...loading...</div>
+        </div>
+        <div id="contact" class="section" style="display: none"></div>
+    </div>
+</div>
+<div id="loading">_loading... </div>
 <script src="js/lang.js" type="text/javascript"></script>
 <script src="js/jquery.js" type="text/javascript"></script>
 <script src="js/jquery.tmpl.js" type="text/javascript"></script>
@@ -55,6 +35,4 @@
 <script type="text/javascript">
     HypnoToad.Init(6);
 </script>
-</body>
-
-</html>
+</body></html>

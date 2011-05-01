@@ -1,34 +1,103 @@
 body {
+
+    min-width: 750px;
+    min-height: 400px;
+    max-height: 400px;
     margin: 0;
     padding: 0;
     font-family: Sans;
-
-    min-width: 749px;
-    min-height: 400px;
 }
 
-#header {
-    margin: 0 0 25px 0;
-    background: #6D84B4;
-    border: 1px solid #3B5998;
-    border-bottom: none;
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 10px 0 10px 50px;
-    text-align: left;
+::-webkit-scrollbar {
+width: 10px;
+height: 10px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment  {
+height: 30px;
+display: block;
+background-color: transparent;
+}
+
+::-webkit-scrollbar-track-piece  {
+background-color: #314153;;
+-webkit-border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+height: 50px;
+background-color: #8298B0;
+-webkit-border-radius: 6px;
+}
+
+#body {
+    /*box-flex:1;*/
+    /*margin:0 auto;*/
 }
 
 #main {
-    width: 750px;
-    margin: 0 auto;
-    text-align: center;
+
+    display:-webkit-box;
+    -webkit-box-orient: horizontal;
+    display:box;
+    box-orient: horizontal;
 }
+
+#content {
+    width: 65%;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+
+    display: box;
+    box-orient: vertical;
+}
+
+#sidebar {
+    width: 35%;
+    background-color: #4b6e95;
+    /*box-shadow: inset 10px -5px 10px -5px #FFF;*/
+    box-shadow: -5px 0 15px #888;
+}
+
+
+/* content */
+
+#user, #history {
+    max-height: 400px;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    display: box;
+    box-orient: vertical;
+    -webkit-box-flex: 1;
+    
+    -webkit-box-align: center;
+    box-align: center;
+}
+
+
+#history_messages, #contact_holder, #history_holder, #user_messages {
+    -webkit-box-flex: 1;
+    box-flex: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    width: 95%;
+}
+
+#contact_holder, #history_holder {
+    text-align: left;
+    padding: 0 20px 0 20px;
+}
+
+/* /content */
 
 /*
  same size as main div
 */
 #loading, #fader {
+    top: 0;
+    left: 0;
     width: 750px;
     height: 450px;
     position: absolute;
@@ -63,30 +132,6 @@ body {
     margin: 20px 50px 50px 50px;
 }
 
-
-
-#left {
-    width: 460px;
-    position: absolute;
-    left: 0px;
-    top: 40px;
-}
-
-#right {
-    position: absolute;
-    left: 460px;
-    top: 0px;
-    width: 290px;
-    background-color: #4b6e95;
-}
-
-
-#fl {
-    width: 400px;
-    display: inline-block;
-    vertical-align: top;
-}
-
 h2 {
     margin: 0 0 15px 0;
     text-align: left;
@@ -94,49 +139,13 @@ h2 {
     background-color: #4B6E95;
     color: #FFF;
     padding: 3px 0 3px 17px;
+    width: 97%;
 }
 
-#history_messages, #contact_holder, #history_holder, #user_messages {
-    text-align: left;
-    padding: 0 20px 0 20px;
-    /*overflow-y: auto;*/
-    /*max-height: 310px;*/
-}
 
 #history_list {
-    max-height: 300px;
+    -webkit-box-flex: 1;
     overflow-y: auto;
-}
-
-div.h2 {
-    font-size: 16px;
-    display: inline-block;
-    padding: 0.5em;
-    background-color: #99A2B4;
-    color: #FFF;
-    margin: 0px;
-    border: 0px;
-}
-
-div.h2:hover {
-    text-decoration: underline;
-    cursor: pointer;
-}
-
-div.active_h2 {
-    background-color: #6D84B4;
-}
-
-div.active_h2:hover {
-    background-color: #6D84B4;
-    text-decoration: none;
-    cursor: default;
-}
-
-
-#menu {
-    text-align: left;
-    margin-bottom: 15px;
 }
 
 label {
@@ -149,11 +158,6 @@ label {
 
 #nw_text_label {
     margin: 10px 0 0 0;
-}
-
-#signout {
-    margin: 0 0 0 20px;
-    font-size: 9pt;
 }
 
 #contact {
@@ -170,19 +174,54 @@ label {
 }
 
 #contact, #contacts {
-    width: 100%;
-    height: 410px;
-    overflow: hidden;
+    height: 400px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    
+    display: box;
+    box-orient: vertical;
+
+    /*overflow: hidden;*/
+}
+
+#contacts_header {
+    padding: 4px 5px 0 15px;
+    font-size: 11px;
+    color: white;
+    font-weight: bold;
+    height: 50px;
 }
 
 #contacts_list {
-    height: 400px;
+    -webkit-box-flex: 1;
+    box-flex: 1;
     overflow: auto;
+    margin: 0 0 0 10px;
+}
+
+#contact-list-top {
+    height: 30px;
+    width: 235px;
+    position: fixed;
+    background-image: -webkit-gradient(
+    linear, left top, left bottom, from(rgba(75,110,149,1)),
+    to(rgba(75,110,149,0)));
+}
+
+#contact-list-bottom {
+    z-index: 150;
+    top: 370px;
+    height: 30px;
+    width: 235px;
+    position: fixed;
+    background-image: -webkit-gradient(
+    linear, left top, left bottom, from(rgba(75,110,149,0)),
+    to(rgba(75,110,149,1)));
 }
 
 #replysms {
     min-height: 50px;
-    width: 100%;
+    width: 97%;
     height: 50px;
 }
 
@@ -341,65 +380,43 @@ div.rcpt_phone:hover {
     cursor: pointer;
 }
 
-div.rcpt_del {
-    width: 20px;
-    cursor: pointer;
-    vertical-align: top;
-    text-align: center;
-    padding-top: 12px;
-    height: 15px;
-}
-
-div.rcpt_del:hover {
-    -webkit-border-radius: 8px;
-    background-color: #5872A7;
-}
-
-div.rcpt_del img {
-    width: 7px;
-    height: 7px;
-    background: url(/img/remove_rcpt.png) no-repeat;
-    background-position: 0px -14px;
-    vertical-align: top;
-}
-
-div.rcpt_del img:hover {
-    background-position: 0px -7px;
-}
-
 #contacts_header_title, #contacts_sort_holder {
     display: inline-block;
     width: 50%;
 }
 
 #contacts_sort_holder {
-    text-align: right;
+    display: -webkit-box;
+    display: box;
+    width: 100%;
 }
 
 #contacts_sort {
-    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-    font-size: 11px;
-    color: #333;
-    border: 1px solid #8496BA;
+    border: 0px;
+    -webkit-box-flex: 2;
+    box-flex: 2;
 }
 
-#contacts_header {
-    padding: 4px 5px 5px;
-    font-size: 11px;
-    color:#333;
-    font-weight: bold;
-    margin-bottom: 8px;
+#signout {
+    -webkit-box-flex: 1;
+    box-flex: 1;
+    text-align: right;
+}
+
+#signout:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 #contacts_list ul {
-    margin: 0;
+    margin: 15px 0 0 0;
     padding: 0;
 }
 
 li.contact {
     color: #6D84B4;
     list-style: none;
-    padding: 2px 0 2px 5px;
+    /*padding: 2px 0 2px 5px;*/
     height: 30px;
 }
 
@@ -456,46 +473,50 @@ div.contact_info:hover div.contact_add, div.contact_info:hover div.contact_about
 div.history_item {
     margin-bottom: 25px;
     font-size: 10pt;
-    display: table;
-    vertical-align: top;
+    
+    display: -webkit-box;
+    display: box;
 }
 
 div.history_rcpt {
-    background-color: #FFFFFF;
     color: #3B5998;
-    width: 100px;
+    width: 120px;
+}
+
+div.sending {
+    background: url('/img/sending2.gif') no-repeat !important;
+    height: 80px !important;
 }
 
 div.history_text {
-    width: 310px;
-    color: #4B6E95;
+    color: #888;
+    -webkit-box-flex: 1;
+    box-flex:1;
 }
 
 #history_messages div.history_text {
     cursor: pointer;
 }
 
-div.history_item div {
-    display: table-cell;
-    /*padding: 0.5em;*/
-}
-
 #user_messages #contact_history {
-    max-height: 195px;
+    /*max-height: 195px;*/
     overflow-y: auto;
     margin-bottom: 15px;
+    
+    display: -webkit-box;
+    display: box;
+    
+    -webkit-box-orient: vertical;
+    box-orient: vertical;
+    
+    -webkit-box-flex: 1;
+    box-flex: 1;
 }
-
-#contact_history div.history_text {
-    width: 550px;
-}
-
 
 span.date {
     font-size: 9pt;
     color: #808080;
 }
-
 
 div.history_ctrl {
     overflow: hidden;

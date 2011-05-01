@@ -68,6 +68,10 @@
     "_me": {
         "message"       : "Me"
     },
+
+    "_sending": {
+        "message"       : "sending..."
+    },
     
     "_phones_list": {
         "message"       : "Phones list"

@@ -298,15 +298,16 @@ var Hypno = {
                 })
             ).done(function(ajax_new_list){
                 var new_sms = [];
-                if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) return false;
-                
-                new_sms = ajax_new_list.sms_list.slice()
-                
+                if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) {
+                    console.warn('status FAIL');
+                    return false;
+                }
+                new_sms = ajax_new_list.sms_list.slice();
+                if (new_sms.length > 0) Hypno.Actions.NewMessagesAvailable();
 
                 // handling of new messages
                 if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
                     Hypno.Messages.list.incoming = new_sms.slice();
-                    Hypno.Actions.NewMessagesAvailable();
                     window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
                     chrome.extension.sendRequest({action: 'reload_lists'});
                 }
