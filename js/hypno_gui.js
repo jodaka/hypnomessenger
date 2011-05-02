@@ -76,7 +76,7 @@ var HypnoToad = {
             if (HypnoToad.Contacts.info_reload_timer) {
                 clearInterval(HypnoToad.Contacts.info_reload_timer);
             }
-            HypnoToad.Ui.Show('history');
+            HypnoToad.UI.Show('history');
         },
 
         Status: function(text){
