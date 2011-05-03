@@ -58,6 +58,16 @@ var HypnoToad = {
                 console.log('all is fine');
             break;
         }
+        
+        window.addEventListener("unload", function (event) {
+            HypnoToad.Messages.Draft.Save();
+        }, true);
+
+        // reading sms drafts
+        var drafts = window.localStorage.getItem('hypno_drafts');
+        if (drafts) {
+            HypnoToad.Messages.drafts = JSON.parse(drafts);
+        }
 
         // get contacts list
         HypnoToad.Contacts.Init();
@@ -216,11 +226,36 @@ var HypnoToad = {
     },
 
     Messages: {
+        drafts: {},
+        
         list : {
             incoming: [],
             outgoing: [],
             viewed  : [],
             history : []
+        },
+
+        Draft: {
+            text: '',
+
+            Save: function() {
+                if (HypnoToad.Contacts.info_reload_timer) {
+                    var draft = HypnoToad.Messages.Draft.text;
+                    if (draft.length > 0) {
+                        HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number] = draft;
+                        window.localStorage.setItem('hypno_drafts', JSON.stringify(HypnoToad.Messages.drafts));
+                    }
+                }
+            },
+
+            Load: function() {
+                console.log('draft LOAD');
+                var draft = $('#replysms').val();
+                if (draft.length == 0 && HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number]) {
+                    console.log('draft LOADED');
+                    $('#replysms').val(HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number]);
+                }
+            }
         },
 
         RemoveById: function(id, list, copy2list) {
@@ -326,6 +361,8 @@ var HypnoToad = {
                         dataType: 'json'
                     })
                 ).done(function(ajax){
+                    HypnoToad.Messages.Draft.text = ''; // reset draft
+                    
                     $('#replysmsbtn').show();
                     $('#reply_icon').hide();
 
@@ -494,8 +531,6 @@ var HypnoToad = {
             $('#user_header').html(chrome.i18n.getMessage('messages_history'));
             HypnoToad.UI.Status(chrome.i18n.getMessage('_ui_loading'));
 
-            
-            
             var input_tmpl = '\
                     <textarea id="replysms" rows="3"></textarea>\
                     <div id="nm_reply">\
@@ -513,6 +548,10 @@ var HypnoToad = {
                     })
                 );
 
+                $('#replysms').bind('keyup', function(e){
+                    HypnoToad.Messages.Draft.text = this.value;
+                    console.log(this.value);
+                });
 
             var get_data_and_draw_it = function(no_animation) {
                 // Drawing messages
@@ -577,6 +616,8 @@ var HypnoToad = {
                             items           : messages
                         })
                     );
+
+                    HypnoToad.Messages.Draft.Load();
 
                     var contact_history = $("#contact_history");
                     if (no_animation) {
