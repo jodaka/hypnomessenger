@@ -3,10 +3,11 @@ var HypnoToad = {
     version : -1,
 
     Init: function(ver) {
+        HypnoToad.version = ver;
+        
         // send request to background page
         chrome.extension.sendRequest({action: 'checkAuthReg'});
-        
-        HypnoToad.version = ver;
+
         // draw loading
         HypnoToad.UI.DrawLoading();
 
@@ -19,7 +20,7 @@ var HypnoToad = {
         // add listener to communicate with popup page
         chrome.extension.onRequest.addListener(
             function(request, sender, sendResponse) {
-                //console.log('~~~~~> GUI got signal'+request['action']);
+                console.log('~~~~~> GUI got signal'+request['action']);
                 if (request['action'] == 'reload_lists') {
                     HypnoToad.Messages.Load();
                 }
@@ -54,7 +55,7 @@ var HypnoToad = {
                 return 1;
             break;
             default:
-                //console.log('all is fine');
+                console.log('all is fine');
             break;
         }
 
@@ -114,6 +115,9 @@ var HypnoToad = {
         },
 
         DrawRegistered: function() {
+            //HypnoToad.Init(HypnoToad.version);
+            HypnoToad.Contacts.Init();
+            HypnoToad.Messages.Init();
             $('#loading').hide();
         },
         DrawNotRegistered: function() {
@@ -128,7 +132,7 @@ var HypnoToad = {
         },
         
         Show: function(section, data) {
-            //console.log('  == Show('+section+','+data+') ');
+            console.log('  == Show('+section+','+data+') ');
             if (section == HypnoToad.UI.section) return 1;
             
             if (section != 'user' && $('#contact').is(":visible")) {
@@ -174,7 +178,7 @@ var HypnoToad = {
             // remove loading screen
             $('#loading').hide();
 
-            //console.log('... UI.Load() started');
+            console.log('... UI.Load() started');
             HypnoToad.Contacts.Filter();
             //HypnoToad.Contacts.DrawUI(HypnoToad.Contacts.list);
 
@@ -194,7 +198,7 @@ var HypnoToad = {
             });
 
             //HypnoToad.Messages.New.RedrawNotes();
-            //console.log('... UI.Load() finished');
+            console.log('... UI.Load() finished');
             return 1;
         
            
@@ -270,7 +274,7 @@ var HypnoToad = {
             if (need_redraw) {
                 HypnoToad.UI.DrawNew();
                 if (HypnoToad.Messages.list.incoming.length > 0) {
-                    //console.log('got new messages... redrawing contact list');
+                    console.log('got new messages... redrawing contact list');
                     HypnoToad.Contacts.Filter();
                 }
             }
@@ -281,7 +285,7 @@ var HypnoToad = {
             rcpt: [],
 
             SendReply: function() {
-                //console.log('Send Reply called');
+                console.log('Send Reply called');
 
                 var text    = $('#replysms').val().trim();
                 if (text == '') {
@@ -369,7 +373,7 @@ var HypnoToad = {
             },
 
             MarkAsRead: function(id) {
-                //console.log('Marking as read id='+id);
+                console.log('Marking as read id='+id);
                 jQuery.ajax({
                     url: HypnoToad.Urls.set_status+id,
                     dataType: 'json',
@@ -424,7 +428,7 @@ var HypnoToad = {
                     );
                     
                 } else {
-                    $('#history_messages').html('_no_new_messages_');
+                    $('#history_messages').html('<div id="nomsg">'+chrome.i18n.getMessage('_no_new_msg')+'</div>');
                 }
             },
 
@@ -433,7 +437,7 @@ var HypnoToad = {
                 if (viewed) {
                     viewed = JSON.parse(viewed);
                     HypnoToad.Messages.list.viewed = viewed;
-                    //console.log('Viewed messages loaded');
+                    console.log('Viewed messages loaded');
                 }
             },
 
@@ -486,7 +490,7 @@ var HypnoToad = {
                 })
             ).show();
             var phones_numbers = phones.join(',');
-            //console.log(phones_numbers);
+            console.log(phones_numbers);
             $('#user_header').html(chrome.i18n.getMessage('messages_history'));
             HypnoToad.UI.Status(chrome.i18n.getMessage('_ui_loading'));
 
@@ -500,7 +504,7 @@ var HypnoToad = {
                                 <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
                         </label>\
                     </div>';
-                //console.log('reply number '+HypnoToad.Messages.New.reply_number);
+                console.log('reply number '+HypnoToad.Messages.New.reply_number);
 
                 $('#user_messages').html('<div id="contact_history"></div>')
                 .append(
@@ -585,7 +589,7 @@ var HypnoToad = {
             
             //get_data_and_draw_it
             HypnoToad.Contacts.info_reload_timer = setInterval(function(){
-                //console.log(' ==> reloading chat');
+                console.log(' ==> reloading chat');
                 get_data_and_draw_it(1);
             }, 10000);
             get_data_and_draw_it();
@@ -701,7 +705,7 @@ var HypnoToad = {
         },
 
         Load: function() {
-            //console.log('... getting Contacts from local storage');
+            console.log('... getting Contacts from local storage');
             HypnoToad.Contacts.list = JSON.parse(window.localStorage.getItem('Hypno_contacts'));
             HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');
         },
@@ -752,7 +756,7 @@ var HypnoToad = {
         index       : chrome.extension.getURL('hypno_gui.html'),
 
         Init: function() {
-            //console.log('... Urls.Init() started');
+            console.log('... Urls.Init() started');
             HypnoToad.Urls.appEngine   = "http://"+HypnoToad.version+".latest.bandog812.appspot.com/";
             HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(chrome.extension.getURL('loading.html'))+"&ver="+HypnoToad.version;
             HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret="+encodeURIComponent(chrome.extension.getURL('close.html'))+"&ver="+HypnoToad.version;
@@ -768,7 +772,7 @@ var HypnoToad = {
             };
             
             HypnoToad.Urls.set_status  = HypnoToad.Urls.appEngine+"sms?action=update_status&ver="+HypnoToad.version+"&status=30&id=";
-            //console.log('... Urls.Init() finished');
+            console.log('... Urls.Init() finished');
         }
     }
 }

@@ -101,7 +101,7 @@ background-color: #8298B0;
     width: 750px;
     height: 450px;
     position: absolute;
-    z-index: 100;
+    z-index: 250;
     background-color: white;
 }
 

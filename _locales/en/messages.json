@@ -128,6 +128,10 @@
     "_icon_not_registered": {
         "message"       : "You need to register your android phone"
     },
+    
+    "_no_new_msg": {
+        "message"      : "No new messages"
+    },
 
     "_ui_month1": { "message" : "Jan" },
     "_ui_month2": { "message" : "Feb" },
