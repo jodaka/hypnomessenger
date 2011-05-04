@@ -317,6 +317,8 @@ var HypnoToad = {
                     return false;
                 }
 
+                HypnoToad.Messages.Draft.Save();
+
                 var rnd_str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
                 var collapse_key = new Date().getTime()/1000+
                     rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))+
@@ -351,7 +353,7 @@ var HypnoToad = {
                     })
                 ).done(function(ajax){
                     HypnoToad.Messages.Draft.text = ''; // reset draft
-                    
+
                     $('#replysmsbtn').show();
                     $('#reply_icon').hide();
 
