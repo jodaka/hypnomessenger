@@ -16,7 +16,7 @@ var Hypno = {
         // add listener to communicate with popup page
         chrome.extension.onRequest.addListener(
             function(request, sender, sendResponse) {
-                console.log('~~~~~> ENGINE got signal'+request['action']);
+                console.log('ENGINE: ~~~~~> ENGINE got signal'+request['action']);
                 switch(request['action']) {
                     case 'message_sent':
                         Hypno.Actions.MessageSent(request)
@@ -63,7 +63,6 @@ var Hypno = {
                         return false;
                     }
 
-                    console.warn(json);
                     Hypno.Actions.checkStatus(json.status);
                 }
             });
@@ -78,28 +77,28 @@ var Hypno = {
                     break;
 
                     case 'DEVICE_NOT_REGISTERED':
-                        console.log('... DEVICE_NOT_REGISTERED');
+                        console.log('ENGINE: ... DEVICE_NOT_REGISTERED');
                         Hypno.Actions.DeviceNotRegistered();
                         Hypno.Messages.Init();
                         return false;
                     break;
 
                     case 'SIGNIN_REQUIRED':
-                        console.log('... SIGNIN_REQUIRED');
+                        console.log('ENGINE: ... SIGNIN_REQUIRED');
                         Hypno.Actions.NotAuthorized();
                         Hypno.Actions.Signout();
                         return false;
                     break;
 
                     default:
-                        console.error('UNKNOWN STATUS '+status);
+                        console.error('ENGINE: UNKNOWN STATUS '+status);
                         return false;
                 }
 
         },
         
         Signout: function() {
-            console.log('Signout called. All data cleared');
+            console.log('ENGINE: Signout called. All data cleared');
             Hypno.Notifications.Icon('clear');
             window.localStorage.setItem('Hypno_status', 'auth');
             Hypno.Messages.list = {
@@ -118,8 +117,7 @@ var Hypno = {
         },
 
         MessageSent: function(request) {
-            console.warn('Message sent detected');
-            console.log(request);
+            console.warn('ENGINE: Message sent detected');
             if (request.hasOwnProperty('message')) {
                 Hypno.Messages.list.outgoing.push(request.message);
                 Hypno.Messages.MergeLists();
@@ -130,7 +128,7 @@ var Hypno = {
 
         NewMessagesAvailable: function() {
             window.localStorage.setItem('Hypno_status', 'ok');
-            console.log('== NewMessagesAvailable fired');
+            console.log('ENGINE: ++ NewMessagesAvailable fired');
             if (Hypno.Messages.list.incoming.length > 0) {
                 Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             } else {
@@ -156,7 +154,7 @@ var Hypno = {
 
         NotAuthorized: function() {
             Hypno.auth_and_register = false;
-            console.log('Binded Auth to icon click');
+            console.log('ENGINE: Binded Auth to icon click');
             window.localStorage.setItem('Hypno_status', 'auth');
             // clear event listeners
             chrome.browserAction.onClicked.listeners = [];
@@ -165,7 +163,7 @@ var Hypno = {
 
     Notifications: {
         Icon: function(action, msg) {
-            console.log('Notify.Icon called action='+action);
+            //console.log('ENGINE: Notify.Icon called action='+action);
             if (action == 'new') {
                 chrome.browserAction.setBadgeText({text: String(msg)});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_new_messages')});
@@ -180,7 +178,6 @@ var Hypno = {
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_not_registered')});
             }
             if (action == 'clear') {
-                console.log('clearing icon');
                 chrome.browserAction.setBadgeText({text: ''});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_authorization_fail')});
             }
@@ -198,10 +195,9 @@ var Hypno = {
         },
 
         BindReloadTimer: function() {
-            console.log(' => messages reloading timer binded');
+            console.log('ENGINE:  => messages reloading timer binded');
             Hypno.Messages.incoming_timer = setInterval(function(){
-                console.log('Checking for new messages...');
-                //console.log(Hypno);
+                //console.log('ENGINE: Checking for new messages...');
                 Hypno.Messages.Load();
             }, 5000);
         },
@@ -230,7 +226,7 @@ var Hypno = {
         // creates huge history list from combined incoming/outgoing
         MergeLists: function() {
             return 1;
-            console.log('merge called');
+            console.log('ENGINE: merge called');
             var local = {
                 incoming: Hypno.Messages.list.incoming,
                 outgoing: Hypno.Messages.list.outgoing,
@@ -283,7 +279,7 @@ var Hypno = {
 
         Load: function(){
             
-            console.log(' Messages.Load() called');
+            //console.log('ENGINE:  Messages.Load() called');
             jQuery.when(
                 jQuery.ajax({
                     url: Hypno.Urls.messages.get.unread+'&status=0',
@@ -292,7 +288,7 @@ var Hypno = {
             ).done(function(ajax_new_list){
                 var new_sms = [];
                 if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) {
-                    console.warn('status FAIL');
+                    console.warn('ENGINE: status FAIL');
                     return false;
                 }
                 new_sms = ajax_new_list.sms_list.slice();
@@ -376,13 +372,13 @@ var Hypno = {
 
             // every 1m we check contacts list and auth
             Hypno.Contacts.timer = setInterval(function(){
-                console.log('Checking contacts list and Auth...');
+                console.log('ENGINE: Checking contacts list and Auth...');
                 Hypno.Contacts.Load();
             }, 10000);
         },
 
         Load: function() {
-            console.log('... Contacts sending request');
+            //console.log('ENGINE: ... Contacts sending request');
             jQuery.ajax({
                 url: Hypno.Urls.contacts,
                 dataType: 'json',
@@ -405,7 +401,7 @@ var Hypno = {
                         }
 
                         if (JSON.stringify(Hypno.Contacts.list) != JSON.stringify(json.contact_list)) {
-                            console.log('==> got new contacts list');
+                            console.log('ENGINE: ==> got new contacts list');
                             window.localStorage.setItem('Hypno_contacts', JSON.stringify(json.contact_list));
                             Hypno.Contacts.list = json.contact_list;
                             window.localStorage.setItem('Hypno_status', 'ok');
