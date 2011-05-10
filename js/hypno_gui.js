@@ -85,6 +85,7 @@ var HypnoToad = {
         },
 
         CloseInfo: function() {
+            HypnoToad.Messages.Draft.Save();
             if (HypnoToad.Contacts.info_reload_timer) {
                 clearInterval(HypnoToad.Contacts.info_reload_timer);
             }
@@ -231,10 +232,9 @@ var HypnoToad = {
             text: '',
 
             Save: function() {
-                if (HypnoToad.Contacts.info_reload_timer) {
-                    HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number] = HypnoToad.Messages.Draft.text;
-                    window.localStorage.setItem('hypno_drafts', JSON.stringify(HypnoToad.Messages.drafts));
-                }
+                bg.console.log('UI: Draft saved. Number '+HypnoToad.Messages.New.reply_number+' Text: '+HypnoToad.Messages.Draft.text);
+                HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number] = HypnoToad.Messages.Draft.text;
+                window.localStorage.setItem('hypno_drafts', JSON.stringify(HypnoToad.Messages.drafts));
             },
 
             Load: function() {
@@ -317,8 +317,6 @@ var HypnoToad = {
                     return false;
                 }
 
-                HypnoToad.Messages.Draft.Save();
-
                 var rnd_str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
                 var collapse_key = new Date().getTime()/1000+
                     rnd_str.charAt(Math.floor(Math.random() * rnd_str.length))+
@@ -353,6 +351,7 @@ var HypnoToad = {
                     })
                 ).done(function(ajax){
                     HypnoToad.Messages.Draft.text = ''; // reset draft
+                    HypnoToad.Messages.Draft.Save();
 
                     $('#replysmsbtn').show();
                     $('#reply_icon').hide();
@@ -375,8 +374,8 @@ var HypnoToad = {
 
                         $('#replysms').val('');
                     } else {
-                        console.error('message NOT sent');
-                        console.error(ajax);
+                        bg.console.error('message NOT sent');
+                        bg.console.error(ajax);
                     }
                 });
             }
@@ -587,12 +586,14 @@ var HypnoToad = {
                             'text'  : from[i].message
                         };
                         messages.push(message);
-                        if (from[i].status != 30) HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
+                        if (from[i].hasOwnProperty('id') && from[i].status != 30) {
+                            HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
+                        }
                         if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
                             HypnoToad.Messages.New.reply_number = from[i].phone_number;
                         }
                     }
-    
+
                     var history_tmpl = '\
                         {{each items}}\
                             <div class="history_item ${$value.class}">\

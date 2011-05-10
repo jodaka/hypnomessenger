@@ -79,7 +79,7 @@ var Hypno = {
                     case 'DEVICE_NOT_REGISTERED':
                         console.log('ENGINE: ... DEVICE_NOT_REGISTERED');
                         Hypno.Actions.DeviceNotRegistered();
-                        Hypno.Messages.Init();
+                        //Hypno.Messages.Init();
                         return false;
                     break;
 
@@ -126,6 +126,11 @@ var Hypno = {
             }
         },
 
+        ClearMessageReloadTimer: function() {
+            clearInterval(Hypno.Messages.incoming_timer);
+            Hypno.Messages.incoming_timer = false;
+        },
+
         NewMessagesAvailable: function() {
             window.localStorage.setItem('Hypno_status', 'ok');
             console.log('ENGINE: ++ NewMessagesAvailable fired');
@@ -143,6 +148,7 @@ var Hypno = {
             chrome.extension.sendRequest({action: 'not_registered'});
             // clear event listeners
             chrome.browserAction.onClicked.listeners = [];
+            Hypno.Actions.ClearMessageReloadTimer();
         },
 
         Registered: function() {
@@ -158,6 +164,7 @@ var Hypno = {
             window.localStorage.setItem('Hypno_status', 'auth');
             // clear event listeners
             chrome.browserAction.onClicked.listeners = [];
+            Hypno.Actions.ClearMessageReloadTimer();
         }
     },
 
@@ -195,11 +202,11 @@ var Hypno = {
         },
 
         BindReloadTimer: function() {
-            console.log('ENGINE:  => messages reloading timer binded');
+            //console.log('ENGINE:  => messages reloading timer binded');
             Hypno.Messages.incoming_timer = setInterval(function(){
                 //console.log('ENGINE: Checking for new messages...');
                 Hypno.Messages.Load();
-            }, 5000);
+            }, 10000);
         },
 
         Init: function() {
@@ -209,7 +216,7 @@ var Hypno = {
                 viewed  : JSON.parse(window.localStorage.getItem('Hypno_messages_viewed')),
                 history : [],
             };
-
+            //
             if (Hypno.auth_and_register) {
                 if (!Hypno.Messages.iniated) {
                     Hypno.Messages.Load();
@@ -370,11 +377,11 @@ var Hypno = {
         Init: function() {
             Hypno.Contacts.Load();
 
-            // every 1m we check contacts list and auth
+            // every 1m we check contacts list 
             Hypno.Contacts.timer = setInterval(function(){
-                console.log('ENGINE: Checking contacts list and Auth...');
+                console.log('ENGINE: Reloading contacts list');
                 Hypno.Contacts.Load();
-            }, 10000);
+            }, 60000);
         },
 
         Load: function() {
