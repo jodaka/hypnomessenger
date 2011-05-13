@@ -137,7 +137,7 @@ var Hypno = {
             if (Hypno.Messages.list.incoming.length > 0) {
                 Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             } else {
-                Hypno.Notifications.Icon('new', '');
+                Hypno.Notifications.Icon('clear');
             }
         },
 
@@ -299,10 +299,13 @@ var Hypno = {
                     return false;
                 }
                 new_sms = ajax_new_list.sms_list.slice();
-                if (new_sms.length > 0) Hypno.Actions.NewMessagesAvailable();
+                //if (new_sms.length > 0 || Hypno.Messages.list.incoming.length != new_sms.length) Hypno.Actions.NewMessagesAvailable();
+
+                Hypno.Actions.NewMessagesAvailable();
 
                 // handling of new messages
                 if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
+                    //Hypno.Actions.NewMessagesAvailable();
                     Hypno.Messages.list.incoming = new_sms.slice();
                     window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
                     chrome.extension.sendRequest({action: 'reload_lists'});
