@@ -770,12 +770,9 @@ var HypnoToad = {
                 holder.append(li);
             }
 
-
-
             $('#contacts_list')
                 .html('')
                 .append(holder)
-                .append('<div id="contact-list-bottom"></div>');
         }
     },
 
