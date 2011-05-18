@@ -438,11 +438,16 @@ li.contact:nth-child(even) {
 }
 
 li.contact:hover {
-    background-color: #EEEEFF;
+    background-image: url('/img/contacts_bg_hover.png');
+    
 }
 
 li.contact:hover div.contact_name {
-    color: #4B6E95;
+    color: #FFF;
+}
+
+li.NewSMS div.contact_name {
+    color: #ffb700 !important;
 }
 
 div.contact_avatar, div.contact_info {
@@ -459,10 +464,15 @@ div.contact_avatar {
     height: 50px;
 }
 
+
+
 div.contact_name {
-    width: 200px;
+    width: 190px;
     display: inline-block;
-    margin-left: 4px;
+    margin-left: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 div.contact_add, div.contact_about {

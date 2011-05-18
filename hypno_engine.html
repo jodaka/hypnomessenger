@@ -21,20 +21,20 @@ var Hypno = {
                     case 'message_sent':
                         Hypno.Actions.MessageSent(request)
                     break;
-                
+
                     case 'reload_data':
                         Hypno.Contacts.Load();
                         Hypno.Messages.Load();
                     break;
-                
+
                     case 'signout':
                         Hypno.Actions.Signout();
                     break;
-                
+
                     case 'checkAuthReg':
                         Hypno.Actions.checkAuthAndReg()
                     break;
-                
+
                     default:
                     
                     break;

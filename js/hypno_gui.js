@@ -491,8 +491,8 @@ var HypnoToad = {
             // User info
             var contact_info_tmpl = '\
                 <div class="contact_info">\
-                    <div class="avatar_sms"> </div>\
                     <div class="contact_name">${contact_name}</div>\
+                    <div class="avatar_sms"> </div>\
                 </div>\
                 <div class="phones_list">${phones_list_label}</div>\
                 <ul class="phones_list">\
@@ -755,18 +755,21 @@ var HypnoToad = {
                             HypnoToad.UI.Show('user', event.data.cid);
                         });
                 }
-                
+
                 var li = $('<li class="contact"></li>')
                     .append(
                         $('<div class="contact_info"></div>')
-                            .append(avatar)
                             .append(
                                 $('<div class="contact_name">'+list[i].name+'</div>')
                                 .bind('click', {cid: list[i].id}, function(event){
                                         HypnoToad.UI.Show('user', event.data.cid);
                                 })
                             )
+                            .append(avatar)
                     );
+                if (list[i].new_sms) {
+                    li.addClass('NewSMS');
+                }
                 holder.append(li);
             }
 
