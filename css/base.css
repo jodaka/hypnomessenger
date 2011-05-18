@@ -1,5 +1,4 @@
 body {
-
     min-width: 750px;
     min-height: 400px;
     max-height: 400px;
@@ -8,27 +7,47 @@ body {
     font-family: Sans;
 }
 
+
+
 ::-webkit-scrollbar {
 width: 10px;
 height: 10px;
 }
 
-::-webkit-scrollbar-button:start:decrement,
-::-webkit-scrollbar-button:end:increment  {
-height: 30px;
-display: block;
-background-color: transparent;
-}
-
 ::-webkit-scrollbar-track-piece  {
-background-color: #314153;;
+background-color: #354973;
 -webkit-border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:vertical {
 height: 50px;
-background-color: #8298B0;
+background-color: #6796fb;
 -webkit-border-radius: 6px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment  {
+    /*height: 1px;*/
+    /*width: 1px;*/
+    display: none;
+    /*background-color: transparent;*/
+}
+
+#contacts_list::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+#contacts_list::-webkit-scrollbar-track-piece  {
+    background-image: url('/img/contacts_scroll_bg.png');
+    -webkit-border-radius: 6px;
+}
+
+#contacts_list::-webkit-scrollbar-thumb:vertical {
+    height: 50px;
+    /*background-color: #6796fb;*/
+    background-image: url('/img/contacts_scroll_thumb.png');
+    -webkit-border-radius: 6px;
 }
 
 #body {
@@ -37,7 +56,7 @@ background-color: #8298B0;
 }
 
 #main {
-
+    margin: 4px;
     display:-webkit-box;
     -webkit-box-orient: horizontal;
     display:box;
@@ -46,6 +65,7 @@ background-color: #8298B0;
 
 #content {
     
+    margin-right: 4px;
     
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -138,13 +158,13 @@ background-color: #8298B0;
 }
 
 h2 {
-    margin: 0 0 15px 0;
+    height: 44px;
+    margin: 0px;
+    width: 100%;
+    background-image: url('/img/h2_bg.png');
     text-align: left;
     font-size: 16pt;
-    background-color: #4B6E95;
     color: #FFF;
-    padding: 3px 0 3px 17px;
-    width: 97%;
 }
 
 
@@ -191,7 +211,7 @@ label {
 
 #contacts_header {
     background-image: url('/img/header_bg.png');
-    padding: 4px 5px 0 15px;
+    
     font-size: 11px;
     color: white;
     height: 44px;
@@ -208,7 +228,9 @@ label {
     display: box;
     -webkit-box-align: center;
 }
+
 #contacts_header_title {
+    padding: 0 0 0 10px;
     -webkit-box-flex: 1;
     box-flex: 1;
     /*padding: 0 0 0 10px;*/
@@ -450,6 +472,24 @@ li.NewSMS div.contact_name {
     color: #ffb700 !important;
 }
 
+li.NewSMS div.avatar_sms {
+    width: 32px;
+    height: 19px;
+    display: inline-block;
+    font-family: sans-serif;
+    color: #FFF;
+    font-size: 9pt;
+    text-align:center;
+    cursor: pointer;
+    background: no-repeat url('/img/new_sms.png');
+    font-weight: bold;
+}
+
+li.NewSMS:hover div.avatar_sms {
+    background-image: url('/img/new_sms_hover.png');
+    color: #578bf5;
+}
+
 div.contact_avatar, div.contact_info {
     display: inline-block;
 }
@@ -467,7 +507,7 @@ div.contact_avatar {
 
 
 div.contact_name {
-    width: 190px;
+    width: 185px;
     display: inline-block;
     margin-left: 10px;
     overflow: hidden;
@@ -564,21 +604,6 @@ div.history_status div {
     padding: 0 !important;
     width: 16px;
     height: 16px;
-}
-
-div.avatar_sms {
-    width: 15px;
-    text-align:center;
-
-    display: inline-block;
-    font-family: sans-serif;
-    cursor: pointer;
-    background-color: #C11919;
-
-    padding: 0 3px;
-    color: #FFF;
-    font-size: 9pt;
-    -webkit-border-radius: 3px;
 }
 
 div.phones_list {
