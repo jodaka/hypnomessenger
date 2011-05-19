@@ -501,7 +501,7 @@ var HypnoToad = {
                 <div id="user_header">\
                     <div id="user_name">${user_name}</div>\
                     <div id="user_phones">${user_phone}</div>\
-                    <div onclick="HypnoToad.UI.CloseInfo()" id="user_close"> _close_ </div>\
+                    <div onclick="HypnoToad.UI.CloseInfo()" id="user_close">&nbsp;</div>\
                 </div>\
                 <div id="user_messages"><div id="contact_history"></div></div>\
                 <div id="reply_holder">\

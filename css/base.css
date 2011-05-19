@@ -126,22 +126,39 @@ background-color: #6796fb;
     text-align: left;
     font-size: 16pt;
     padding: 0 0 0 10px;
-    width: 150px;
+    width: 170px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 #user_phones {
+    height: 24px;
     display: box;
     box-flex: 1;
     display: -webkit-box;
     -webkit-box-flex: 1;
+    font-size: 9pt;
+    padding: 10px 0 0 10px;
+    background: no-repeat url('/img/user_number_bg.png');
+    background-position: 0 5px;
+}
+
+#user_phones:hover {
+    background: no-repeat url('/img/user_number_bg_hovered.png');
+    background-position: 0 5px;
 }
 
 #user_close {
-    width: 40px;
+    width: 22px;
     overflow: hidden;
+    background: no-repeat url('/img/close_normal.png');
+    cursor: pointer;
+    background-position: 0 2px;
+}
+
+#user_close:hover {
+    background-image: url('/img/close_hovered.png');
 }
 
 #history_messages, #contact_holder, #history_holder, #user_messages {
@@ -199,7 +216,7 @@ background-color: #6796fb;
     margin: 20px 50px 50px 50px;
 }
 
-h2 {
+#history_header {
     height: 44px;
     margin: 0px;
     width: 100%;
@@ -207,6 +224,14 @@ h2 {
     text-align: left;
     font-size: 16pt;
     color: #FFF;
+    font-weight: normal;
+    padding: 0 0 0 10px;
+
+    display: -webkit-box;
+    -webkit-box-align: center;
+
+    display: box;
+    box-align: center;
 }
 
 
@@ -253,12 +278,11 @@ label {
 
 #contacts_header {
     background-image: url('/img/header_bg.png');
-    
+
     font-size: 11px;
     color: white;
     height: 44px;
-    -webkit-box-shadow: 15px 0 25px #354973;
-    
+
     display: -webkit-box;
     display: box;
     -webkit-box-orient: horizontal;
@@ -481,18 +505,18 @@ div.rcpt_phone:hover {
     height: 42px;
     border-bottom: 1px solid #354973;
     -webkit-box-align: center;
+    
+    background-image: url('/img/filter_bg.png');
 }
 
 #contacts_sort {
     background-color: #354973;
-    border-radius: 10px;
-    border: 1px solid #2c3d5f;
-    border-bottom: 1px solid #5f739d;
+    border: 0px;
     color: #739fff;
-    width: 220px;
-    margin-left: 10px;
+    width: 180px;
+    margin: 3px 0 0 35px;
+    outline:none;
 }
-
 
 #contacts_list ul {
     margin: 15px 0 0 0;
