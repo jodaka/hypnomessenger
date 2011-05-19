@@ -147,11 +147,11 @@ var HypnoToad = {
             bg.console.log('UI: == Show('+section+','+data+') ');
             if (section == HypnoToad.UI.section) return 1;
             
-            if (section != 'user' && $('#contact').is(":visible")) {
-                //HypnoToad.Contacts.CloseInfo();
-                $('#contact').hide();
-                $('#contacts').show();
-            }
+            //if (section != 'user' && $('#contact').is(":visible")) {
+            //    //HypnoToad.Contacts.CloseInfo();
+            //    $('#contact').hide();
+            //    $('#contacts').show();
+            //}
 
             HypnoToad.UI.section = section;
 
@@ -167,9 +167,9 @@ var HypnoToad = {
                 break;
 
                 case 'user':
-                    $('#contacts').hide();
+                    //$('#contacts').hide();
                     $('#main div.section:visible').fadeOut('fast', 0, function(){
-                        $('#user').show();
+                        //$('#user').show();
                         $('#menu div.active_h2').removeClass('active_h2');
                         HypnoToad.Contacts.Info(data);
                     });
@@ -488,59 +488,74 @@ var HypnoToad = {
             Takes contact id and shows a detailed contact info
         */
         Info: function(cid) {
-            // User info
-            var contact_info_tmpl = '\
-                <div class="contact_info">\
-                    <div class="contact_name">${contact_name}</div>\
-                    <div class="avatar_sms"> </div>\
-                </div>\
-                <div class="phones_list">${phones_list_label}</div>\
-                <ul class="phones_list">\
-                {{each phone}} \
-                    <li>${$value}</li>\
-                {{/each}}\
-                </ul>\
-                <input type="button" id="close_info" value="${close_info_label}" onclick="HypnoToad.UI.CloseInfo()">';
-
+            
             var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
             var phones  = [];
             for (var i = contact.phones.length-1; i >= 0; i--) {
                 phones.push(contact.phones[i].number);
             }
-
-            $('#contact').html(
-                jQuery.tmpl(contact_info_tmpl, {
-                    contact_name     : contact.name,
-                    phones_list_label: chrome.i18n.getMessage('_phones_list'),
-                    phone            : phones,
-                    close_info_label : chrome.i18n.getMessage('_close_info')
-                })
-            ).show();
             var phones_numbers = phones.join(',');
             bg.console.log('UI: '+phones_numbers);
-            $('#user_header').html(chrome.i18n.getMessage('messages_history'));
-            HypnoToad.UI.Status(chrome.i18n.getMessage('_ui_loading'));
-
-            var input_tmpl = '\
+            
+            var user_tmpl = '\
+                <div id="user_header">\
+                    <div id="user_name">${user_name}</div>\
+                    <div id="user_phones">${user_phone}</div>\
+                    <div onclick="HypnoToad.UI.CloseInfo()" id="user_close"> _close_ </div>\
+                </div>\
+                <div id="user_messages"><div id="contact_history"></div></div>\
+                <div id="reply_holder">\
                     <textarea id="replysms" rows="3"></textarea>\
                     <div id="nm_reply">\
                         <label id="send_label" for="replysmsbtn">\
                             <input type="button" value="${send_reply_label}" id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()"/>\
                                 <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
                         </label>\
-                    </div>';
-                bg.console.log('UI: reply number '+HypnoToad.Messages.New.reply_number);
+                    </div>\
+                </div>\
+            ';
 
-                $('#user_messages').html('<div id="contact_history"></div>')
-                .append(
-                    jQuery.tmpl(input_tmpl, {
-                        send_reply_label: chrome.i18n.getMessage('_send_reply')
-                    })
-                );
+            // User info
+            //var contact_info_tmpl = '\
+            //    <div class="contact_info">\
+            //        <div class="contact_name">${contact_name}</div>\
+            //        <div class="avatar_sms"> </div>\
+            //    </div>\
+            //    <div class="phones_list">${phones_list_label}</div>\
+            //    <ul class="phones_list">\
+            //    {{each phone}} \
+            //        <li>${$value}</li>\
+            //    {{/each}}\
+            //    </ul>\
+            //    <input type="button" id="close_info" value="${close_info_label}" onclick="HypnoToad.UI.CloseInfo()">';
 
-                $('#replysms').bind('keyup', function(e){
-                    HypnoToad.Messages.Draft.text = this.value;
-                });
+            //$('#contact').html(
+            //    jQuery.tmpl(contact_info_tmpl, {
+            //        contact_name     : contact.name,
+            //        phones_list_label: chrome.i18n.getMessage('_phones_list'),
+            //        phone            : phones,
+            //        close_info_label : chrome.i18n.getMessage('_close_info')
+            //    })
+            //).show();
+
+            //$('#user_header').html(chrome.i18n.getMessage('messages_history'));
+            HypnoToad.UI.Status(chrome.i18n.getMessage('_ui_loading'));
+
+            //var input_tmpl = '\
+                //';
+            bg.console.log('UI: reply number '+HypnoToad.Messages.New.reply_number);
+
+            $('#user').html('').append(
+                jQuery.tmpl(user_tmpl , {
+                    user_name   :  contact.name,
+                    user_phone  : phones,
+                    send_reply_label: chrome.i18n.getMessage('_send_reply')
+                })
+            ).show();
+
+            $('#replysms').bind('keyup', function(e){
+                HypnoToad.Messages.Draft.text = this.value;
+            });
 
             var get_data_and_draw_it = function(no_animation) {
                 // Drawing messages
