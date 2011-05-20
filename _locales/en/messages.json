@@ -1,9 +1,9 @@
 {
     "name": {
-        "message"       : "Hypno Messenger"
+        "message"       : "WebSMS"
     },
     "description": {
-        "message"       : "All glory to the Hypno Messenger!"
+        "message"       : "All glory to the WebSMS!"
     },
     "_ui_send_btn" : {
         "message"       : "Send message"
@@ -26,7 +26,7 @@
     },
     
     "_ui_header"        : {
-        "message"       : "HypnoMessenger (alfa)"
+        "message"       : "WebSMS (alfa)"
     },
     
     "_history_header"   : {
@@ -82,7 +82,7 @@
     },
     
     "_ui_device_not_registered_text": {
-        "message"       : "You need to install Bandog Messenger app on your android phone and press 'Register' button"
+        "message"       : "You need to install WebSMS app on your android phone and press 'Register' button"
     },
     
     "_ui_device_not_registered_header": {

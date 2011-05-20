@@ -229,9 +229,10 @@ background-color: #6796fb;
 
     display: -webkit-box;
     -webkit-box-align: center;
-
+    -webkit-box-sizing: border-box;
     display: box;
     box-align: center;
+    box-sizing: border-box;
 }
 
 
@@ -350,38 +351,17 @@ label {
 
 
 #nm_send_btn, #replysmsbtn {
-    font-size: 13px;
-    color: white;
+    font-size: 11px;
+    color: #FFF;
     cursor: pointer;
-    display: inline-block;
     font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
-    font-weight: bold;
-    margin: 0;
-    outline: none;
-    padding: 1px 0 2px;
-    white-space: nowrap;
-    text-align: center;
-    background-color: transparent;
-    border: 0;
-}
 
-#send_label {
-    min-width: 44px;
-    cursor: pointer;
-    display: -moz-inline-box;
-    display: inline-block;
-    padding: 2px 6px;
+    background: repeat-x url('/img/send_btn_bg_main.png');
 
-    background: #EEE url('/img/btn_bg.png') repeat 0 0;
-    background-position: 0 -48px;
-    border: 1px solid #999;
-    border-bottom-color: #888;
-    border-color: #29447E #29447E #1A356E;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
-    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
-
-    line-height: normal !important;
-    
+    -webkit-border-image: url('/img/send_btn_bg.png') 25;
+    width: 150px;
+    height: 25px;
+    border-width: 0 25px;
 }
 
 textarea {

@@ -11,5 +11,5 @@
    },
    "name": "__MSG_name__",
    "permissions": [ "tabs", "http://6.latest.bandog812.appspot.com/"],
-   "version": "2"
+   "version": "3"
 }
