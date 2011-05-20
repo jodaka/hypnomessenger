@@ -328,7 +328,6 @@ var HypnoToad = {
                     '&message='+encodeURIComponent(text);
                  // disable button
                 $('#replysmsbtn').hide();
-                $('#reply_icon').show();
 
                 var sending_tmpl = '\
                     <div class="history_item me sending">\
@@ -354,7 +353,6 @@ var HypnoToad = {
                     HypnoToad.Messages.Draft.Save();
 
                     $('#replysmsbtn').show();
-                    $('#reply_icon').hide();
 
                     if (ajax['status'] == 'OK') {
 
@@ -507,10 +505,8 @@ var HypnoToad = {
                 <div id="reply_holder">\
                     <textarea id="replysms" rows="3"></textarea>\
                     <div id="nm_reply">\
-                        <label id="send_label" for="replysmsbtn">\
-                            <input type="button" value="${send_reply_label}" id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()"/>\
-                                <img id="reply_icon" src="img/sending.gif" alt="" style="display: none" />\
-                        </label>\
+                        <div id="reply_sms_count">0 sms</div>\
+                        <div id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()">${send_reply_label}</div>\
                     </div>\
                 </div>\
             ';

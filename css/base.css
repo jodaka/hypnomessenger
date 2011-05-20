@@ -340,7 +340,7 @@ label {
 }
 
 #replysms {
-    margin: 10px 0 10px 10px;
+    margin: 10px 0 0 10px;
     padding: 0;
     min-height: 50px;
     width: 335px;
@@ -349,20 +349,58 @@ label {
     border-top: 1px solid #9fa1a6;
 }
 
+#nm_reply {
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-orient: horizontal;
 
-#nm_send_btn, #replysmsbtn {
+    display: box;
+    box-align: center;
+    box-orient: horizontal;
+
+    -webkit-box-pack: justify;
+    margin: 5px 10px 10px 10px;
+    box-sizing: border-box;
+}
+
+#reply_sms_count {
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+    display: box;
+    box-align: center;
+    box-pack: center;
+
+    width: 47px;
+    height: 22px;
+    background: no-repeat url('/img/sms_count_bg.png');
+    color: #C0C1C4;
+    font-size: 9px;
+    font-weight: bold;
+    
+}
+
+#replysmsbtn {
+    display: -webkit-box;
+    -webkit-box-align: center;
+    display: box;
+    box-align: center;
+    
     font-size: 11px;
     color: #FFF;
     cursor: pointer;
     font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
 
-    background: repeat-x url('/img/send_btn_bg_main.png');
-
-    -webkit-border-image: url('/img/send_btn_bg.png') 25;
-    width: 150px;
+    -webkit-border-image: url('/img/send_btn_bg.png') 0 11 0 11;
+    border-width: 0 11px;
     height: 25px;
-    border-width: 0 25px;
 }
+
+#replysmsbtn:hover {
+    -webkit-border-image: url('/img/send_btn_bg_hovered.png') 0 11 0 11;
+    border-width: 0 11px;
+}
+
 
 textarea {
     width: 342px;
@@ -401,11 +439,6 @@ textarea {
     cursor: text;
     width: 150px;
     border: 1px solid #6D84B4;
-}
-
-#nm_send, #nm_notes, #replysmsbtn {
-    vertical-align: top;
-    display: inline-block;
 }
 
 #nm_notes {
