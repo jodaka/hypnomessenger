@@ -85,6 +85,7 @@ var HypnoToad = {
         },
 
         CloseInfo: function() {
+            HypnoToad.Contacts.info_data.from = [];
             HypnoToad.Messages.Draft.Save();
             if (HypnoToad.Contacts.info_reload_timer) {
                 clearInterval(HypnoToad.Contacts.info_reload_timer);
@@ -438,7 +439,7 @@ var HypnoToad = {
                         {{each items}}\
                             <div class="history_item ${$value.class}">\
                                 <div class="history_rcpt">${$value.name}<br /><span class="date">{{html $value.date}}</span></div>\
-                                <div class="history_text" title="${markread}" onclick="HypnoToad.Messages.Incoming.MarkAndRemove(\'${$value.id}\'); ">${$value.text}</div>\
+                                <div class="history_text">${$value.text}</div>\
                             </div>\
                         {{/each}}\
                         ';
@@ -476,6 +477,7 @@ var HypnoToad = {
 
     Contacts: {
         info_reload_timer: false,
+        info_list: [],
         list: [],
         phones_lookup: false,
         info_data: {
@@ -503,7 +505,7 @@ var HypnoToad = {
                 </div>\
                 <div id="user_messages"><div id="contact_history"></div></div>\
                 <div id="reply_holder">\
-                    <textarea id="replysms" rows="3"></textarea>\
+                    <div id="replysms" contenteditable="true"></div>\
                     <div id="nm_reply">\
                         <div id="reply_sms_count">0 sms</div>\
                         <div id="replysmsbtn" onclick="HypnoToad.Messages.New.SendReply()">${send_reply_label}</div>\
@@ -543,8 +545,8 @@ var HypnoToad = {
 
             $('#user').html('').append(
                 jQuery.tmpl(user_tmpl , {
-                    user_name   :  contact.name,
-                    user_phone  : phones,
+                    user_name   : contact.name,
+                    user_phone  : HypnoToad.Messages.New.reply_number,
                     send_reply_label: chrome.i18n.getMessage('_send_reply')
                 })
             ).show();
@@ -585,7 +587,14 @@ var HypnoToad = {
                             }
                         }
                     }
-    
+
+                    // check if we data has anything new
+                    if (JSON.stringify(HypnoToad.Contacts.info_data.from) != JSON.stringify(from)) {
+                        HypnoToad.Contacts.info_data.from = from;
+                    } else {
+                        return 0;
+                    }
+
                     HypnoToad.Messages.New.reply_number = '';
                     var messages = [];
                     for (var i = from.length-1; i >= 0; i--) {
@@ -604,6 +613,10 @@ var HypnoToad = {
                             HypnoToad.Messages.New.reply_number = from[i].phone_number;
                         }
                     }
+
+                    // check if there are more then 1 phone number...
+                    // make something usefull 
+                    $('#user_phones').text(HypnoToad.Messages.New.reply_number);
 
                     var history_tmpl = '\
                         {{each items}}\
