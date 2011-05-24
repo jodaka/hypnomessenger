@@ -149,6 +149,12 @@ background-color: #6796fb;
 
 #user_phones.has_mmore_pphones {
     /* TODO ADD triangle that will indicate other numbers */
+    background-image: url('/img/user_number_bg.png'), url('/img/select_phones.png');
+    background-position: left center, 120px center;
+}
+
+#user_phones.has_mmore_pphones:hover {
+    background-image: url('/img/user_number_bg_hovered.png'), url('/img/select_phones.png');
 }
 
 #phones_select {

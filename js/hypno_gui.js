@@ -382,6 +382,7 @@ var HypnoToad = {
                     HypnoToad.Messages.Draft.text = ''; // reset draft
                     HypnoToad.Messages.Draft.Save();
 
+                    $('#replysms').keyup();
                     $('#replysmsbtn').show();
 
                     if (ajax['status'] == 'OK') {
@@ -575,7 +576,7 @@ var HypnoToad = {
                 }
             });
 
-            var get_data_and_draw_it = function(no_animation) {
+            var get_data_and_draw_it = function() {
                 // Drawing messages
                 jQuery.when(
                     jQuery.ajax({
@@ -663,18 +664,14 @@ var HypnoToad = {
                     HypnoToad.Messages.Draft.Load();
 
                     var contact_history = $("#contact_history");
-                    if (no_animation) {
-                        contact_history.scrollTop(contact_history.attr("scrollHeight"));
-                    } else {
-                        contact_history.animate({ scrollTop: contact_history.attr("scrollHeight") }, 1000);
-                    }
+                    contact_history.scrollTop(contact_history.attr("scrollHeight"));
                 });
             };
             
             //get_data_and_draw_it
             HypnoToad.Contacts.info_reload_timer = setInterval(function(){
                 bg.console.log('UI: ==> reloading chat');
-                get_data_and_draw_it(1);
+                get_data_and_draw_it();
             }, 10000);
             get_data_and_draw_it();
         },
