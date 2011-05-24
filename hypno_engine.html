@@ -75,12 +75,11 @@ var Hypno = {
             Hypno.params.userid     = res.email;
             Hypno.params.username   = res.nickName;
             Hypno.params.userkey    = '123456789'; // TO BE FIXED one day
-
-            //if (Hypno.auth_and_reg) {
-            //    console.log('OLA');
-            //    Hypno.Contacts.Load();
-            //    Hypno.ws.init();
-            //}
+            if (Hypno.auth_and_reg) {
+                console.log('OLA');
+                Hypno.Contacts.Load();
+                Hypno.ws.init();
+            }
         });
     },
 
@@ -90,7 +89,7 @@ var Hypno = {
         // it just check then we have auth and reg
         checkAuthAndReg: function() {
             jQuery.ajax({
-                url: Hypno.Urls.send_status+'0',
+                url: Hypno.Urls.status,
                 dataType: 'json',
                 complete: function(res) {
                     try {
@@ -109,7 +108,10 @@ var Hypno = {
 
             switch (status) {
                     case 'OK':
-                        if (window.localStorage.getItem('Hypno_status') != 'ok') Hypno.Actions.Registered();
+                        var stored_status = window.localStorage.getItem('Hypno_status');
+                        if (stored_status != 'ok' || !Hypno.auth_and_reg) {
+                            Hypno.Actions.Registered();
+                        }
                         return true;
                     break;
 
@@ -188,6 +190,7 @@ var Hypno = {
         },
 
         Registered: function() {
+            Hypno.log('ENGINE: ... DEVICE_REGISTERED');
             Hypno.auth_and_reg = true;
             Hypno.Notifications.Icon('clear');
             window.localStorage.setItem('Hypno_status', 'ok');
@@ -487,7 +490,7 @@ var Hypno = {
             Hypno.Urls.contacts    = Hypno.Urls.appEngine+"contacts_list?action=get&ver="+Hypno.params.version;
             Hypno.Urls.send        = Hypno.Urls.appEngine+"message?action=send&ver="+Hypno.params.version;
             Hypno.Urls.send_status = Hypno.Urls.appEngine+"message?action=get_status&ver="+Hypno.params.version+'&collapse_key=';
-            Hypno.Urls.websocket.host = Hypno.params.ws_port;
+            Hypno.Urls.websocket.port = Hypno.params.ws_port;
             Hypno.Urls.websocket.host = Hypno.params.ws_host;
 
             Hypno.Urls.messages = {
@@ -517,7 +520,7 @@ var Hypno = {
                     return 0;
                 }
                 try {
-                    Hypno.ws.socket = new io.Socket(null, {
+                    Hypno.ws.socket = new io.Socket(Hypno.Urls.websocket.host, {
                         port: Hypno.Urls.websocket.port,
                         rememberTransport: true
                     });
