@@ -145,6 +145,10 @@
         "message"       : "Now you can close this tab and click on WebSMS icon in the toolbar to view you sms"
     },
 
+    "_ui_logout_ok": {
+        "message"       : "You have signed out. Have fun"
+    },
+
     "_ui_month1": { "message" : "Jan" },
     "_ui_month2": { "message" : "Feb" },
     "_ui_month3": { "message" : "Mar" },

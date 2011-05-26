@@ -5,11 +5,12 @@
     <div id="outer">
         <div id="inner">
           <div id="goodnewseveryone">
-            <img src="img/icon_120.png" alt="" align="absmiddle" id="logo" /> You have signed out. Have fun   
+            <img src="img/icon_120.png" alt="" align="absmiddle" id="logo" /><span id="_ui_logout_ok"></span>
           </div>
        </div>
 </div>
 <script type="text/javascript">
+    document.getElementById('_ui_logout_ok').innerHTML = chrome.i18n.getMessage('_ui_logout_ok');
     // send auth request signal to background process
     chrome.extension.sendRequest({action: 'signout'});
 </script>
