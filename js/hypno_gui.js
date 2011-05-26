@@ -175,14 +175,6 @@ var HypnoToad = {
         
         Show: function(section, data) {
             bg.console.log('UI: == Show('+section+','+data+') ');
-            if (section == HypnoToad.UI.section) return 1;
-            
-            //if (section != 'user' && $('#contact').is(":visible")) {
-            //    //HypnoToad.Contacts.CloseInfo();
-            //    $('#contact').hide();
-            //    $('#contacts').show();
-            //}
-
             HypnoToad.UI.section = section;
 
             switch (section) {
@@ -197,9 +189,7 @@ var HypnoToad = {
                 break;
 
                 case 'user':
-                    //$('#contacts').hide();
                     $('#main div.section:visible').fadeOut('fast', 0, function(){
-                        //$('#user').show();
                         $('#menu div.active_h2').removeClass('active_h2');
                         HypnoToad.Contacts.Info(data);
                     });
@@ -593,10 +583,10 @@ var HypnoToad = {
                     HypnoToad.UI.Status();
                     var from = [];
                     var to   = [];
-    
+
                     if (ajax1[1] == 'success') from = ajax1[0].sms_list;
                     if (ajax2[1] == 'success') to   = ajax2[0].message_list;
-    
+
                     // merging of 2 lists
                     for (var t = 0; t < to.length; t++) {
                         for (var f = 0; f < from.length; f++) {
@@ -608,13 +598,16 @@ var HypnoToad = {
                             }
                         }
                     }
-
+    //
+    // after implementing
+    // ws - those are obsolete
+    //
                     // check if we data has anything new
-                    if (JSON.stringify(HypnoToad.Contacts.info_data.from) != JSON.stringify(from)) {
-                        HypnoToad.Contacts.info_data.from = from;
-                    } else {
-                        return 0;
-                    }
+                    //if (JSON.stringify(HypnoToad.Contacts.info_data.from) != JSON.stringify(from)) {
+                    //    HypnoToad.Contacts.info_data.from = from;
+                    //} else {
+                    //    return 0;
+                    //}
 
                     HypnoToad.Messages.New.reply_number = '';
                     var messages = [];
@@ -645,16 +638,21 @@ var HypnoToad = {
                     }
 
                     var phones_label = $('#user_phones');
-                    phones_label.text(HypnoToad.Messages.New.reply_number);
+                    if (HypnoToad.Messages.New.reply_number) {
+                        phones_label.text(HypnoToad.Messages.New.reply_number);
+                    } else {
+                        // fallback to first number
+                        phones_label.text(phones[0]);
+                    }
+
                     // check if there are more then 1 phone number
                     if (HypnoToad.Contacts.info_data.phones.length > 1) {
                         // make something usefull 
                         phones_label.addClass('has_mmore_pphones');
-
                         phones_label.bind('click', function(e){
                             HypnoToad.UI.SelectNumber(cid);
                         });
-                    } 
+                    }
 
                     var history_tmpl = '\
                         {{each items}}\
@@ -669,19 +667,12 @@ var HypnoToad = {
                             items           : messages
                         })
                     );
-
                     HypnoToad.Messages.Draft.Load();
 
                     var contact_history = $("#contact_history");
                     contact_history.scrollTop(contact_history.attr("scrollHeight"));
                 });
             };
-            
-            //get_data_and_draw_it
-            HypnoToad.Contacts.info_reload_timer = setInterval(function(){
-                bg.console.log('UI: ==> reloading chat');
-                get_data_and_draw_it();
-            }, 10000);
             get_data_and_draw_it();
         },
 
@@ -772,7 +763,7 @@ var HypnoToad = {
             if (res.length > 0) {
                 HypnoToad.Contacts.DrawUI(res);
             } else {
-                $('#contacts_list').html(chrome.i18n.getMessage('_ui_no_contacts_math_filtering'));
+                $('#contacts_list').html('<div id="nothing_found">'+chrome.i18n.getMessage('_ui_no_contacts_math_filtering')+'</div>');
             }
 
             return 1;
@@ -822,7 +813,6 @@ var HypnoToad = {
                                 .bind('click', {cid: list[i].id}, function(event){
                                     var parent = $(this).parent().parent();
                                     if (parent.hasClass('selected')) return 0;
-                                    
                                     $('#contacts_list li.selected').removeClass('selected');
                                     parent.addClass('selected');
                                     HypnoToad.UI.Show('user', event.data.cid);
