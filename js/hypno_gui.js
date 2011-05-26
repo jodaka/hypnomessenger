@@ -346,7 +346,8 @@ var HypnoToad = {
                     '&collapse_key='+collapse_key+
                     '&phone_number='+encodeURIComponent(phone_number)+
                     '&message='+encodeURIComponent(text);
-                 // disable button
+
+                // disable reply button to prevent double clicks
                 $('#replysmsbtn').hide();
 
                 var sending_tmpl = '\
@@ -372,7 +373,7 @@ var HypnoToad = {
                     HypnoToad.Messages.Draft.text = ''; // reset draft
                     HypnoToad.Messages.Draft.Save();
 
-                    $('#replysms').keyup();
+                    // enable Reply button
                     $('#replysmsbtn').show();
 
                     if (ajax['status'] == 'OK') {
@@ -391,7 +392,8 @@ var HypnoToad = {
                             }
                         });
 
-                        $('#replysms').text('');
+                        // clear number of SMS and input field
+                        HypnoToad.Contacts.CountSMS(document.getElementById('replysms').innerHTML='');
                     } else {
                         bg.console.error('message NOT sent');
                         bg.console.error(ajax);
@@ -504,6 +506,35 @@ var HypnoToad = {
             from: [],
             phones: []
         },
+        
+
+        /*
+            Count number of symbols in SMS and draw number of sms
+            that will be sent
+        */
+        CountSMS: function(input) {
+            var text = $(input).text().trim();
+            HypnoToad.Messages.Draft.text = text;
+
+            var text_length = 0;
+            for (var i = 0, n = text.length; i < n; i++) {
+                if (text[i].charCodeAt() > 255) {
+                    text_length = text_length+2;
+                } else {
+                    text_length++;
+                }
+            }
+
+            var sms_count  = Math.ceil(text_length / 140);
+            var sms_holder = $('#reply_sms_count');
+            sms_holder.html(sms_count+' sms');
+            if (sms_count > 0) {
+                sms_holder.addClass('mmoresms');
+            } else {
+                sms_holder.removeClass('mmoresms');
+            }
+        },
+        
         /*
             Takes contact id and shows a detailed contact info
         */
@@ -544,26 +575,7 @@ var HypnoToad = {
             ).show();
 
             $('#replysms').bind('keyup', function(e){
-                var text = $(this).text().trim();
-                HypnoToad.Messages.Draft.text = text;
-
-                var text_length = 0;
-                for (var i = 0, n = text.length; i < n; i++) {
-                    if (text[i].charCodeAt() > 255) {
-                        text_length = text_length+2;
-                    } else {
-                        text_length++;
-                    }
-                }
-
-                var sms_count  = Math.ceil(text_length / 140);
-                var sms_holder = $('#reply_sms_count');
-                sms_holder.html(sms_count+' sms');
-                if (sms_count > 0) {
-                    sms_holder.addClass('mmoresms');
-                } else {
-                    sms_holder.removeClass('mmoresms');
-                }
+                HypnoToad.Contacts.CountSMS(this);
             });
 
             var get_data_and_draw_it = function() {
