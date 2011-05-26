@@ -1,8 +1,22 @@
-<html><head></head>
+<!DOCTYPE html>
+<html><head><link rel="stylesheet" type="text/css" href="css/minime.css"/>
+</head>
 <body>
-<div id="loading"><img src="img/sending.gif" alt="" valign="absmiddle"/><div id="loading_msg" style="display: inline-block">_Loading... </div></div>
+    <div id="outer">
+        <div id="inner">
+          <div id="goodnewseveryone">
+                <div id="loading"><img src="img/sending.gif" alt="" valign="absmiddle"/><div id="loading_msg" style="display: inline-block">_Loading... </div></div>
+                <div id="signinok" style="display: none">
+                    <h2><img src="img/icon_120.png" alt="" align="absmiddle" id="logo" /> <span id="_ui_login_ok_help"> _Login_ok</span></h2>
+                    <p id="_ui_login_ok_help"> </p>
+                </div>
+          </div>
+       </div>
+</div>
 <script type="text/javascript">
-document.getElementById('loading_msg').innerHTML = chrome.i18n.getMessage('_ui_loading');
+document.getElementById('loading_msg').innerHTML        = chrome.i18n.getMessage('_ui_loading');
+document.getElementById('_ui_login_ok').innerHTML       = chrome.i18n.getMessage('_ui_login_ok');
+document.getElementById('_ui_login_ok_help').innerHTML  = chrome.i18n.getMessage('_ui_login_ok_help');
 
 // send auth request signal to background process
 chrome.extension.sendRequest({action: 'reload_data'});
@@ -13,20 +27,10 @@ chrome.extension.onRequest.addListener(
         if (request['action'] == 'reload_contacts') {
             document.getElementById('signinok').style.display = 'block';
             document.getElementById('loading').style.display  = 'none';
-            // closing current tab
-            //chrome.windows.getCurrent(function(window){
-            //    chrome.tabs.getSelected(window.id, function(tab){
-            //        chrome.tabs.remove(tab.id);
-            //    });
-            //});
-            
         }
     }
 );
 </script>
-<div id="signinok" style="display: none">
-    <h2>You have successfully logged in</h2>
-    <p>Now you can close this tab and click on Bandog icon in toolbar to view you sms</p>
-</div>
+
 <!-- Written just for fun by Anton Kudris (aka jodaka) kudris@gmail.com -->
 </body></html>

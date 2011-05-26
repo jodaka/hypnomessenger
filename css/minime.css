@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #FFF;
+    height: 100%;
+    width: 100%;
+    font-family: 'Calibri', sans;
+}
+
+#outer {
+    position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px;
+}
+#inner {
+    display:-webkit-box;
+    -webkit-box-flex:1;
+    -webkit-box-align: center; 
+    -webkit-box-pack: center;
+    -webkit-box-orient:vertical; 
+    height:100%;
+    width: 100%;
+}
+
+#logo {
+    margin: 0 10px 0 0;
+}
+
+#goodnewseveryone {
+    
+    padding: 25px 50px;
+    text-align: center;
+    
+    background-color: #40588A;
+    border-radius: 4px;
+    box-shadow: 0 0 15px #555;
+    color: #FFF;
+}

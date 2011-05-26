@@ -2,21 +2,16 @@
 <html><head><link rel="stylesheet" type="text/css" href="css/minime.css"/>
 </head>
 <body>
-    <div id="goodnewseveryone">You have signed out. Have fun</div>
-
-
+    <div id="outer">
+        <div id="inner">
+          <div id="goodnewseveryone">
+            <img src="img/icon_120.png" alt="" align="absmiddle" id="logo" /> You have signed out. Have fun   
+          </div>
+       </div>
+</div>
 <script type="text/javascript">
-//chrome.extension.sendRequest({action: 'signout'});
-
     // send auth request signal to background process
     chrome.extension.sendRequest({action: 'signout'});
-
-    //window.close();
-    //chrome.windows.getCurrent(function(window){
-    //    chrome.tabs.getSelected(window.id, function(tab){
-    //        chrome.tabs.remove(tab.id);
-    //    });
-    //});
 </script>
 <!--
     Written just for fun by Anton Kudris (aka jodaka) kudris@gmail.com
