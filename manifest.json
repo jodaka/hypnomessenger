@@ -1,5 +1,5 @@
 {
-   "background_page": "hypno_engine.html",
+   "background_page": "awesomeness_is_free_of_charge",
    "browser_action": {
       "default_icon": "icon_18.png",
       "name": "__MSG_description__"
@@ -11,5 +11,5 @@
    },
    "name": "__MSG_name__",
    "permissions": [ "tabs", "http://6.latest.bandog812.appspot.com/"],
-   "version": "3"
+   "version": "2011.5"
 }
