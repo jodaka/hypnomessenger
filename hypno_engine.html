@@ -34,6 +34,10 @@ var Hypno = {
                         Hypno.Actions.MessageSent(request)
                     break;
 
+                    case 'reload_messages':
+                        Hypno.Messages.Load();
+                    break;
+
                     case 'reload_data':
                         Hypno.Contacts.Load();
                         Hypno.Messages.Load();
@@ -241,14 +245,6 @@ var Hypno = {
             history : []
         },
 
-        //BindReloadTimer: function() {
-        //    //Hypno.log('ENGINE:  => messages reloading timer binded');
-        //    Hypno.Messages.incoming_timer = setInterval(function(){
-        //        //Hypno.log('ENGINE: Checking for new messages...');
-        //        Hypno.Messages.Load();
-        //    }, 10000);
-        //},
-
         Init: function() {
             Hypno.Messages.list = {
                 incoming: JSON.parse(window.localStorage.getItem('Hypno_messages_incoming')),
@@ -334,21 +330,22 @@ var Hypno = {
                     dataType: 'json'
                 })
             ).done(function(ajax_new_list){
+                console.log('))) ajax finished');
                 var new_sms = [];
                 if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) {
                     console.warn('ENGINE: status FAIL');
                     return false;
                 }
+                console.log('))) status ok');
                 new_sms = ajax_new_list.sms_list.slice();
-                //if (new_sms.length > 0 || Hypno.Messages.list.incoming.length != new_sms.length) Hypno.Actions.NewMessagesAvailable();
-
+                console.log('))) going to call new messages');
                 Hypno.Actions.NewMessagesAvailable();
-
                 // handling of new messages
                 if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
-                    //Hypno.Actions.NewMessagesAvailable();
+                    console.log('))) saving data');
                     Hypno.Messages.list.incoming = new_sms.slice();
                     window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
+                    Hypno.Actions.NewMessagesAvailable();
                     chrome.extension.sendRequest({action: 'reload_lists'});
                 }
             });

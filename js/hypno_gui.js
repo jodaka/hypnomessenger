@@ -618,6 +618,7 @@ var HypnoToad = {
 
                     HypnoToad.Messages.New.reply_number = '';
                     var messages = [];
+                    var markedread = 0;
                     for (var i = from.length-1; i >= 0; i--) {
                         var message = {
                             'id'    : i,
@@ -627,12 +628,20 @@ var HypnoToad = {
                             'text'  : from[i].message
                         };
                         messages.push(message);
+                        
                         if (from[i].hasOwnProperty('id') && from[i].status != 30) {
                             HypnoToad.Messages.Incoming.MarkAsRead(from[i].id);
+                            markedread = 1;
                         }
                         if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
                             HypnoToad.Messages.New.reply_number = from[i].phone_number;
                         }
+                    }
+                    if (markedread) {
+                        // if some messages were marked as read - we want to reload messages
+                        window.setTimeout(function(){
+                            chrome.extension.sendRequest({action: 'reload_messages'});
+                        }, 1000);
                     }
 
                     var phones_label = $('#user_phones');
