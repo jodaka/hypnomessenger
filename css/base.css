@@ -104,6 +104,21 @@ background-color: #6796fb;
     box-align: center;
 }
 
+#history {
+    max-height: 350px;
+}
+
+#mark_all_read {
+    font-size: 9pt;
+    text-align: left;
+    width: 100%;
+    margin: 0 0 0 10px;
+    box-sizing: border-box;
+}
+
+#mark_all_read a {
+    color: #6998FB;
+}
 
 #user_header {
     display: -webkit-box;
@@ -201,33 +216,65 @@ background-color: #6796fb;
     background-image: url('/img/close_hovered.png');
 }
 
-#history_messages, #contact_holder, #history_holder, #user_messages {
+#history_messages, #user_messages {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     margin: 15px 0 15px 10px;
-
     -webkit-box-flex: 1;
     box-flex: 1;
 }
 
-#contact_holder, #history_holder {
-    text-align: left;
-    padding: 0 20px 0 20px;
+#user_messages {
+    margin: 15px 0 0 10px;
 }
 
 /* /content */
+
+#nomsg {
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-flex: 1;
+    text-align: center;
+    color: #555;
+    font-size: 10pt;
+}
 
 /*
  same size as main div
 */
 #loading, #fader {
-    top: 0;
-    left: 0;
-    width: 750px;
-    height: 450px;
-    position: absolute;
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
     z-index: 250;
-    background-color: white;
+}
+
+#loading_center {
+    display:-webkit-box;
+    -webkit-box-flex:1;
+    -webkit-box-align: center; 
+    -webkit-box-pack: center;
+    -webkit-box-orient:vertical; 
+    height:100%;
+    width: 100%;
+    background-color: #40588A;
+    color: #FFF;
+}
+
+#not_registered {
+    margin: 0 90px;
+}
+
+#not_registered h2 {
+    color: #FFF;
+    margin: 0;
+}
+
+#not_registered p {
+    margin: 0 0 0 60px;
+    font-size: 9pt;
 }
 
 #fader {
@@ -249,13 +296,6 @@ background-color: #6796fb;
     font-size: 10pt;
 }
 
-#loading h2 {
-    margin: 50px 50px 0 50px;
-}
-
-#loading div {
-    margin: 20px 50px 50px 50px;
-}
 
 #history_header {
     height: 44px;
@@ -267,7 +307,7 @@ background-color: #6796fb;
     color: #FFF;
     font-weight: normal;
     padding: 0 0 0 10px;
-
+    cursor: default;
     display: -webkit-box;
     -webkit-box-align: center;
     -webkit-box-sizing: border-box;
@@ -344,6 +384,7 @@ label {
     /*padding: 0 0 0 10px;*/
     font-size: 18px;
     color: #FFF;
+    cursor: default;
 }
 
 #signout {
@@ -707,6 +748,7 @@ div.history_item {
     font-size: 12px;
     display: -webkit-box;
     display: box;
+    cursor: pointer;
 }
 
 div.history_rcpt {
