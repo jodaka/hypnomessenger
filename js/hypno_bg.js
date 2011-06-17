@@ -11,8 +11,21 @@ var Hypno = {
 
     // console.log wrapper then only spams in debug mode
     log: function(o) {
-        if (Hypno.params.debug&&window.console&&console.log)
+        if (Hypno.params.debug&&window.console&&console.log) {
             console.log(o);
+        }
+    },
+    // console.log wrapper then only spams in debug mode
+    warn: function(o) {
+        if (window.console&&console.warn) {
+            console.warn(o);
+        }
+    },
+    // console.log wrapper then only spams in debug mode
+    error: function(o) {
+        if (window.console&&console.error) {
+            console.error(o);
+        }
     },
 
     Init: function(params) {
@@ -29,11 +42,9 @@ var Hypno = {
             function(request, sender, sendResponse) {
 
                 if (!request.hasOwnProperty('action')) {
-                    bg.console.log('UI: request without action detected. Ignoring');
+                    Hypno.log('UI: request without action detected. Ignoring');
                     return false;
                 }
-
-                Hypno.log('ENGINE: ~~~> got signal '+request.action);
 
                 switch(request.action) {
                 case 'bg_send_sms':
@@ -42,6 +53,25 @@ var Hypno = {
 
                 case 'bg_mark_as_read':
                     Hypno.Messages.MarkAsRead(request['data']);
+                    break;
+
+                case 'bg_log':
+                    if (request.hasOwnProperty('type')) {
+                        switch (request.type) {
+                        case 'info':
+                            Hypno.log(request.data);
+                            break;
+                        case 'warn':
+                            Hypno.warn(request.data);
+                            break;
+                        case 'error':
+                            Hypno.error(request.data);
+                            break;
+                        }
+                    } else {
+                        Hypno.warn('Got log request without type definition:');
+                        Hypno.warn(request.data);
+                    }
                     break;
 
                 case 'bg_reload_messages':
@@ -74,7 +104,7 @@ var Hypno = {
                     break;
 
                 default:
-
+                    Hypno.log('ENGINE: ~~~> got signal '+request.action);
                     break;
                 }
             }
@@ -93,7 +123,7 @@ var Hypno = {
         ).done(
             function(res) {
                 if (!(typeof(res) === "object" && res.hasOwnProperty('status'))) {
-                    console.warn(res);
+                    Hypno.warn(res);
                     return false;
                 }
                 // check status
@@ -123,7 +153,7 @@ var Hypno = {
                     try {
                         json = eval('('+res['responseText']+')');  // obj = this.getResponseJSON();
                     } catch (err) {
-                        console.warn(err);
+                        Hypno.warn(err);
                         return false;
                     }
                     Hypno.Actions.checkStatus(json.status);
@@ -155,7 +185,7 @@ var Hypno = {
                 break;
 
             default:
-                console.error('ENGINE: UNKNOWN STATUS '+status);
+                Hypno.error('ENGINE: UNKNOWN STATUS '+status);
                 return false;
             }
         },
@@ -291,19 +321,6 @@ var Hypno = {
 
         LoadDialog: function(cid) {
 
-            console.warn(" === loading dialog data for cid "+cid);
-            /*
-            var dialog = window.localStorage.getItem('Hypno_dialog_cache');
-            if (dialog) {
-                try {
-                    dialog = JSON.parse(dialog);
-                } catch(e) {
-                    dialog = {};
-                }
-            } else {
-                dialog = {};
-            }
-                */
             var contact = Hypno.Contacts.list[Hypno.Contacts.FindById(cid)];
             var phones  = [];
             if (contact && contact.phones && contact.phones.length > 0) {
@@ -312,9 +329,6 @@ var Hypno = {
                 }
             }
             var phones_numbers = phones.join(',');
-            //console.warn('numbers = '+phones_numbers);
-
-            Hypno.log(' ++++++++++++++++++++++++++++ loading dialog for numbers '+phones_numbers+ ' CID='+cid);
 
             // Drawing messages
             jQuery.when(
@@ -348,11 +362,6 @@ var Hypno = {
                        }
 
                        window.localStorage.setItem('Hypno_dialog', JSON.stringify(from));
-
-                       // saving dialog cache
-//                       dialog[cid] = from.slice();
-//                       window.localStorage.setItem('Hypno_dialog_cache', JSON.stringify(dialog));
-
                        chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
                    });
 
@@ -377,10 +386,8 @@ var Hypno = {
                                 dataType: 'json'
                             })
             ).done(function(ajax_new_list){
-                       //console.log('))) ajax finished. Messages loaded');
-                       //var new_sms = [];
                        if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) {
-                           console.warn('ENGINE: status FAIL');
+                           Hypno.warn('ENGINE: status FAIL');
                            return false;
                        }
 
@@ -393,8 +400,6 @@ var Hypno = {
 
                        // handling of new messages
                        if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
-                           console.log('))) saving data');
-
                            Hypno.Messages.list.incoming = new_sms.slice();
                            window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
 
@@ -450,14 +455,9 @@ var Hypno = {
                             url: Hypno.Urls.messages['set']['read']+id_arr.join(','),
                             dataType: 'json',
                             complete: function(data) {
-                                Hypno.log(' ASREAD: ajax complete for '+id_arr.join('-'));
-                                Hypno.log(Hypno.Messages.list.incoming);
                                 Hypno.Messages.list.incoming = Hypno.Messages.RemoveById(id_arr);
-                                Hypno.log(Hypno.Messages.list.incoming);
                                 Hypno.Messages.Store();
-                                Hypno.log(' =============== finished ==========');
                                 Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
-
                                 // send signal to UI to update lists
                                 chrome.extension.sendRequest({action: 'ui_reload_contacts'});
                                 chrome.extension.sendRequest({action: 'ui_reload_messages'});
@@ -478,7 +478,7 @@ var Hypno = {
                                 try {
                                     var json = eval('('+data['responseText']+')');
                                 } catch (err) {
-                                    console.warn(err);
+                                    Hypno.warn(err);
                                     return false;
                                 }
 
@@ -567,9 +567,6 @@ var Hypno = {
                 }
             }
 
-            //console.log('generated virtual contacts');
-            //console.log(virtual);
-
             // saving virtual contacts
             for (var c in virtual) {
                 Hypno.Contacts.list.push(virtual[c]);
@@ -590,7 +587,7 @@ var Hypno = {
                                 try {
                                     json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
                                 } catch (err) {
-                                    console.warn(err);
+                                    Hypno.warn(err);
                                     return false;
                                 }
 
@@ -824,7 +821,7 @@ var Hypno = {
                 if (cid > -1) {
                     name = Hypno.Contacts.list[cid].name;
                 } else {
-                    console.warn('Haven\'t found contact for number '+msg.data);
+                    Hypno.warn('Haven\'t found contact for number '+msg.data);
                     // we don't have this contact in list
                     // we need to reset contacts lookup so it will be rebuilded
                     Hypno.Contacts.phones_lookup = false;
