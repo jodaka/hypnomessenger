@@ -226,6 +226,7 @@ background-color: #6796fb;
 
 #user_messages {
     margin: 15px 0 0 10px;
+    width: 100%;
 }
 
 /* /content */

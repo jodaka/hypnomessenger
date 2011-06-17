@@ -503,29 +503,7 @@ var HypnoToad = {
                     need_redraw = true;
                 }
             }
-/*
-            local.history = window.localStorage.getItem('Hypno_messages_history');
-            if (local.history) {
-                HypnoToad.Messages.list.history = JSON.parse(local.history);
-                need_redraw = true;
-            }
-*/
-
             return need_redraw;
-            /*
-            if (need_redraw) {
-                //if (HypnoToad.Messages.list.incoming.length > 0)
-                bg.console.log('UI: got new messages... redrawing GUI');
-
-                if (HypnoToad.Contacts.selected) {
-                    // we got active dialog
-                    HypnoToad.UI.DrawDialog();
-                } else {
-                    HypnoToad.UI.DrawNewMessages();
-                }
-                HypnoToad.Contacts.Filter();
-            }
-            */
         },
 
         _generate_collapse_key: function() {
@@ -867,7 +845,6 @@ var HypnoToad = {
             HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(chrome.extension.getURL('loading.html'))+"&ver="+HypnoToad.version;
             HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret="+encodeURIComponent(chrome.extension.getURL('close.html'))+"&ver="+HypnoToad.version;
             HypnoToad.Urls.contacts    = HypnoToad.Urls.appEngine+"contacts_list?action=get&ver="+HypnoToad.version;
-            HypnoToad.Urls.send        = HypnoToad.Urls.appEngine+"message?action=send&ver="+HypnoToad.version;
             HypnoToad.Urls.send_status = HypnoToad.Urls.appEngine+"message?action=get_status&ver="+HypnoToad.version+'&collapse_key=';
 
             HypnoToad.Urls.messages = {
