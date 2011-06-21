@@ -176,11 +176,11 @@ var HypnoToad = {
                 return false;
             }
 
-            var contact    = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
-            var dialog     = HypnoToad.Messages.list.dialog;
-            var messages   = [];
-            var markedread = [];
-            var number     = false;
+            var contact    = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)],
+                dialog     = HypnoToad.Messages.list.dialog,
+                messages   = [],
+                markedread = [],
+                number     = false;
 
             HypnoToad.Messages.New.reply_number = '';
 
@@ -213,6 +213,8 @@ var HypnoToad = {
                 phones_label.text(HypnoToad.Messages.New.reply_number);
             } else {
                 // fallback to first number
+                HypnoToad.log('~~~ falling back to default number');
+                HypnoToad.Messages.New.reply_number = HypnoToad.Contacts.info_data.phones[0];
                 phones_label.text(HypnoToad.Contacts.info_data.phones[0]);
             }
 
@@ -356,7 +358,6 @@ var HypnoToad = {
             document.getElementById('loading').innerHTML = chrome.i18n.getMessage('_ui_loading');
             return 1;
         },
-
 
         DrawRegistered: function () {
             $('#loading').hide().html();
@@ -660,6 +661,9 @@ var HypnoToad = {
                 for (var i = contact.phones.length-1; i >= 0; i--) {
                     phones.push(contact.phones[i].number);
                 }
+            }
+            if (phones.length < 1) {
+                HypnoToad.error('Contact cid='+cid+' doesn\'t have any phones numbers');
             }
             HypnoToad.Contacts.info_data.phones = phones;
 
