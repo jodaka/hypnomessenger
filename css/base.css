@@ -43,19 +43,28 @@ background-color: #6796fb;
 
 #contacts_list::-webkit-scrollbar-thumb:vertical {
     height: 50px;
-    /*background-color: #6796fb;*/
     background-image: url('/img/contacts_scroll_thumb.png');
     -webkit-border-radius: 6px;
 }
 
-#contact_history::-webkit-scrollbar-track-piece, #history_list::-webkit-scrollbar-track-piece  {
+#contact_history::-webkit-scrollbar-track-piece, #history_list::-webkit-scrollbar-track-piece, #replysms::-webkit-scrollbar-track-piece  {
     background-image: url('/img/msg_scroll_bg.png');
     width: 6px;
 }
 
-#body {
-    /*box-flex:1;*/
-    /*margin:0 auto;*/
+#replysms::-webkit-scrollbar {
+    width: 6px;
+}
+
+#replysms::-webkit-scrollbar-track-piece  {
+    width: 5px;
+}
+
+#replysms::-webkit-scrollbar-thumb:vertical {
+    height: 10px;
+    width: 5px;
+    background-image: url('/img/contacts_scroll_thumb.png');
+    -webkit-border-radius: 6px;
 }
 
 #main {
@@ -227,6 +236,9 @@ background-color: #6796fb;
 #user_messages {
     margin: 15px 0 0 10px;
     width: 100%;
+}
+#user #user_messages {
+    width: auto;
 }
 
 /* /content */
@@ -435,6 +447,8 @@ label {
     background-color: #FFF;
     font-size: 12px;
     padding: 1px 2px;
+    
+    overflow: auto;
 }
 
 #nm_reply {
