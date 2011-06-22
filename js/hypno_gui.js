@@ -865,4 +865,4 @@ var HypnoToad = {
             HypnoToad.Urls.set_status  = HypnoToad.Urls.appEngine+"sms?action=update_status&ver="+HypnoToad.version+"&status=30&collapse_key=";
         }
     }
-}
+};

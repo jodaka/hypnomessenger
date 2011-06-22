@@ -52,7 +52,7 @@ var Hypno = {
                     break;
 
                 case 'bg_mark_as_read':
-                    Hypno.Messages.MarkAsRead(request['data']);
+                    Hypno.Messages.MarkAsRead(request.data);
                     break;
 
                 case 'bg_log':
@@ -79,7 +79,7 @@ var Hypno = {
                     break;
 
                 case 'bg_load_dialog':
-                    Hypno.Messages.LoadDialog(request['cid']);
+                    Hypno.Messages.LoadDialog(request.cid);
                     break;
 
                 case 'bg_reload_data':
@@ -150,8 +150,9 @@ var Hypno = {
                 url: Hypno.Urls.status,
                 dataType: 'json',
                 complete: function(res) {
+                    var json;
                     try {
-                        json = eval('('+res['responseText']+')');  // obj = this.getResponseJSON();
+                        json = eval('('+res.responseText+')');  // obj = this.getResponseJSON();
                     } catch (err) {
                         Hypno.warn(err);
                         return false;
@@ -163,31 +164,29 @@ var Hypno = {
         },
 
         checkStatus: function(status) {
-
+            var result = false;
             switch (status) {
             case 'OK':
                 var stored_status = window.localStorage.getItem('Hypno_status');
                 if (stored_status != 'ok' || !Hypno.auth_and_reg) {
                     Hypno.Actions.Registered();
                 }
-                return true;
+                result = true;
                 break;
 
             case 'DEVICE_NOT_REGISTERED':
                 Hypno.Actions.DeviceNotRegistered();
-                return 0;
                 break;
 
             case 'SIGNIN_REQUIRED':
                 Hypno.Actions.NotAuthorized();
                 Hypno.Actions.Signout();
-                return 0;
                 break;
 
             default:
                 Hypno.error('ENGINE: UNKNOWN STATUS '+status);
-                return false;
             }
+            return result;
         },
 
         Signout: function() {
@@ -277,6 +276,7 @@ var Hypno = {
             } else {
                 window.webkitNotifications.requestPermission();
             }
+            return true;
         },
 
         Icon: function(action, msg) {
@@ -284,7 +284,7 @@ var Hypno = {
             if (action == 'new') {
                 chrome.browserAction.setIcon({path: "img/icon_18.png"});
                 // don't draw 0 sms
-                if (msg == 0) {
+                if (msg === 0) {
                     chrome.browserAction.setBadgeText({text: ''});
                     return 1;
                 }
@@ -306,6 +306,7 @@ var Hypno = {
                 chrome.browserAction.setBadgeText({text: ''});
                 chrome.browserAction.setTitle({title: chrome.i18n.getMessage('_icon_new_messages')});
             }
+            return true;
         }
     },
 
@@ -411,7 +412,7 @@ var Hypno = {
                            chrome.extension.sendRequest({action: 'ui_reload_messages'});
                            chrome.extension.sendRequest({action: 'ui_reload_contacts'});
                        }
-
+                       return true;
                    });
         },
 

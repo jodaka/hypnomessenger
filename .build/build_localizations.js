@@ -20,6 +20,7 @@ var fs      = require('fs'),
 
 // from http://code.google.com/chrome/webstore/docs/i18n.html#localeTable
 var supported_localizations = {
+    'Chtulhu': 'cht',
     'Arabic': 'ar',
     'Bulgarian': 'bg',
     'Catalan': 'ca',
