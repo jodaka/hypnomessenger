@@ -17,7 +17,6 @@ var HypnoToad = {
 
     Init: function(ver) {
         HypnoToad.version = ver;
-
         // draw loading
         HypnoToad.UI.DrawLoading();
 
@@ -60,7 +59,7 @@ var HypnoToad = {
 
                 case 'ui_reload_dialog':
                     HypnoToad.Messages.Load();
-                    HypnoToad.UI.DrawDialog(request['cid']);
+                    HypnoToad.UI.DrawDialog(request.cid);
                     break;
 
                 case 'ui_registered':
@@ -114,28 +113,36 @@ var HypnoToad = {
         select_number_active: false,
 
         SelectNumber: function(cid) {
-            if (HypnoToad.UI.select_number_active) return false;
+            if (HypnoToad.UI.select_number_active) {
+                return false;
+            }
 
             HypnoToad.UI.select_number_active = true;
             var contact = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)];
             var phones  = [];
 
-            var list_select = $('<ul></ul>');
+            var list_select = document.createElement('ul');
+
+            var bind_helper = function(phone_number) {
+                return function(e) {
+                    HypnoToad.Messages.New.reply_number = phone_number;
+                    $('#user_phones').html(phone_number);
+                    $('#phones_select').remove();
+                    HypnoToad.UI.select_number_active = false;
+                };
+            };
+
             for (var i = contact.phones.length-1; i >= 0; i--) {
-                list_select.append(
-                    $('<li></li>')
-                    .append(contact.phones[i].number)
-                    .bind('click', {phone: contact.phones[i].number}, function(e){
-                        HypnoToad.Messages.New.reply_number = e.data.phone;
-                        $('#user_phones').html(e.data.phone);
-                        $('#phones_select').remove();
-                        HypnoToad.UI.select_number_active = false;
-                    })
-                );
+                var li = document.createElement('li');
+                li.innerHTML = contact.phones[i].number;
+                li.onclick   = bind_helper(contact.phones[i].number);
+                list_select.appendChild(li);
             }
-            var phones_select = jQuery('<div id="phones_select"></div>')
-                .append(list_select);
-            jQuery('body').append(phones_select);
+
+            var phones_select = document.createElement('div');
+            phones_select.setAttribute('id', 'phones_select');
+            phones_select.innerHTML = list_select;
+            document.body.appendChild(phones_select);
             return true;
         },
 
@@ -189,9 +196,7 @@ var HypnoToad = {
                     'id'    : i,
                     'class' : (dialog[i].hasOwnProperty('id')) ? 'notme' : 'me',
                     'date'  : HypnoToad.Messages.formatTime(dialog[i].create_time),
-                    'name'  : (dialog[i].hasOwnProperty('id'))
-                        ? ((contact) ? contact.name : dialog[i].phone_number)
-                        : chrome.i18n.getMessage('_me'),
+                    'name'  : (dialog[i].hasOwnProperty('id')) ? ((contact) ? contact.name : dialog[i].phone_number) : chrome.i18n.getMessage('_me'),
                     'text'  : dialog[i].message
                 };
                 // name error ?
@@ -200,7 +205,7 @@ var HypnoToad = {
                 if (dialog[i].hasOwnProperty('id') && dialog[i].status != 30) {
                     markedread.push(dialog[i].id);
                 }
-                if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number == '') {
+                if (message['class'] == 'notme' && HypnoToad.Messages.New.reply_number === '') {
                     HypnoToad.Messages.New.reply_number = dialog[i].phone_number;
                 }
             }
@@ -772,7 +777,7 @@ var HypnoToad = {
                 }
             }
 
-            for (var i in new_sms_rcpt) {
+            for (i in new_sms_rcpt) {
                 if (!new_sms_rcpt.hasOwnProperty(i)) continue;
 
                 var id      = HypnoToad.Contacts.FindById(i);
@@ -790,7 +795,7 @@ var HypnoToad = {
                 }
             }
 
-            for (var i = 0; i < list.length; i++) {
+            for (i = 0; i < list.length; i++) {
                 if (new_sms_rcpt[list[i].id]) continue;
 
                 if (name_part != '') {
