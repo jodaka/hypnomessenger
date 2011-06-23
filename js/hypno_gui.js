@@ -550,10 +550,11 @@ var HypnoToad = {
 
                 HypnoToad.log('UI: Send Reply called');
 
-                var text    = $('#replysms').text().trim();
+                var textinput = $('#replysms');
+                var smstext   = textinput.text().trim();
 
                 // lets show a warning if there's no text to send
-                if (text == '') {
+                if (smstext == '') {
                     HypnoToad.warn('UI: sms without text. Exiting');
                     return false;
                 }
@@ -574,7 +575,7 @@ var HypnoToad = {
                 $('#contact_history').prepend(
                     jQuery.tmpl(sending_tmpl, {
                         name: chrome.i18n.getMessage('_me'),
-                        text: text
+                        text: smstext
                     })
                 );
 
@@ -590,12 +591,14 @@ var HypnoToad = {
                     {
                         action : 'bg_send_sms',
                         data: {
-                            'message'       : encodeURIComponent(text),
+                            'message'       : encodeURIComponent(smstext),
                             'collapse_key'  : collapse_key,
                             'phone_number'  : encodeURIComponent(phone_number)
                         }
                     }
                 );
+
+                textinput.focus();
                 return true;
             },
 
@@ -821,7 +824,7 @@ var HypnoToad = {
 
         // type could be 'name' or 'secondname'
         Sort: function(type) {
-            if (type == 'name') {
+            if (type === 'name' && HypnoToad.Contacts.list) {
                 return HypnoToad.Contacts.list.sort(function(a,b){
                     if (a.name < b.name) return -1;
                     if (a.name > b.name) return 1;
