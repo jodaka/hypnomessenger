@@ -233,7 +233,7 @@ var Hypno = {
         },
 
         Registered: function() {
-            Hypno.log('ENGINE: ... DEVICE_REGISTERED');
+            Hypno.log('ENGINE: ... DEVICE_REGISTERED!');
             Hypno.auth_and_reg = true;
             Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
             window.localStorage.setItem('Hypno_status', 'ok');
@@ -342,29 +342,40 @@ var Hypno = {
                                 dataType: 'json'
 
                             })
-            ).done(function(ajax1, ajax2){
+            ).done(
+                function(ajax1, ajax2){
+                    // the problem here is that both lists are not sorted.
+                    // so we can try to concat them and then sort
+                    var list = ajax1[0].sms_list.slice().concat(ajax2[0].message_list.slice());
 
-                       var from = [];
-                       var to   = [];
+                    // Copyright Douglas Crockford
+                    var by = function(name){
+                        return function(o, p) {
+                            var a, b;
+                            if (typeof o === 'object' && typeof p === 'object' && o && p) {
+                                a = o[name];
+                                b = p[name];
+                                if (a === b){
+                                    return 0;
+                                }
+                                if (typeof a === typeof b){
+                                    return a < b ? -1 : 1;
+                                }
+                                return typeof a < typeof b ? -1 : 1;
 
-                       if (ajax1[1] == 'success') from = ajax1[0].sms_list;
-                       if (ajax2[1] == 'success') to   = ajax2[0].message_list;
+                            } else {
+                                throw {
+                                    name: "Error",
+                                    message: 'i want object with property '+name
+                                };
+                            }
+                        };
+                    };
 
-                       // merging of 2 lists
-                       for (var t = 0; t < to.length; t++) {
-                           for (var f = 0; f < from.length; f++) {
-                               if (from[f].create_time > to[t].create_time) {
-                                   continue;
-                               } else {
-                                   from.splice(f, 0, to[t]);
-                                   break;
-                               }
-                           }
-                       }
-
-                       window.localStorage.setItem('Hypno_dialog', JSON.stringify(from));
-                       chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
-                   });
+                    var sorted = list.sort(by('create_time')).reverse();
+                    window.localStorage.setItem('Hypno_dialog', JSON.stringify(sorted));
+                    chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
+                });
 
         },
 
@@ -816,33 +827,59 @@ var Hypno = {
 
             // handling of new sms notifications
             sms: function(msg) {
-                // message data contaions phone number
-                var name = msg.data;
-                var cid  = Hypno.Contacts.FindByPhone(msg.data);
+                // message data contaions full sms
+                try {
+                    msg = JSON.parse(msg.data);
+                } catch (x) {
+                    Hypno.error('Cannot parse new incoming sms message. Not a proper JSON format');
+                    Hypno.error(msg);
+                    return false;
+                }
+
+                // saving new sms into list
+                Hypno.Messages.list.incoming.unshift(msg);
+                Hypno.Messages.Store();
+
+                var name = msg.phone_number;
+                var cid  = Hypno.Contacts.FindByPhone(msg.phone_number);
+
                 if (cid > -1) {
                     name = Hypno.Contacts.list[cid].name;
                 } else {
-                    Hypno.warn('Haven\'t found contact for number '+msg.data);
+                    Hypno.warn('Haven\'t found contact for number '+msg.phone_number);
                     // we don't have this contact in list
                     // we need to reset contacts lookup so it will be rebuilded
                     Hypno.Contacts.phones_lookup = false;
                     Hypno.Contacts.GenerateVirtualContacts();
-                    cid = msg.data;
+                    cid = msg.phone_number;
                 }
+
                 Hypno.Notifications.Popup(chrome.i18n.getMessage('_new_sms_notify_label')+' '+name);
-                Hypno.Messages.Load();
+
+                // send signal to UI
+                Hypno.Actions.NewMessagesAvailable();
+                chrome.extension.sendRequest({action: 'ui_reload_messages'});
+                chrome.extension.sendRequest({action: 'ui_reload_contacts'});
 
                 // if we got active dialog - we should update it
                 if (Hypno.Contacts.active_dialog) {
                     if (Hypno.Contacts.active_dialog.indexOf(msg.data) != -1) {
                         Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.data);
-                        var contact_id = Hypno.Contacts.list[cid].id;
-                        Hypno.Messages.LoadDialog(contact_id);
+
+                        var magick = function (){
+                            Hypno.log('*** doing magick with dialog');
+                            var dialog = JSON.parse(window.localStorage.getItem('Hypno_dialog'));
+                            dialog.unshift(msg);
+                            window.localStorage.setItem('Hypno_dialog', JSON.stringify(dialog));
+                            chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
+                            //var contact_id = Hypno.Contacts.list[cid].id;
+                            //Hypno.Messages.LoadDialog(contact_id);
+                        };
+                        magick();
+
                     } else {
                         Hypno.log('active dialog with '+Hypno.Contacts.active_dialog+' but sms is from '+ msg.data);
                     }
-                } else {
-                    Hypno.log('no active dialog found');
                 }
             },
 

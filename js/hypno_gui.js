@@ -141,7 +141,7 @@ var HypnoToad = {
 
             var phones_select = document.createElement('div');
             phones_select.setAttribute('id', 'phones_select');
-            phones_select.innerHTML = list_select;
+            phones_select.appendChild(list_select);
             document.body.appendChild(phones_select);
             return true;
         },
