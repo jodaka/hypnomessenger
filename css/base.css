@@ -276,6 +276,13 @@ background-color: #6796fb;
     color: #FFF;
 }
 
+#dialogloading {
+    height: 180px;
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+}
+
 #not_registered {
     margin: 0 90px;
 }

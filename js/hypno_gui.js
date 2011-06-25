@@ -681,7 +681,9 @@ var HypnoToad = {
                     <div id="user_phones">${user_phone}</div>\
                     <div onclick="HypnoToad.UI.CloseInfo()" id="user_close">&nbsp;</div>\
                 </div>\
-                <div id="user_messages"><div id="contact_history"></div></div>\
+                <div id="user_messages"><div id="contact_history">\
+                   <div id="dialogloading"><img src="img/dialogloading.gif" alt="" /></div>\
+                </div></div>\
                 <div id="reply_holder">\
                     <div id="replysms" contenteditable="true"></div>\
                     <div id="nm_reply">\
@@ -694,7 +696,7 @@ var HypnoToad = {
             //HypnoToad.UI.Status(chrome.i18n.getMessage('_ui_loading'));
             HypnoToad.log('UI: reply number '+HypnoToad.Messages.New.reply_number);
 
-            $('#user').html('').append(
+            $('#user').html(
                 jQuery.tmpl(user_tmpl , {
                     user_name   : contact.name,
                     user_phone  : chrome.i18n.getMessage('loading'),
@@ -704,7 +706,6 @@ var HypnoToad = {
 
             // send a signal to background to indicate that we have active dialog
             chrome.extension.sendRequest({action: 'bg_dialog_active', data: phones.join(' ')});
-
 
             $('#replysms').bind('keyup', function(e){
                 HypnoToad.Contacts.CountSMS(this);
