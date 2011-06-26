@@ -48,9 +48,9 @@ var HypnoToad = {
                     break;
 
                 case 'ui_reload_messages':
-                    if (HypnoToad.Messages.Load()) {
-                        HypnoToad.UI.Update();
-                    }
+                    HypnoToad.Messages.Load();
+
+                    HypnoToad.UI.Update();
                     break;
 
                 case 'ui_not_registered':
@@ -58,8 +58,11 @@ var HypnoToad = {
                     break;
 
                 case 'ui_reload_dialog':
+                    HypnoToad.log('~~~ update started');
                     HypnoToad.Messages.Load();
                     HypnoToad.UI.DrawDialog(request.cid);
+                    HypnoToad.log('~~~ update finished');
+
                     break;
 
                 case 'ui_registered':

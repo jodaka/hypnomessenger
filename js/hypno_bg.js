@@ -852,7 +852,7 @@ var Hypno = {
                     Hypno.Contacts.phones_lookup = false;
                     Hypno.Contacts.GenerateVirtualContacts();
                     window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
-                    cid = msg.phone_number;
+                    cid = Hypno.Contacts.FindByPhone(msg.phone_number);
                 }
 
                 Hypno.Notifications.Popup(chrome.i18n.getMessage('_new_sms_notify_label')+' '+name);
@@ -867,16 +867,12 @@ var Hypno = {
                     if (Hypno.Contacts.active_dialog.indexOf(msg.data) != -1) {
                         Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.data);
 
-                        var magick = function (){
-                            Hypno.log('*** doing magick with dialog');
-                            var dialog = JSON.parse(window.localStorage.getItem('Hypno_dialog'));
-                            dialog.unshift(msg);
-                            window.localStorage.setItem('Hypno_dialog', JSON.stringify(dialog));
-                            chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
-                            //var contact_id = Hypno.Contacts.list[cid].id;
-                            //Hypno.Messages.LoadDialog(contact_id);
-                        };
-                        magick();
+                        var dialog = JSON.parse(window.localStorage.getItem('Hypno_dialog'));
+                        dialog.unshift(msg);
+                        window.localStorage.setItem('Hypno_dialog', JSON.stringify(dialog));
+
+                        var contact_id = Hypno.Contacts.list[cid].id;
+                        chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: contact_id, noreload: 1});
 
                     } else {
                         Hypno.log('active dialog with '+Hypno.Contacts.active_dialog+' but sms is from '+ msg.data);
