@@ -294,19 +294,13 @@ var HypnoToad = {
         },
 
         SelectUser: function(id, el) {
-            //var parent = $(el).parent().parent();
-            //if (parent.hasClass('selected')) return 0;
-            if (HypnoToad.Contacts.selected == id) return false; // do nothing if user already selected
-
+            // do nothing if user already selected
+            if (HypnoToad.Contacts.selected == id) {
+                return false;
+            }
             HypnoToad.Contacts.selected = id;
-
-            //$('#contacts_list li.selected').removeClass('selected');
-            //parent.addClass('selected');
-
             HypnoToad.UI.Show('user', id);
-            //HypnoToad.UI.DrawContacts();
             HypnoToad.Contacts.Filter();
-            return true;
         },
 
         DrawNewMessages: function() {

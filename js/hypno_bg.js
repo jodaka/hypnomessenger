@@ -544,8 +544,8 @@ var Hypno = {
         // this function will parse all incoming messages and search for
         // senders that are not in the contact list
         GenerateVirtualContacts: function(messages, contacts) {
-            var msgs = (messages) ? messages : Hypno.Messages.list.incoming;
-            var ctcs = (contacts) ? contacts : Hypno.Contacts.list;
+            var msgs = messages || Hypno.Messages.list.incoming;
+            var ctcs = contacts || Hypno.Contacts.list;
 
             if (!msgs) {
                 Hypno.log('Warning! no messages found. Can\'t generate virtual contacts');
@@ -851,6 +851,7 @@ var Hypno = {
                     // we need to reset contacts lookup so it will be rebuilded
                     Hypno.Contacts.phones_lookup = false;
                     Hypno.Contacts.GenerateVirtualContacts();
+                    window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
                     cid = msg.phone_number;
                 }
 
