@@ -270,8 +270,11 @@ var Hypno = {
 
                 // remove notification
                 setTimeout(function(){
-                               Hypno.Notifications.desktop_popup.cancel();
-                               Hypno.Notifications.desktop_popup = false;
+                               // we check if user have already closed popup
+                               if (Hypno.Notifications.desktop_popup) {
+                                   Hypno.Notifications.desktop_popup.cancel();
+                                   Hypno.Notifications.desktop_popup = false;
+                               }
                            }, 4000);
 
             } else {
@@ -462,7 +465,9 @@ var Hypno = {
                             url: Hypno.Urls.messages['set']['read']+id_arr.join(','),
                             dataType: 'json',
                             complete: function(data) {
-                                Hypno.Messages.list = Hypno.Messages.RemoveById(id_arr);
+                                Hypno.warn('removing by id');
+                                Hypno.warn(id_arr);
+                                Hypno.Messages.list = Hypno.Messages.RemoveById();
                                 Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
 
                                 // send signal to UI to update lists
@@ -579,7 +584,6 @@ var Hypno = {
                 return 0;
             }
 
-            var virtual = {};
             /*
              contact format
              ---------------
@@ -589,23 +593,16 @@ var Hypno = {
              */
             for (var i = 0; i < msgs.length; i++) {
                 if (!Hypno.Contacts.FindByPhone(msgs[i].phone_number)) {
-                    virtual[msgs[i].phone_number] = {
-                        id  : 'virt'+i,
+                    Hypno.Contacts.list.push({
+                        id  : 'virt'+Math.floor(Math.random()*11)+Math.floor(Math.random()*5)+(new Date().getTime()), // trying to be random :(
                         name: msgs[i].phone_number,
                         phones: [{
                                      number  : msgs[i].phone_number,
                                      primary : true,
                                      type    : 2 // could be any type here
                                  }]
-                    };
-                }
-            }
-
-            // saving virtual contacts
-            for (var c in virtual) {
-                if (virtual.hasOwnProperty(c)) {
-                    Hypno.Contacts.list.push(virtual[c]);
-                    Hypno.Contacts.phones_lookup[c] = Hypno.Contacts.list.length-1;
+                    });
+                    Hypno.Contacts.phones_lookup[msgs[i].phone_number] = Hypno.Contacts.list.length-1;
                 }
             }
 

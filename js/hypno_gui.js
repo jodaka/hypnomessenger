@@ -458,7 +458,7 @@ var HypnoToad = {
                 var draft = $('#replysms').text();
                 if (draft.length == 0 && HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number]) {
                     HypnoToad.log('UI: draft LOADED');
-                    $('#replysms').text(HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number]);
+                    $('#replysms').html(HypnoToad.Messages.drafts[HypnoToad.Messages.New.reply_number]);
                 }
             }
         },
@@ -593,6 +593,7 @@ var HypnoToad = {
                 HypnoToad.Messages.New.sending = false;
                 // enable Reply button
                 $('#replysmsbtn').show();
+                $('#replysms').html('');
             }
         }
     },
@@ -803,7 +804,7 @@ var HypnoToad = {
         }
     },
 
-    Urls: {
+    Url: {
         appEngine   : false,
         signIn      : false,
         signOut     : false,
