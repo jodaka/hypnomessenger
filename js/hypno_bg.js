@@ -34,9 +34,6 @@ var Hypno = {
         // initializing urls
         Hypno.Urls.Init();
 
-        // clean dialogs cache
-        window.localStorage.removeItem('Hypno_dialog_cache');
-
         // add listener to communicate with popup page
         chrome.extension.onRequest.addListener(
             function(request, sender, sendResponse) {
@@ -72,6 +69,22 @@ var Hypno = {
                         Hypno.warn('Got log request without type definition:');
                         Hypno.warn(request.data);
                     }
+                    break;
+
+                case 'bg_get_contact_list':
+                    // send signal to main window with contact list
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_contacts',
+                                                     data: Hypno.Contacts.list
+                                                 });
+                    break;
+
+                case 'bg_get_messages':
+                    // send signal to main window with contact list
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_messages',
+                                                     data: Hypno.Messages.list
+                                                 });
                     break;
 
                 case 'bg_reload_messages':
@@ -193,17 +206,6 @@ var Hypno = {
             Hypno.log('ENGINE: Signout called. All data cleared');
             Hypno.Notifications.Icon('auth');
             window.localStorage.setItem('Hypno_status', 'auth');
-            Hypno.Messages.list = {
-                incoming: [],
-                outgoing: [],
-                history : [],
-                viewed  : []
-            };
-            window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
-            window.localStorage.setItem('Hypno_messages_outgoing', JSON.stringify(Hypno.Messages.list.outgoing));
-            window.localStorage.setItem('Hypno_messages_viewed', JSON.stringify(Hypno.Messages.list.viewed));
-            window.localStorage.setItem('Hypno_messages_history', JSON.stringify(Hypno.Messages.list.history));
-
             Hypno.Contacts.list = [];
         },
 
@@ -214,9 +216,8 @@ var Hypno = {
 
         NewMessagesAvailable: function() {
             window.localStorage.setItem('Hypno_status', 'ok');
-            //Hypno.log('ENGINE: ++ NewMessagesAvailable fired');
-            if (Hypno.Messages.list.incoming && Hypno.Messages.list.incoming.length > 0) {
-                Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
+            if (Hypno.Messages.list && Hypno.Messages.list.length > 0) {
+                Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
             } else {
                 Hypno.Notifications.Icon('clear');
             }
@@ -235,7 +236,7 @@ var Hypno = {
         Registered: function() {
             Hypno.log('ENGINE: ... DEVICE_REGISTERED!');
             Hypno.auth_and_reg = true;
-            Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
+            Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
             window.localStorage.setItem('Hypno_status', 'ok');
             chrome.extension.sendRequest({action: 'ui_registered'});
         },
@@ -312,13 +313,12 @@ var Hypno = {
 
     Messages: {
         iniated: false,
-        //incoming_timer: false,
-        list: {
-            incoming: [],
-            outgoing: [],
-            viewed  : [],
-            history : []
-        },
+
+        // incoming sms messages
+        list: [],
+
+        // holds active dialog
+        active_dialog: [],
 
         LoadDialog: function(cid) {
 
@@ -372,9 +372,12 @@ var Hypno = {
                         };
                     };
 
-                    var sorted = list.sort(by('create_time')).reverse();
-                    window.localStorage.setItem('Hypno_dialog', JSON.stringify(sorted));
-                    chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: cid});
+                    Hypno.Messages.active_dialog = list.sort(by('create_time')).reverse();
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_dialog',
+                                                     cid: cid,
+                                                     data: Hypno.Messages.active_dialog
+                                                 });
                 });
 
         },
@@ -382,13 +385,6 @@ var Hypno = {
         Load: function(){
 
             if (!Hypno.Messages.iniated) {
-                // load cache
-                Hypno.Messages.list = {
-                    incoming: JSON.parse(window.localStorage.getItem('Hypno_messages_incoming')),
-                    outgoing: JSON.parse(window.localStorage.getItem('Hypno_messages_outgoing')),
-                    viewed  : JSON.parse(window.localStorage.getItem('Hypno_messages_viewed')),
-                    history : []
-                };
                 Hypno.Messages.iniated = true;
             }
 
@@ -408,37 +404,36 @@ var Hypno = {
 
                        // generating virtual contacts
                        Hypno.Contacts.GenerateVirtualContacts(new_sms);
-                       window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
+                       // TODO FIXME
+                       // do we really need above? Maybe we should send contacts to UI here ?
+
 
                        // handling of new messages
-                       if (JSON.stringify(Hypno.Messages.list.incoming) != JSON.stringify(new_sms)) {
-                           Hypno.Messages.list.incoming = new_sms.slice();
-                           window.localStorage.setItem('Hypno_messages_incoming', JSON.stringify(Hypno.Messages.list.incoming));
+                       if (Hypno.Messages.list != new_sms) {
+                           Hypno.Messages.list = new_sms.slice();
 
                            // generating virtual contacts
                            Hypno.Contacts.GenerateVirtualContacts();
-                           window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
-
                            Hypno.Actions.NewMessagesAvailable();
-                           chrome.extension.sendRequest({action: 'ui_reload_messages'});
-                           chrome.extension.sendRequest({action: 'ui_reload_contacts'});
+
+                           chrome.extension.sendRequest({
+                                                            action: 'ui_reload_messages',
+                                                            data: Hypno.Messages.list
+                                                        });
+                           chrome.extension.sendRequest({
+                                                            action: 'ui_reload_contacts',
+                                                            data: Hypno.Contacts.list
+                                                        });
                        }
                        return true;
                    });
-        },
-
-        Store: function() {
-            window.localStorage.setItem('Hypno_messages_incoming',  JSON.stringify(Hypno.Messages.list.incoming));
-            window.localStorage.setItem('Hypno_messages_viewed',    JSON.stringify(Hypno.Messages.list.viewed));
-            window.localStorage.setItem('Hypno_messages_outgoing',  JSON.stringify(Hypno.Messages.list.outgoing));
-            window.localStorage.setItem('Hypno_messages_history',   JSON.stringify(Hypno.Messages.list.history));
         },
 
         /*
          Receive a list of messages ids and move them from list to copy2list
          */
         RemoveById: function(id_arr) {
-            var list = Hypno.Messages.list.incoming;
+            var list = Hypno.Messages.list;
             for (var a = 0, max = id_arr.length; a < max; a++) {
                 for (var l = 0, max2 = list.length; l < max2; l++) {
                     if (list[l].id == id_arr[a]) {
@@ -454,7 +449,7 @@ var Hypno = {
             // we can mark all messages as read if pass any string instead of array
             if (id_arr.constructor != Array ) {
                 id_arr = [];
-                var list = Hypno.Messages.list.incoming;
+                var list = Hypno.Messages.list;
                 for (var i = 0, max = list.length; i < max; i++) {
                     if (list[i].hasOwnProperty('id') && list[i].status != 30)
                         id_arr.push(list[i].id);
@@ -467,12 +462,19 @@ var Hypno = {
                             url: Hypno.Urls.messages['set']['read']+id_arr.join(','),
                             dataType: 'json',
                             complete: function(data) {
-                                Hypno.Messages.list.incoming = Hypno.Messages.RemoveById(id_arr);
-                                Hypno.Messages.Store();
-                                Hypno.Notifications.Icon('new', Hypno.Messages.list.incoming.length);
+                                Hypno.Messages.list = Hypno.Messages.RemoveById(id_arr);
+                                Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
+
                                 // send signal to UI to update lists
-                                chrome.extension.sendRequest({action: 'ui_reload_contacts'});
-                                chrome.extension.sendRequest({action: 'ui_reload_messages'});
+                                chrome.extension.sendRequest({
+                                                                 action: 'ui_reload_contacts',
+                                                                 data: Hypno.Contacts.list
+                                                             });
+
+                                chrome.extension.sendRequest({
+                                                                 action: 'ui_reload_messages',
+                                                                 data: Hypno.Messages.list
+                                                             });
                             }
                         });
         },
@@ -480,8 +482,8 @@ var Hypno = {
         Send: function(msg) {
             var send_url = Hypno.Urls.send+
                 '&collapse_key='+msg.collapse_key+
-                '&phone_number='+msg.phone_number+
-                '&message='+msg.message;
+                '&phone_number='+encodeURIComponent(msg.phone_number)+
+                '&message='+encodeURIComponent(msg.message);
 
             jQuery.ajax({
                             url: send_url,
@@ -495,12 +497,26 @@ var Hypno = {
                                 }
 
                                 if (Hypno.Actions.checkStatus(json.status)) {
+
+                                    // saving message to dialog
+                                    Hypno.Messages.active_dialog.unshift({
+                                                                             create_time: new Date().getTime(),
+                                                                             id: msg.collapse_key,
+                                                                             message: msg.message,
+                                                                             phone_number: msg.phone_number,
+                                                                             status: 30
+                                                                         });
+
                                     chrome.extension.sendRequest({
-                                                                     action : 'ui_message_sent',
-                                                                     message: {
-                                                                         'collapse_key'  : msg.collapse_key
-                                                                     }
+                                                                     action : 'ui_message_sent'
                                                                  });
+
+                                    chrome.extension.sendRequest({
+                                                                     action: 'ui_reload_dialog',
+                                                                     cid: msg.cid,
+                                                                     data: Hypno.Messages.active_dialog
+                                                                 });
+
                                 }
                                 return true;
                             }
@@ -523,19 +539,22 @@ var Hypno = {
             return -1;
         },
 
+        RebuildLookup: function() {
+            var lookup   = {};
+            var list = Hypno.Contacts.list;
+            for (var i = 0; i < list.length; i++) {
+                for (var j = 0; j < list[i].phones.length; j++) {
+                    lookup[list[i].phones[j].number] = i;
+                }
+            }
+            Hypno.Contacts.phones_lookup = lookup;
+        },
+
         FindByPhone: function(phone) {
             var lookup = Hypno.Contacts.phones_lookup;
 
             if (!lookup) {
-                lookup   = {};
-                var list = Hypno.Contacts.list;
-                for (var i = 0; i < list.length; i++) {
-                    for (var j = 0; j < list[i].phones.length; j++) {
-                        var number = list[i].phones[j].number;
-                        lookup[number] = i;
-                    }
-                }
-                Hypno.Contacts.phones_lookup = lookup;
+                Hypno.Contacts.RebuildLookup();
             }
             if (!phone) return -1;
             return lookup[phone];
@@ -544,7 +563,10 @@ var Hypno = {
         // this function will parse all incoming messages and search for
         // senders that are not in the contact list
         GenerateVirtualContacts: function(messages, contacts) {
-            var msgs = messages || Hypno.Messages.list.incoming;
+            // reseting lookup
+            Hypno.Contacts.phones_lookup = false;
+
+            var msgs = messages || Hypno.Messages.list;
             var ctcs = contacts || Hypno.Contacts.list;
 
             if (!msgs) {
@@ -581,8 +603,10 @@ var Hypno = {
 
             // saving virtual contacts
             for (var c in virtual) {
-                Hypno.Contacts.list.push(virtual[c]);
-                Hypno.Contacts.phones_lookup[c] = Hypno.Contacts.list.length-1;
+                if (virtual.hasOwnProperty(c)) {
+                    Hypno.Contacts.list.push(virtual[c]);
+                    Hypno.Contacts.phones_lookup[c] = Hypno.Contacts.list.length-1;
+                }
             }
 
             return 1;
@@ -605,23 +629,25 @@ var Hypno = {
 
                                 if (Hypno.Actions.checkStatus(json.status)) {
 
-                                    if (!Hypno.auth_and_reg) Hypno.Actions.Registered(); // ? do we really need this ?
+                                    if (!Hypno.auth_and_reg) {
+                                        Hypno.Actions.Registered(); // ? do we really need this ?
+                                    }
 
-                                    if (JSON.stringify(Hypno.Contacts.list) != JSON.stringify(json.contact_list)) {
+                                    if (Hypno.Contacts.list != json.contact_list) {
                                         Hypno.log('<== got new contacts list');
-                                        Hypno.Contacts.list = json.contact_list;
-
-                                        // we need to reset contacts lookup so it will be rebuilded
-                                        Hypno.Contacts.phones_lookup = false;
+                                        Hypno.Contacts.list = json.contact_list.slice();
 
                                         // generating virtual contacts
                                         Hypno.Contacts.GenerateVirtualContacts();
-                                        // saving contacts
-                                        window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
-                                        window.localStorage.setItem('Hypno_status', 'ok');
+
+//                                        window.localStorage.setItem('Hypno_status', 'ok');
 
                                         // send signal to main window to update contacts list
-                                        chrome.extension.sendRequest({action: 'ui_reload_contacts'});
+                                        chrome.extension.sendRequest({
+                                                                         action: 'ui_reload_contacts',
+                                                                         data: Hypno.Contacts.list
+                                                                     });
+
                                     }
 
                                     // getting messages from server
@@ -837,21 +863,21 @@ var Hypno = {
                 }
 
                 // saving new sms into list
-                Hypno.Messages.list.incoming.unshift(msg);
-                Hypno.Messages.Store();
+                Hypno.Messages.list.unshift(msg);
 
-                var name = msg.phone_number;
+                // send message to UI instead of storing into local storage
+                //Hypno.Messages.Store();
+
+
                 var cid  = Hypno.Contacts.FindByPhone(msg.phone_number);
+                var name = msg.phone_number;
 
                 if (cid > -1) {
+                    // we found contact
                     name = Hypno.Contacts.list[cid].name;
                 } else {
-                    Hypno.warn('Haven\'t found contact for number '+msg.phone_number);
-                    // we don't have this contact in list
                     // we need to reset contacts lookup so it will be rebuilded
-                    Hypno.Contacts.phones_lookup = false;
                     Hypno.Contacts.GenerateVirtualContacts();
-                    window.localStorage.setItem('Hypno_contacts', JSON.stringify(Hypno.Contacts.list));
                     cid = Hypno.Contacts.FindByPhone(msg.phone_number);
                 }
 
@@ -859,20 +885,28 @@ var Hypno = {
 
                 // send signal to UI
                 Hypno.Actions.NewMessagesAvailable();
-                chrome.extension.sendRequest({action: 'ui_reload_messages'});
-                chrome.extension.sendRequest({action: 'ui_reload_contacts'});
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_messages',
+                                                 data: Hypno.Messages.list
+                                             });
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_contacts',
+                                                 data: Hypno.Contacts.list
+                                             });
 
                 // if we got active dialog - we should update it
                 if (Hypno.Contacts.active_dialog) {
-                    if (Hypno.Contacts.active_dialog.indexOf(msg.data) != -1) {
+                    if (Hypno.Contacts.active_dialog.indexOf(msg.phone_number) != -1) {
                         Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.data);
-
-                        var dialog = JSON.parse(window.localStorage.getItem('Hypno_dialog'));
-                        dialog.unshift(msg);
-                        window.localStorage.setItem('Hypno_dialog', JSON.stringify(dialog));
-
+                        // injecting sms message into dialog
+                        Hypno.Messages.active_dialog.unshift(msg);
                         var contact_id = Hypno.Contacts.list[cid].id;
-                        chrome.extension.sendRequest({action: 'ui_reload_dialog', cid: contact_id, noreload: 1});
+                        chrome.extension.sendRequest({
+                                                         action: 'ui_reload_dialog',
+                                                         cid: contact_id,
+                                                         noreload: 1,
+                                                         data: Hypno.Messages.active_dialog
+                                                     });
 
                     } else {
                         Hypno.log('active dialog with '+Hypno.Contacts.active_dialog+' but sms is from '+ msg.data);
@@ -883,8 +917,14 @@ var Hypno = {
             status_update: function(msg) {
                 // should we do anything on msg status change?
                 Hypno.log(' ** status_update fired');
-                chrome.extension.sendRequest({action: 'ui_reload_contacts'});
-                chrome.extension.sendRequest({action: 'ui_reload_messages'});
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_messages',
+                                                 data: Hypno.Messages.list
+                                             });
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_contacts',
+                                                 data: Hypno.Contacts.list
+                                             });
                 return 1;
             },
 

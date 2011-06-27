@@ -1,3 +1,5 @@
+/*global document,chrome,window
+ */
 "use strict";
 var HypnoToad = {
     version : -1,
@@ -42,14 +44,12 @@ var HypnoToad = {
                     break;
 
                 case 'ui_reload_contacts':
-                    if (HypnoToad.Contacts.Load()){
-                        HypnoToad.UI.UpdateContacts();
-                    }
+                    HypnoToad.Contacts.Load(request.data);
+                    HypnoToad.UI.UpdateContacts();
                     break;
 
                 case 'ui_reload_messages':
-                    HypnoToad.Messages.Load();
-
+                    HypnoToad.Messages.list = request.data;
                     HypnoToad.UI.Update();
                     break;
 
@@ -58,11 +58,9 @@ var HypnoToad = {
                     break;
 
                 case 'ui_reload_dialog':
-                    HypnoToad.log('~~~ update started');
-                    HypnoToad.Messages.Load();
+                    HypnoToad.Messages.active_dialog = request.data;
                     HypnoToad.UI.DrawDialog(request.cid);
                     HypnoToad.log('~~~ update finished');
-
                     break;
 
                 case 'ui_registered':
@@ -104,7 +102,8 @@ var HypnoToad = {
         if (drafts) {
             HypnoToad.Messages.drafts = JSON.parse(drafts);
         }
-        HypnoToad.Contacts.Load();
+
+        chrome.extension.sendRequest({action: 'bg_get_contact_list'});
         HypnoToad.Messages.Init();
     },
 
@@ -158,9 +157,7 @@ var HypnoToad = {
             } else {
                 HypnoToad.UI.DrawNewMessages();
             }
-            if (HypnoToad.Contacts.Load()) {
-                HypnoToad.Contacts.Filter();
-            }
+            HypnoToad.Contacts.Filter();
         },
 
         Close: function() {
@@ -187,7 +184,7 @@ var HypnoToad = {
             }
 
             var contact    = HypnoToad.Contacts.list[HypnoToad.Contacts.FindById(cid)],
-                dialog     = HypnoToad.Messages.list.dialog,
+                dialog     = HypnoToad.Messages.active_dialog,
                 messages   = [],
                 markedread = [],
                 number     = false;
@@ -296,9 +293,9 @@ var HypnoToad = {
             $('#contacts_list').html(holder);
         },
 
-        SelectUser: function(id, el) {
+        SelectUser: function(id) {
             // do nothing if user already selected
-            if (HypnoToad.Contacts.selected == id) {
+            if (HypnoToad.Contacts.selected === id) {
                 return false;
             }
             HypnoToad.Contacts.selected = id;
@@ -307,7 +304,7 @@ var HypnoToad = {
         },
 
         DrawNewMessages: function() {
-            var list = HypnoToad.Messages.list.incoming;
+            var list = HypnoToad.Messages.list;
 
             $('#history_header').html(chrome.i18n.getMessage('_ui_new_messages'));
 
@@ -444,13 +441,8 @@ var HypnoToad = {
     Messages: {
         drafts: {},
 
-        list : {
-            incoming: [],
-            outgoing: [],
-            viewed  : [],
-            history : [],
-            dialog  : []
-        },
+        list: [],
+        active_dialog: [],
 
         Draft: {
             text: '',
@@ -472,46 +464,9 @@ var HypnoToad = {
         },
 
         Init: function() {
-            HypnoToad.Messages.Load();
+            chrome.extension.sendRequest({action: 'bg_get_messages'});
             HypnoToad.UI.DrawNewMessages();
             HypnoToad.UI.Load(); // draw contact list
-        },
-
-        Load: function() {
-            var need_redraw = false;
-            var local = {
-                incoming: [],
-                viewed  : [],
-                dialog  : []
-            };
-
-            // new messages
-            local.incoming = window.localStorage.getItem('Hypno_messages_incoming');
-            if (local.incoming) {
-                if (JSON.stringify(HypnoToad.Messages.list.incoming) != local.incoming) {
-                    HypnoToad.Messages.list.incoming = JSON.parse(local.incoming);
-                    need_redraw = true;
-                }
-            }
-
-            // viewed
-            local.viewed = window.localStorage.getItem('Hypno_messages_viewed');
-            if (local.viewed) {
-                if (JSON.stringify(HypnoToad.Messages.list.viewed) != local.viewed) {
-                    HypnoToad.Messages.list.viewed= JSON.parse(local.viewed);
-                    need_redraw = true;
-                }
-            }
-
-            // dialog
-            local.dialog = window.localStorage.getItem('Hypno_dialog');
-            if (local.dialog) {
-                if (JSON.stringify(HypnoToad.Messages.list.dialog) != local.dialog) {
-                    HypnoToad.Messages.list.dialog = JSON.parse(local.dialog);
-                    need_redraw = true;
-                }
-            }
-            return need_redraw;
         },
 
         _generate_collapse_key: function() {
@@ -535,100 +490,10 @@ var HypnoToad = {
             chrome.extension.sendRequest({action: 'bg_mark_as_read', data: id_arr});
         },
 
-        New: {
-            reply_number: '',       // used in send_reply form
-            rcpt        : [],
-            sending     : false,    // flag that indicates that sms sending is
-                                    // in progress
-
-            SendReply: function() {
-                // don't do anything if another sms sending is in progress
-                if (HypnoToad.Messages.New.sending) return false;
-
-                HypnoToad.log('UI: Send Reply called');
-
-                var textinput = $('#replysms');
-                var smstext   = textinput.text().trim();
-
-                // lets show a warning if there's no text to send
-                if (smstext == '') {
-                    HypnoToad.warn('UI: sms without text. Exiting');
-                    return false;
-                }
-
-                // generating bogus collapse key
-                var collapse_key = HypnoToad.Messages._generate_collapse_key();
-                var phone_number = HypnoToad.Messages.New.reply_number;
-
-                // disable reply button to prevent double clicks
-                $('#replysmsbtn').hide();
-
-                var sending_tmpl = '\
-                    <div class="history_item me sending">\
-                        <div class="history_rcpt">${name}<br /><span class="date"> </span></div>\
-                        <div class="history_text">${text}</div>\
-                    </div>';
-
-                $('#contact_history').prepend(
-                    jQuery.tmpl(sending_tmpl, {
-                        name: chrome.i18n.getMessage('_me'),
-                        text: smstext
-                    })
-                );
-
-                // saving draft for the first time
-                // in case if sms sending will fail and user closes popup
-                HypnoToad.Messages.Draft.Save();
-                // clear number of SMS and input field
-                HypnoToad.Contacts.CountSMS(document.getElementById('replysms').innerHTML='');
-                // set flag
-                HypnoToad.Messages.New.sending = true;
-
-                chrome.extension.sendRequest(
-                    {
-                        action : 'bg_send_sms',
-                        data: {
-                            'message'       : encodeURIComponent(smstext),
-                            'collapse_key'  : collapse_key,
-                            'phone_number'  : encodeURIComponent(phone_number)
-                        }
-                    }
-                );
-
-                textinput.focus();
-                return true;
-            },
-
-            // BG send signal when sending actually completes
-            // no error display for now
-            SendReplyFinished: function() {
-                // sending competed. Now we can safely clean draft
-                HypnoToad.Messages.Draft.text = '';
-                HypnoToad.Messages.Draft.Save();
-
-                HypnoToad.Messages.New.sending = false;
-                // enable Reply button
-                $('#replysmsbtn').show();
-                $('div.sending').removeClass('sending');
-
-                return true;
-            }
-        }
-    },
-
-    Contacts: {
-        list            : [],    // list of contacts
-        selected        : false, // id of the selected contact
-        phones_lookup   : false, // lookup to speedup contacts list search
-
-        info_data: {
-            phones: []
-        },
-
         /*
-            Count number of symbols in SMS and draw number of sms
-            that will be sent
-        */
+         Count number of symbols in SMS and draw number of sms
+         that will be sent
+         */
         CountSMS: function(input) {
             var text = $(input).text().trim();
             HypnoToad.Messages.Draft.text = text;
@@ -650,6 +515,95 @@ var HypnoToad = {
             } else {
                 sms_holder.removeClass('mmoresms');
             }
+        },
+
+
+        New: {
+            reply_number: '',       // used in send_reply form
+            rcpt        : [],
+            sending     : false,    // flag that indicates that sms sending is
+                                    // in progress
+
+            SendReply: function() {
+                // don't do anything if another sms sending is in progress
+                if (HypnoToad.Messages.New.sending) {
+                    return false;
+                }
+
+                HypnoToad.log('UI: Send Reply called');
+
+                var textinput = $('#replysms');
+                var smstext   = textinput.text().trim();
+
+                // lets show a warning if there's no text to send
+                if (smstext === '') {
+                    HypnoToad.warn('UI: sms without text. Exiting');
+                    return false;
+                }
+
+                // generating bogus collapse key
+                var collapse_key = HypnoToad.Messages._generate_collapse_key();
+                var phone_number = HypnoToad.Messages.New.reply_number;
+
+                // disable reply button to prevent double clicks
+                $('#replysmsbtn').hide();
+
+                var sending_tmpl = '\
+                    <div class="history_item me sending">\
+                        <div class="history_rcpt">${name}<br /><span class="date"> </span></div>\
+                        <div class="history_text">${text}</div>\
+                    </div>';
+
+
+                // this draw message that's being sent
+                $('#contact_history').prepend(
+                    jQuery.tmpl(sending_tmpl, {
+                        name: chrome.i18n.getMessage('_me'),
+                        text: smstext
+                    })
+                );
+
+                // saving draft for the first time
+                // in case if sms sending will fail and user closes popup
+                HypnoToad.Messages.Draft.Save();
+                // clear number of SMS and input field
+                HypnoToad.Messages.CountSMS(document.getElementById('replysms').innerHTML='');
+                // set flag
+                HypnoToad.Messages.New.sending = true;
+
+                chrome.extension.sendRequest({
+                                                 action : 'bg_send_sms',
+                                                 data: {
+                                                     message       : smstext,
+                                                     collapse_key  : collapse_key,
+                                                     phone_number  : phone_number,
+                                                     cid           : HypnoToad.Contacts.selected
+                                                 }
+                                             });
+                textinput.focus();
+                return true;
+            },
+
+            // BG send signal when sending actually completes
+            // no error display for now
+            SendReplyFinished: function() {
+                // sending competed. Now we can safely clean draft
+                HypnoToad.Messages.Draft.text = '';
+                HypnoToad.Messages.Draft.Save();
+                HypnoToad.Messages.New.sending = false;
+                // enable Reply button
+                $('#replysmsbtn').show();
+            }
+        }
+    },
+
+    Contacts: {
+        list            : [],    // list of contacts
+        selected        : false, // id of the selected contact
+        phones_lookup   : false, // lookup to speedup contacts list search
+
+        info_data: {
+            phones: []
         },
 
         /*
@@ -705,7 +659,7 @@ var HypnoToad = {
             chrome.extension.sendRequest({action: 'bg_dialog_active', data: phones.join(' ')});
 
             $('#replysms').bind('keyup', function(e){
-                HypnoToad.Contacts.CountSMS(this);
+                HypnoToad.Messages.CountSMS(this);
             });
 
             // bind Ctrl+Enter to send sms
@@ -729,26 +683,25 @@ var HypnoToad = {
             var list = HypnoToad.Contacts.list;
 
             // while contacts are not loaded - do nothing
-            if (!list||list.length ==0) return false;
+            if (!list||list.length === 0) {
+                return false;
+            }
 
             // if lookup is empty we need to init it first
             if (!lookup) {
-                lookup   = {};
-                for (var i = 0; i < list.length; i++) {
-                    for (var j = 0; j < list[i].phones.length; j++) {
-                        var number = list[i].phones[j].number;
-                        lookup[number] = i;
-                    }
-                }
-                HypnoToad.Contacts.phones_lookup = lookup;
+                HypnoToad.error('no contacts looup found');
+                return -1;
             }
-            if (!phone) return -1;
+            if (!phone) {
+                return -1;
+            }
             return lookup[phone];
         },
+
         FindById: function(id) {
             var list = HypnoToad.Contacts.list;
             for (var i = 0; i < list.length; i++) {
-                if (list[i].id == id) {
+                if (list[i].id === id) {
                     return i;
                 }
             }
@@ -766,8 +719,8 @@ var HypnoToad = {
             var res  = [];
 
             var new_sms_rcpt = {};
-            for (var i = 0; i < HypnoToad.Messages.list.incoming.length; i++) {
-                var phone   = HypnoToad.Messages.list.incoming[i].phone_number;
+            for (var i = 0; i < HypnoToad.Messages.list.length; i++) {
+                var phone   = HypnoToad.Messages.list[i].phone_number;
                 var rcpt_id = HypnoToad.Contacts.FindByPhone(phone);
                 if (list[rcpt_id]) {
                     if (new_sms_rcpt[list[rcpt_id].id]) {
@@ -820,30 +773,33 @@ var HypnoToad = {
             return 1;
         },
 
-        // type could be 'name' or 'secondname'
+        // type could be 'name'
         Sort: function(type) {
             if (type === 'name' && HypnoToad.Contacts.list) {
-                return HypnoToad.Contacts.list.sort(function(a,b){
+                HypnoToad.Contacts.list = HypnoToad.Contacts.list.sort(function(a,b){
                     if (a.name < b.name) return -1;
                     if (a.name > b.name) return 1;
                     return 0;
                 });
             }
-            return true;
         },
 
         // loads contact list and return true if it was actually updated
-        Load: function() {
-            //HypnoToad.log('UI: ... getting Contacts from local storage');
-            var contacts = window.localStorage.getItem('Hypno_contacts');
-            if (JSON.stringify(HypnoToad.Contacts.list) != contacts) {
-                HypnoToad.Contacts.list = JSON.parse(contacts);
-                HypnoToad.Contacts.list = HypnoToad.Contacts.Sort('name');
-                // resetting lookup cache
-                HypnoToad.Contacts.phones_lookup = false;
-                return true;
+        Load: function(data) {
+            if (!data) {
+                HypnoToad.log('no data to load');
+                return false;
             }
-            return false;
+            HypnoToad.Contacts.list = data;
+            HypnoToad.Contacts.Sort('name');
+            // after sorting of contacts list we are forced to rebuild lookup
+            var lookup   = {}, i, j;
+            for (i = 0; i < HypnoToad.Contacts.list.length; i++) {
+                for (j = 0; j < HypnoToad.Contacts.list[i].phones.length; j++) {
+                    lookup[HypnoToad.Contacts.list[i].phones[j].number] = i;
+                }
+            }
+            HypnoToad.Contacts.phones_lookup = lookup;
         }
     },
 
@@ -851,24 +807,13 @@ var HypnoToad = {
         appEngine   : false,
         signIn      : false,
         signOut     : false,
-        contacts    : false,
-        send        : false,
         index       : chrome.extension.getURL('hypno_gui.html'),
 
         Init: function() {
             HypnoToad.Urls.appEngine   = "http://"+HypnoToad.version+".latest.bandog812.appspot.com/";
             HypnoToad.Urls.signIn      = HypnoToad.Urls.appEngine+"sign?action=signin&extret="+encodeURIComponent(chrome.extension.getURL('loading.html'))+"&ver="+HypnoToad.version;
             HypnoToad.Urls.signOut     = HypnoToad.Urls.appEngine+"sign?action=signout&extret="+encodeURIComponent(chrome.extension.getURL('close.html'))+"&ver="+HypnoToad.version;
-            HypnoToad.Urls.contacts    = HypnoToad.Urls.appEngine+"contacts_list?action=get&ver="+HypnoToad.version;
-            HypnoToad.Urls.send_status = HypnoToad.Urls.appEngine+"message?action=get_status&ver="+HypnoToad.version+'&collapse_key=';
 
-            HypnoToad.Urls.messages = {
-                'get': {
-                    unread  : HypnoToad.Urls.appEngine+"sms?action=get&ver="+HypnoToad.version,
-                    outgoing: HypnoToad.Urls.appEngine+'message?action=get&ver='+HypnoToad.version
-                }
-            };
-            HypnoToad.Urls.set_status  = HypnoToad.Urls.appEngine+"sms?action=update_status&ver="+HypnoToad.version+"&status=30&collapse_key=";
         }
     }
 };
