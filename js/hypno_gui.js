@@ -1,6 +1,9 @@
-/*global document,chrome,window
- */
-"use strict";
+/*
+
+//global document,chrome,window,jQuery
+//"use strict";
+
+*/
 var HypnoToad = {
     version : -1,
 
@@ -17,6 +20,10 @@ var HypnoToad = {
         chrome.extension.sendRequest({action: 'bg_log', type: 'error', data: o});
     },
 
+    testest: function(test) {
+        console.log('ommmmm');
+    },
+
     Init: function(ver) {
         HypnoToad.version = ver;
         // draw loading
@@ -30,7 +37,7 @@ var HypnoToad = {
 
         // Signals processing from BG
         chrome.extension.onRequest.addListener(
-            function(request, sender, sendResponse) {
+            function(request) {
                 if (!request.hasOwnProperty('action')) {
                     HypnoToad.log('UI: request without action detected. Ignoring');
                     return false;
@@ -93,8 +100,9 @@ var HypnoToad = {
         }
 
         // saving draft on unload
-        window.addEventListener("unload", function (event) {
-                                    HypnoToad.Messages.Draft.Save();
+        window.addEventListener("unload",
+                                function (event) {
+                                    Hypnotoad.Messages.Draft.Save();
                                 }, true);
 
         // reading sms drafts
@@ -128,8 +136,8 @@ var HypnoToad = {
             var bind_helper = function(phone_number) {
                 return function(e) {
                     HypnoToad.Messages.New.reply_number = phone_number;
-                    $('#user_phones').html(phone_number);
-                    $('#phones_select').remove();
+                    jQuery('#user_phones').html(phone_number);
+                    jQuery('#phones_select').remove();
                     HypnoToad.UI.select_number_active = false;
                 };
             };
@@ -213,7 +221,7 @@ var HypnoToad = {
                 HypnoToad.Messages.MarkAsRead(markedread);
             }
 
-            var phones_label = $('#user_phones');
+            var phones_label = jQuery('#user_phones');
             if (HypnoToad.Messages.New.reply_number) {
                 phones_label.text(HypnoToad.Messages.New.reply_number);
             } else {
@@ -232,7 +240,7 @@ var HypnoToad = {
                 });
             }
 
-            var contact_history = $("#contact_history");
+            var contact_history = jQuery("#contact_history");
 
             var history_tmpl = '\
                 {{each items}}\
@@ -804,7 +812,7 @@ var HypnoToad = {
         }
     },
 
-    Url: {
+    Urls: {
         appEngine   : false,
         signIn      : false,
         signOut     : false,
