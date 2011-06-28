@@ -410,6 +410,7 @@ var Hypno = {
 
                        // generating virtual contacts
                        Hypno.Contacts.GenerateVirtualContacts(new_sms);
+
                        // TODO FIXME
                        // do we really need above? Maybe we should send contacts to UI here ?
 
@@ -495,10 +496,19 @@ var Hypno = {
                             complete: function(data) {
                                 Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
 
+                                if (Hypno.Contacts.active_dialog) {
+                                    chrome.extension.sendRequest({
+                                                                     action: 'ui_reload_dialog',
+                                                                     data: Hypno.Messages.active_dialog
+                                                                 });
+                                }
+
                                 chrome.extension.sendRequest({
                                                                  action: 'ui_reload_messages',
                                                                  data: Hypno.Messages.list
                                                              });
+
+
                                 // send signal to UI to update lists
                                 chrome.extension.sendRequest({
                                                                  action: 'ui_reload_contacts',
@@ -581,13 +591,14 @@ var Hypno = {
         },
 
         FindByPhone: function(phone) {
-            var lookup = Hypno.Contacts.phones_lookup;
-
-            if (!lookup) {
+            if (!Hypno.Contacts.phones_lookup) {
                 Hypno.Contacts.RebuildLookup();
             }
-            if (!phone) return -1;
-            return lookup[phone];
+
+            if (!phone) {
+                return -1;
+            }
+            return Hypno.Contacts.phones_lookup[phone];
         },
 
         // this function will parse all incoming messages and search for
@@ -616,8 +627,10 @@ var Hypno = {
              name : string
              phones: array[{ number: string, primary: boolean, type: int } ]
              */
+            var search = -1;
             for (var i = 0; i < msgs.length; i++) {
-                if (!Hypno.Contacts.FindByPhone(msgs[i].phone_number)) {
+                search = Hypno.Contacts.FindByPhone(msgs[i].phone_number);
+                if (!search || search === -1) {
                     Hypno.Contacts.list.push({
                         id  : 'virt'+Math.floor(Math.random()*11)+Math.floor(Math.random()*5)+(new Date().getTime()), // trying to be random :(
                         name: msgs[i].phone_number,
@@ -871,7 +884,6 @@ var Hypno = {
 
             // handling of new sms notifications
             sms: function(msg) {
-                Hypno.error(msg);
                 // message data contaions full sms
                 try {
                     msg = JSON.parse(msg.data);
@@ -880,20 +892,8 @@ var Hypno = {
                     Hypno.error(msg);
                     return false;
                 }
-                Hypno.error(msg);
                 var cid  = Hypno.Contacts.FindByPhone(msg.phone_number);
                 var name = msg.phone_number;
-
-                if (cid > -1) {
-                    // we found contact
-                    name = Hypno.Contacts.list[cid].name;
-                } else {
-                    // we need to reset contacts lookup so it will be rebuilded
-                    Hypno.Contacts.GenerateVirtualContacts();
-                    cid = Hypno.Contacts.FindByPhone(msg.phone_number);
-                }
-
-                Hypno.Notifications.Popup(chrome.i18n.getMessage('_new_sms_notify_label')+' '+name);
 
                 // send signal to UI
                 Hypno.Actions.NewMessagesAvailable();
@@ -902,7 +902,8 @@ var Hypno = {
                 if (Hypno.Contacts.active_dialog && Hypno.Contacts.active_dialog.indexOf(msg.phone_number) != -1) {
                     Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.phone_number);
 
-                    Hypno.warn(msg);
+                    Hypno.Notifications.Popup(chrome.i18n.getMessage('_new_sms_notify_label')+' '+name);
+
                     // changing message status to 30 (read)
                     msg.status = 30;
 
@@ -928,6 +929,16 @@ var Hypno = {
                 } else {
                     // saving new sms into list
                     Hypno.Messages.list.unshift(msg);
+
+                    if (cid > -1) {
+                        // we found contact
+                        name = Hypno.Contacts.list[cid].name;
+                    } else {
+                        // we need to reset contacts lookup so it will be rebuilded
+                        Hypno.Contacts.GenerateVirtualContacts();
+                        cid = Hypno.Contacts.FindByPhone(msg.phone_number);
+                    }
+                    Hypno.Notifications.Popup(chrome.i18n.getMessage('_new_sms_notify_label')+' '+name);
 
                     chrome.extension.sendRequest({
                                                      action: 'ui_reload_messages',

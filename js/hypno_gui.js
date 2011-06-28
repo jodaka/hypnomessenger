@@ -58,7 +58,7 @@ var HypnoToad = {
 
                 case 'ui_reload_dialog':
                     HypnoToad.Messages.active_dialog = request.data;
-                    HypnoToad.UI.DrawDialog(request.cid);
+                    HypnoToad.UI.DrawDialog(request.cid ? request.cid : HypnoToad.Contacts.selected);
                     HypnoToad.log('~~~ update finished');
                     break;
 
