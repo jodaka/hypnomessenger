@@ -348,8 +348,13 @@ var HypnoToad = {
                 );
 
             } else {
-                $('#history_messages').html('<div id="nomsg"><div style="width: 100%">'+chrome.i18n.getMessage('_no_new_msg')+'</div></div>');
-                $('#mark_all_read').html('');
+                document.getElementById('history_messages').innerHTML = '<div id="nomsg">'
+                    + '<div style="width: 100%">' + chrome.i18n.getMessage('_no_new_msg') + '<div>'
+                    + '</div>';
+
+                document.getElementById('mark_all_read').innerHTML = '';
+                //$('#history_messages').html('<div id="nomsg"><div style="width: 100%">'+chrome.i18n.getMessage('_no_new_msg')+'</div></div>');
+                //$('#mark_all_read').html('');
             }
         },
 

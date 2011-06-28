@@ -510,7 +510,7 @@ var Hypno = {
                                     // saving message to dialog
                                     Hypno.Messages.active_dialog.unshift({
                                                                              create_time: new Date().getTime(),
-                                                                             id: msg.collapse_key,
+                                                                             collapse_key: msg.collapse_key,
                                                                              message: msg.message,
                                                                              phone_number: msg.phone_number,
                                                                              status: 30
