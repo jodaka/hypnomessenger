@@ -1,3 +1,4 @@
+/*global window,chrome,jQuery,document,console,io */
 "use strict";  // voices in my head forced me to write this
 
 var Hypno = {
@@ -165,7 +166,8 @@ var Hypno = {
                 complete: function(res) {
                     var json;
                     try {
-                        json = eval('('+res.responseText+')');  // obj = this.getResponseJSON();
+                        //json = eval('('+res.responseText+')');  // obj = this.getResponseJSON();
+                        json = JSON.parse(res.responseText);
                     } catch (err) {
                         Hypno.warn(err);
                         return false;
@@ -259,7 +261,7 @@ var Hypno = {
         Popup: function(msg) {
             if (!msg) return 0; // we only display usefull popups :)
 
-            if (window.webkitNotifications.checkPermission() == 0) { // 0 is PERMISSION_ALLOWED
+            if (window.webkitNotifications.checkPermission() === 0) { // 0 is PERMISSION_ALLOWED
 
                 Hypno.Notifications.desktop_popup = window.webkitNotifications.createNotification(
                     'img/icon_120.png',
@@ -269,13 +271,14 @@ var Hypno = {
                 Hypno.Notifications.desktop_popup.show();
 
                 // remove notification
-                setTimeout(function(){
-                               // we check if user have already closed popup
-                               if (Hypno.Notifications.desktop_popup) {
-                                   Hypno.Notifications.desktop_popup.cancel();
-                                   Hypno.Notifications.desktop_popup = false;
-                               }
-                           }, 4000);
+                window.setTimeout(
+                    function(){
+                        // we check if user have already closed popup
+                        if (Hypno.Notifications.desktop_popup) {
+                            Hypno.Notifications.desktop_popup.cancel();
+                            Hypno.Notifications.desktop_popup = false;
+                        }
+                    }, 4000);
 
             } else {
                 window.webkitNotifications.requestPermission();
@@ -397,7 +400,7 @@ var Hypno = {
                                 dataType: 'json'
                             })
             ).done(function(ajax_new_list){
-                       if (!Hypno.Actions.checkStatus(ajax_new_list['status'])) {
+                       if (!Hypno.Actions.checkStatus(ajax_new_list.status)) {
                            Hypno.warn('ENGINE: status FAIL');
                            return false;
                        }
@@ -437,11 +440,14 @@ var Hypno = {
          */
         RemoveById: function(id_arr) {
             var list = Hypno.Messages.list;
-            for (var a = 0, max = id_arr.length; a < max; a++) {
-                for (var l = 0, max2 = list.length; l < max2; l++) {
-                    if (list[l].id == id_arr[a]) {
-                        list.splice(l, 1);
-                        break;
+            var a,l,max,max2;
+            if (id_arr instanceof Array && id_arr.length > 0) {
+                for (a = 0, max = id_arr.length; a < max; a++) {
+                    for (l = 0, max2 = list.length; l < max2; l++) {
+                        if (list[l].id == id_arr[a]) {
+                            list.splice(l, 1);
+                            break;
+                        }
                     }
                 }
             }
@@ -461,24 +467,21 @@ var Hypno = {
                 Hypno.log('UI: Marking as read id='+id_arr.join(','));
             }
 
+            Hypno.Messages.list = Hypno.Messages.RemoveById(id_arr);
+
             jQuery.ajax({
-                            url: Hypno.Urls.messages['set']['read']+id_arr.join(','),
+                            url: Hypno.Urls.messages.set.read+id_arr.join(','),
                             dataType: 'json',
                             complete: function(data) {
-                                Hypno.warn('removing by id');
-                                Hypno.warn(id_arr);
-                                Hypno.Messages.list = Hypno.Messages.RemoveById();
                                 Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
-
+                                chrome.extension.sendRequest({
+                                                                 action: 'ui_reload_messages',
+                                                                 data: Hypno.Messages.list
+                                                             });
                                 // send signal to UI to update lists
                                 chrome.extension.sendRequest({
                                                                  action: 'ui_reload_contacts',
                                                                  data: Hypno.Contacts.list
-                                                             });
-
-                                chrome.extension.sendRequest({
-                                                                 action: 'ui_reload_messages',
-                                                                 data: Hypno.Messages.list
                                                              });
                             }
                         });
@@ -494,8 +497,9 @@ var Hypno = {
                             url: send_url,
                             dataType: 'json',
                             complete: function (data) {
+                                var json = {};
                                 try {
-                                    var json = eval('('+data['responseText']+')');
+                                    json = JSON.parse(data.responseText);
                                 } catch (err) {
                                     Hypno.warn(err);
                                     return false;
@@ -616,9 +620,8 @@ var Hypno = {
                             dataType: 'json',
                             complete: function(data) {
                                 var json = {};
-
                                 try {
-                                    json = eval('('+data['responseText']+')');  // obj = this.getResponseJSON();
+                                    json = JSON.parse(data.responseText);
                                 } catch (err) {
                                     Hypno.warn(err);
                                     return false;
@@ -776,19 +779,16 @@ var Hypno = {
                             Hypno.log('<--- AUTH response');
                             Hypno.ws.conn.auth(msg);
                             return 1;
-                            break;
 
                         case 'SMS':
                             Hypno.log('<--- SMS');
                             Hypno.ws.notify.sms(msg);
                             return 1;
-                            break;
 
                         case 'MESSAGE':
                             Hypno.log('<--- MESSAGE');
                             Hypno.ws.notify.message(msg);
                             return 1;
-                            break;
 
                         case 'SMS_STATUS_CHANGED':
                             // do nothing;

@@ -1,9 +1,5 @@
-/*
-
-//global document,chrome,window,jQuery
-//"use strict";
-
-*/
+/*global window,chrome,jQuery,document,console,io */
+"use strict";
 var HypnoToad = {
     version : -1,
 
@@ -18,10 +14,6 @@ var HypnoToad = {
     // HypnoToad.log wrapper then only spams in debug mode
     error: function(o) {
         chrome.extension.sendRequest({action: 'bg_log', type: 'error', data: o});
-    },
-
-    testest: function(test) {
-        console.log('ommmmm');
     },
 
     Init: function(ver) {
@@ -356,7 +348,7 @@ var HypnoToad = {
                 );
 
             } else {
-                $('#history_messages').html('<div id="nomsg">'+chrome.i18n.getMessage('_no_new_msg')+'</div>');
+                $('#history_messages').html('<div id="nomsg"><div style="width: 100%">'+chrome.i18n.getMessage('_no_new_msg')+'</div></div>');
                 $('#mark_all_read').html('');
             }
         },
