@@ -439,6 +439,8 @@ var Hypno = {
          Receive a list of messages ids and move them from list to copy2list
          */
         RemoveById: function(id_arr) {
+
+            // removing message from incoming
             var list = Hypno.Messages.list;
             var a,l,max,max2;
             if (id_arr instanceof Array && id_arr.length > 0) {
@@ -451,10 +453,28 @@ var Hypno = {
                     }
                 }
             }
+
+            // now we need to mark is as read in the dialog
+            if (Hypno.Contacts.active_dialog) {
+                var dialog = Hypno.Messages.active_dialog;
+
+                for (a = 0, max = id_arr.length; a < max; a++) {
+                    for (l = 0, max2 = dialog.length; l < max2; l++) {
+                        if (dialog[l].id && dialog[l].id == id_arr[a]) {
+                            dialog[l].status = 30;
+                            break;
+                        }
+                    }
+                }
+            }
             return list;
         },
 
         MarkAsRead: function(id_arr) {
+            if (!id_arr) {
+                Hypno.warn("Passed empty argument for MarkAsRead");
+                return false;
+            }
             // we can mark all messages as read if pass any string instead of array
             if (id_arr.constructor != Array ) {
                 id_arr = [];
@@ -474,6 +494,7 @@ var Hypno = {
                             dataType: 'json',
                             complete: function(data) {
                                 Hypno.Notifications.Icon('new', Hypno.Messages.list.length);
+
                                 chrome.extension.sendRequest({
                                                                  action: 'ui_reload_messages',
                                                                  data: Hypno.Messages.list
@@ -850,6 +871,7 @@ var Hypno = {
 
             // handling of new sms notifications
             sms: function(msg) {
+                Hypno.error(msg);
                 // message data contaions full sms
                 try {
                     msg = JSON.parse(msg.data);
@@ -858,14 +880,7 @@ var Hypno = {
                     Hypno.error(msg);
                     return false;
                 }
-
-                // saving new sms into list
-                Hypno.Messages.list.unshift(msg);
-
-                // send message to UI instead of storing into local storage
-                //Hypno.Messages.Store();
-
-
+                Hypno.error(msg);
                 var cid  = Hypno.Contacts.FindByPhone(msg.phone_number);
                 var name = msg.phone_number;
 
@@ -882,32 +897,47 @@ var Hypno = {
 
                 // send signal to UI
                 Hypno.Actions.NewMessagesAvailable();
-                chrome.extension.sendRequest({
-                                                 action: 'ui_reload_messages',
-                                                 data: Hypno.Messages.list
-                                             });
-                chrome.extension.sendRequest({
-                                                 action: 'ui_reload_contacts',
-                                                 data: Hypno.Contacts.list
-                                             });
 
                 // if we got active dialog - we should update it
-                if (Hypno.Contacts.active_dialog) {
-                    if (Hypno.Contacts.active_dialog.indexOf(msg.phone_number) != -1) {
-                        Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.data);
-                        // injecting sms message into dialog
-                        Hypno.Messages.active_dialog.unshift(msg);
-                        var contact_id = Hypno.Contacts.list[cid].id;
-                        chrome.extension.sendRequest({
-                                                         action: 'ui_reload_dialog',
-                                                         cid: contact_id,
-                                                         noreload: 1,
-                                                         data: Hypno.Messages.active_dialog
-                                                     });
+                if (Hypno.Contacts.active_dialog && Hypno.Contacts.active_dialog.indexOf(msg.phone_number) != -1) {
+                    Hypno.log(' **************** got active dialog! Reloading... for cid='+cid+' user='+msg.phone_number);
 
-                    } else {
-                        Hypno.log('active dialog with '+Hypno.Contacts.active_dialog+' but sms is from '+ msg.data);
+                    Hypno.warn(msg);
+                    // changing message status to 30 (read)
+                    msg.status = 30;
+
+                    // injecting sms message into dialog
+                    Hypno.Messages.active_dialog.unshift(msg);
+
+                    // sending mark_as_read request
+                    if (msg.id) {
+                        Hypno.Messages.MarkAsRead(msg.id);
                     }
+
+                    if (msg.collapse_key) {
+                        Hypno.Messages.MarkAsRead(msg.collapse_key);
+                    }
+
+                    var contact_id = Hypno.Contacts.list[cid].id;
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_dialog',
+                                                     cid: contact_id,
+                                                     noreload: 1,
+                                                     data: Hypno.Messages.active_dialog
+                                                 });
+                } else {
+                    // saving new sms into list
+                    Hypno.Messages.list.unshift(msg);
+
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_messages',
+                                                     data: Hypno.Messages.list
+                                                 });
+                    chrome.extension.sendRequest({
+                                                     action: 'ui_reload_contacts',
+                                                     data: Hypno.Contacts.list
+                                                 });
+
                 }
             },
 

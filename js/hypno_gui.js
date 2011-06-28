@@ -95,6 +95,9 @@ var HypnoToad = {
         window.addEventListener("unload",
                                 function (event) {
                                     Hypnotoad.Messages.Draft.Save();
+
+                                    // send signal to BG to cancel any dialogs
+                                    chrome.extension.sendRequest({action: 'bg_dialog_inactive'});
                                 }, true);
 
         // reading sms drafts
