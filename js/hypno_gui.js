@@ -1,5 +1,6 @@
 /*global window,chrome,jQuery,document,console,io */
 "use strict";
+
 var HypnoToad = {
     version : -1,
 
@@ -9,7 +10,9 @@ var HypnoToad = {
     },
     // HypnoToad.log wrapper then only spams in debug mode
     warn: function(o) {
-        chrome.extension.sendRequest({action: 'bg_log', type: 'warn', data: o});
+//        opera.postError(o);
+        console.warn(o);
+        //        chrome.extension.sendRequest({action: 'bg_log', type: 'warn', data: o});
     },
     // HypnoToad.log wrapper then only spams in debug mode
     error: function(o) {

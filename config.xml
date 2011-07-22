@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="http://hypnomessenger.com">
+	<name>Hypnomessenger</name>
+	<description>Hypnomessenger client for Opera browser</description>
+  	<author href="http://hypnomessenger.com" email="info@hypnomessenger.com">Hypnomessenger team</author>
+  	<icon src="img/icon_18.png"/>
+        <content src="opera_button.html"/>
+
+        <access origin="http://hypnomessenger.com" subdomains="true"/>
+        <access origin="http://6.latest.bandog812.appspot.com" subdomains="true"/>
+</widget>
