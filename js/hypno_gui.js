@@ -31,47 +31,49 @@ var HypnoToad = {
         HypnoToad.UI.DrawTranslations();
 
         // Signals processing from BG
-        chrome.extension.onRequest.addListener(
-            function(request) {
-                if (!request.hasOwnProperty('action')) {
-                    HypnoToad.log('UI: request without action detected. Ignoring');
-                    return false;
-                }
 
-                HypnoToad.log('UI: ~~~~~> got signal '+request.action);
-                switch(request.action) {
+        opera.extension.onmessage = function(event) {
 
-                case 'ui_message_sent':
-                    HypnoToad.Messages.New.SendReplyFinished();
-                    break;
+            var request = event.data;
 
-                case 'ui_reload_contacts':
-                    HypnoToad.Contacts.Load(request.data);
-                    HypnoToad.UI.UpdateContacts();
-                    break;
-
-                case 'ui_reload_messages':
-                    HypnoToad.Messages.list = request.data;
-                    HypnoToad.UI.Update();
-                    break;
-
-                case 'ui_not_registered':
-                    HypnoToad.UI.DrawNotRegistered();
-                    break;
-
-                case 'ui_reload_dialog':
-                    HypnoToad.Messages.active_dialog = request.data;
-                    HypnoToad.UI.DrawDialog(request.cid ? request.cid : HypnoToad.Contacts.selected);
-                    HypnoToad.log('~~~ update finished');
-                    break;
-
-                case 'ui_registered':
-                    HypnoToad.UI.DrawRegistered();
-                    break;
-                }
-                return true;
+            if (!request.hasOwnProperty('action')) {
+                HypnoToad.log('UI: request without action detected. Ignoring');
+                return false;
             }
-        );
+
+            HypnoToad.log('UI: ~~~~~> got signal '+request.action);
+            switch(request.action) {
+
+            case 'ui_message_sent':
+                HypnoToad.Messages.New.SendReplyFinished();
+                break;
+
+            case 'ui_reload_contacts':
+                HypnoToad.Contacts.Load(request.data);
+                HypnoToad.UI.UpdateContacts();
+                break;
+
+            case 'ui_reload_messages':
+                HypnoToad.Messages.list = request.data;
+                HypnoToad.UI.Update();
+                break;
+
+            case 'ui_not_registered':
+                HypnoToad.UI.DrawNotRegistered();
+                break;
+
+            case 'ui_reload_dialog':
+                HypnoToad.Messages.active_dialog = request.data;
+                HypnoToad.UI.DrawDialog(request.cid ? request.cid : HypnoToad.Contacts.selected);
+                HypnoToad.log('~~~ update finished');
+                break;
+
+            case 'ui_registered':
+                HypnoToad.UI.DrawRegistered();
+                break;
+            }
+            return true;
+        };
 
         var status = window.localStorage.getItem('Hypno_status');
 
@@ -100,7 +102,7 @@ var HypnoToad = {
                                     Hypnotoad.Messages.Draft.Save();
 
                                     // send signal to BG to cancel any dialogs
-                                    chrome.extension.sendRequest({action: 'bg_dialog_inactive'});
+                                    opera.extension.broadcastMessage({action: 'bg_dialog_inactive'});
                                 }, true);
 
         // reading sms drafts
@@ -109,7 +111,7 @@ var HypnoToad = {
             HypnoToad.Messages.drafts = JSON.parse(drafts);
         }
 
-        chrome.extension.sendRequest({action: 'bg_get_contact_list'});
+        opera.extension.broadcastMessage({action: 'bg_get_contact_list'});
         HypnoToad.Messages.Init();
     },
 
@@ -178,7 +180,7 @@ var HypnoToad = {
             HypnoToad.Contacts.selected = false;
 
             // send a signal to background to indicate no more dialog is active
-            chrome.extension.sendRequest({action: 'bg_dialog_inactive'});
+            opera.extension.broadcastMessage({action: 'bg_dialog_inactive'});
             return true;
         },
 
@@ -349,7 +351,7 @@ var HypnoToad = {
                 $('#mark_all_read').html(
                     $('<a href="javascript:void(0)">'+chrome.i18n.getMessage('_ui_mark_all_as_read')+'</a>').click(function(){
                         HypnoToad.log('UI: Mark all messages as read');
-                        chrome.extension.sendRequest({action: 'bg_mark_as_read', data: 'all'});
+                        opera.extension.broadcastMessage({action: 'bg_mark_as_read', data: 'all'});
                     })
                 );
 

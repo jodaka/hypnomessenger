@@ -3,11 +3,20 @@ var chrome = {
     extension: {
         onRequest: {
             addListener: function() {
-                HypnoToad.warn('Add listener found');
+
             }
         },
-        sendRequest: function() {
-            HypnoToad.warn('send request called');
+
+        sendRequest: function(data) {
+            opera.postError(data);
+            try {
+                opera.extension.broadcastMessage(data);
+            } catch (x) {
+                opera.postError(x);
+            }
+
+            opera.postError('call finished');
+            return 1;
         },
 
         getURL: function() {

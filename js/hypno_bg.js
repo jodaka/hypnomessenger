@@ -36,93 +36,94 @@ var Hypno = {
         Hypno.Urls.Init();
 
         // add listener to communicate with popup page
-        chrome.extension.onRequest.addListener(
-            function(request, sender, sendResponse) {
+        opera.extension.onmessage = function(event) {
 
-                if (!request.hasOwnProperty('action')) {
-                    Hypno.log('UI: request without action detected. Ignoring');
-                    return false;
-                }
+            var request = event.data;
 
-                switch(request.action) {
-                case 'bg_send_sms':
-                    Hypno.Messages.Send(request.data);
-                    break;
-
-                case 'bg_mark_as_read':
-                    Hypno.Messages.MarkAsRead(request.data);
-                    break;
-
-                case 'bg_log':
-                    if (request.hasOwnProperty('type')) {
-                        switch (request.type) {
-                        case 'info':
-                            Hypno.log(request.data);
-                            break;
-                        case 'warn':
-                            Hypno.warn(request.data);
-                            break;
-                        case 'error':
-                            Hypno.error(request.data);
-                            break;
-                        }
-                    } else {
-                        Hypno.warn('Got log request without type definition:');
-                        Hypno.warn(request.data);
-                    }
-                    break;
-
-                case 'bg_get_contact_list':
-                    // send signal to main window with contact list
-                    chrome.extension.sendRequest({
-                                                     action: 'ui_reload_contacts',
-                                                     data: Hypno.Contacts.list
-                                                 });
-                    break;
-
-                case 'bg_get_messages':
-                    // send signal to main window with contact list
-                    chrome.extension.sendRequest({
-                                                     action: 'ui_reload_messages',
-                                                     data: Hypno.Messages.list
-                                                 });
-                    break;
-
-                case 'bg_reload_messages':
-                    Hypno.Messages.Load();
-                    break;
-
-                case 'bg_load_dialog':
-                    Hypno.Messages.LoadDialog(request.cid);
-                    break;
-
-                case 'bg_reload_data':
-                    Hypno.Contacts.Load();
-                    Hypno.Messages.Load();
-                    break;
-
-                case 'bg_signout':
-                    Hypno.Actions.Signout();
-                    break;
-
-                case 'bg_checkAuthReg':
-                    Hypno.Actions.checkAuthAndReg();
-                    break;
-
-                case 'bg_dialog_inactive':
-                    Hypno.Contacts.active_dialog = false;
-                    break;
-
-                case 'bg_dialog_active':
-                    Hypno.Contacts.active_dialog = request.data;
-                    break;
-
-                default:
-                    Hypno.log('ENGINE: ~~~> got signal '+request.action);
-                    break;
-                }
+            if (!request.hasOwnProperty('action')) {
+                Hypno.log('UI: request without action detected. Ignoring');
+                return false;
             }
-        );
+
+            switch(request.action) {
+            case 'bg_send_sms':
+                Hypno.Messages.Send(request.data);
+                break;
+
+            case 'bg_mark_as_read':
+                Hypno.Messages.MarkAsRead(request.data);
+                break;
+
+            case 'bg_log':
+                if (request.hasOwnProperty('type')) {
+                    switch (request.type) {
+                    case 'info':
+                        Hypno.log(request.data);
+                        break;
+                    case 'warn':
+                        Hypno.warn(request.data);
+                        break;
+                    case 'error':
+                        Hypno.error(request.data);
+                        break;
+                    }
+                } else {
+                    Hypno.warn('Got log request without type definition:');
+                    Hypno.warn(request.data);
+                }
+                break;
+
+            case 'bg_get_contact_list':
+                // send signal to main window with contact list
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_contacts',
+                                                 data: Hypno.Contacts.list
+                                             });
+                break;
+
+            case 'bg_get_messages':
+                // send signal to main window with contact list
+                chrome.extension.sendRequest({
+                                                 action: 'ui_reload_messages',
+                                                 data: Hypno.Messages.list
+                                             });
+                break;
+
+            case 'bg_reload_messages':
+                Hypno.Messages.Load();
+                break;
+
+            case 'bg_load_dialog':
+                Hypno.Messages.LoadDialog(request.cid);
+                break;
+
+            case 'bg_reload_data':
+                Hypno.Contacts.Load();
+                Hypno.Messages.Load();
+                break;
+
+            case 'bg_signout':
+                Hypno.Actions.Signout();
+                break;
+
+            case 'bg_checkAuthReg':
+                Hypno.Actions.checkAuthAndReg();
+                break;
+
+            case 'bg_dialog_inactive':
+                Hypno.Contacts.active_dialog = false;
+                break;
+
+            case 'bg_dialog_active':
+                Hypno.Contacts.active_dialog = request.data;
+                break;
+
+            default:
+                Hypno.log('ENGINE: ~~~> got signal '+request.action);
+                break;
+            }
+        };
+
 
         chrome.browserAction.setPopup({
             popup: "hypno_gui.html"
